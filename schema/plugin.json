@@ -1,0 +1,79 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "jupytereverywhere",
+  "description": "jupytereverywhere settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false,
+  "jupyter.lab.toolbars": {
+    "Notebook": [ 
+      {
+        "name": "save",
+        "command": "",
+        "disabled": true,
+        "rank": 10
+      },
+      {
+        "name": "insert",
+        "command": "notebook:insert-cell-below",
+        "rank":12,
+        "label": "Code"
+      },
+      { 
+        "name": "cut", 
+        "command": "notebook:cut-cell", 
+        "disabled": true },
+      { 
+        "name": "copy",
+        "command": "notebook:copy-cell",
+        "disabled": true
+      },
+      {
+        "name": "paste",
+        "command": "notebook:paste-cell-below",
+        "disabled": true
+      }, 
+      {
+        "name": "cellType",
+        "command": "",
+        "disabled": true
+      },
+      {
+        "name": "executionProgress",
+        "command": "",
+        "disabled": true
+      },
+      {
+        "name": "kernelName",
+        "args": {},
+        "command": "",
+        "disabled": false,
+        "rank": 1000
+      },
+      {
+        "name": "insert-text",
+        "command": "jupytereverywhere:insert-markdown-cell",
+        "disabled": false,
+        "rank": 13,
+        "icon": "ui-components:add",
+        "label": "Text"
+      },
+      {
+        "name":"upload",
+        "command": "",
+        "rank": 5,
+        "icon": "ui-components:file-upload"
+      }
+    ],
+    "Cell": [
+      {
+        "name": "insert-cell-above",
+        "disabled": true
+      },
+      {
+        "name": "insert-cell-below",
+        "disabled": true
+      }
+    ]
+  }
+}
