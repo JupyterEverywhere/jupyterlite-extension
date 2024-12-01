@@ -20,9 +20,7 @@ import {
 import { Widget } from '@lumino/widgets';
 import { PageConfig} from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-//import { CommandRegistry } from '@lumino/commands';
-//import { IDisposable } from '@lumino/disposable';
-//import { DocumentRegistry } from '@jupyterlab/docregistry';
+import { fileUploadIcon } from '@jupyterlab/ui-components'; // Import JupyterLab's built-in upload icon
 
 
 /**
@@ -76,6 +74,106 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const { commands, shell } = app;
 
     /**
+     * Add custom upload button
+     */
+    const uploadNotebookCommand = 'jupytereverywhere:upload-notebook';
+    commands.addCommand(uploadNotebookCommand, {
+      label: 'Upload Notebook',
+      execute: async () => {
+        const inputElement = document.createElement('input');
+        inputElement.type = 'file';
+        inputElement.accept = '.ipynb'; // Accept only Jupyter Notebook files
+        inputElement.style.display = 'none';
+
+        // Listen for file selection
+        inputElement.onchange = async (event) => {
+          const file = (event.target as HTMLInputElement)?.files?.[0];
+          if (file) {
+            try {
+              // Read the notebook file content
+              const content = await file.text();
+
+              // Create a new notebook and set the content
+              const newModel = await docManager.newUntitled({
+                type: 'notebook',
+                path: '',
+              });
+              const newContext = await docManager.open(newModel.path) as NotebookPanel;
+              if (newContext) {
+                newContext.context.model.fromString(content);
+              }
+
+              console.log('Notebook uploaded successfully');
+            } catch (error) {
+              console.error('Failed to upload notebook:', error);
+              showErrorMessage('Upload Error', 'Failed to upload notebook.');
+            }
+          }
+        };
+
+        // Trigger file input click to open file dialog
+        inputElement.click();
+      },
+    });
+
+    /**
+     * Add the upload button to the toolbar
+     */
+    // Allowed file extensions
+    const allowedExtensions = ['.ipynb', '.csv', '.tsv', '.json', '.png', '.jpg', '.jpeg'];
+
+    // Function to validate file type
+    function validateFile(file: File): boolean {
+      const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+      return allowedExtensions.includes(extension);
+    }
+
+    // Create the upload button
+    const uploadButton = new ToolbarButton({
+      label: 'Upload',
+      icon: fileUploadIcon,
+      tooltip: 'Upload a notebook, dataset, or image',
+      onClick: async () => {
+        // Create a hidden file input element
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = allowedExtensions.join(','); // Limit to specific file types
+        input.multiple = true; // Allow multiple files if needed
+
+        // Trigger the file picker dialog
+        input.click();
+
+        // Handle file selection
+        input.onchange = async () => {
+          if (input.files) {
+            const files = Array.from(input.files);
+            const invalidFiles = files.filter(file => !validateFile(file));
+
+            if (invalidFiles.length > 0) {
+              // Show a warning dialog for invalid files
+              await showDialog({
+                title: 'Invalid File Type',
+                body: `The following files are not allowed: ${invalidFiles.map(f => f.name).join(', ')}`,
+                buttons: [Dialog.okButton({ label: 'OK' })]
+              });
+            } else {
+              // Proceed with uploading valid files
+              console.log('Valid files:', files.map(f => f.name));
+              // Add your custom upload logic here
+            }
+          }
+        };
+      }
+    });
+
+    // Add the upload button to the toolbar as the first item on the left
+    tracker.widgetAdded.connect((_, notebookPanel) => {
+      if (notebookPanel) {
+        notebookPanel.toolbar.insertItem(0, 'uploadButton', uploadButton); // Insert at position 0
+      }
+    });
+
+    /**
     * Add custom save button command 
     */
     const linkCheckpoint = 'jupytereverywhere:save-link';
@@ -83,27 +181,45 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     commands.addCommand(linkCheckpoint, {
       label: 'Create checkpoint and show link',
-      execute: () => {
-        // Generate Sharable Link 
-          // TODO: Implement API Generating Link Logic 
-          const shareableLink = 'https://example.com/notebook/sharelink';
-
+      execute: async () => { // Declare the function as async
+        // Generate Shareable Link 
+        const shareableLink = 'https://example.com/notebook/sharelink'; // TODO: Replace with dynamic link logic
+    
         if (firstClick) {
           // Display the message for the first click
-          showErrorMessage(
-            '',
-            'Save the following infromation to access your notebook in a future session. Here is the sharable link to your noteboook'
-          );
-          firstClick = false; // Update the flag
-        } else {
-          showDialog({
-            title: 'Progress Saved',
+          const result = await showDialog({
+            title: '',
             body: new Widget({
               node: (() => {
                 const container = document.createElement('div');
                 container.innerHTML = `
-                  <p>Your work has successfully saved. Make sure to save your link to access your notebook in the future:</p>
-                  <p><a href="${shareableLink}" target="_blank" rel="noopener noreferrer">${shareableLink}</a></p>
+                  <p style="font-size: 1.2em; margin-bottom: 10px;">
+                    Save the following information to access your notebook in a future session.
+                    Here is the shareable link to your notebook:
+                  </p>
+                  <p>
+                    <div style="text-align: center; margin: 10px 0;">
+                      <a href="${shareableLink}" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style="font-size: 1.1em; color: #007bff; text-decoration: underline;">
+                        ${shareableLink}
+                      </a>
+                    </div>
+                  </p>
+                  <p style="font-size: 1.2em; margin-bottom: 10px;">
+                    Here's the code required to edit the original notebook. Make sure to save this code as it will not appear again:
+                  </p>
+                  <p>
+                    <div style="text-align: center; margin: 10px 0;">
+                      <a href="${shareableLink}" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style="font-size: 1.1em; color: #007bff; text-decoration: underline;">
+                        ${shareableLink}
+                      </a>
+                    </div>
+                  </p>
                 `;
                 return container;
               })()
@@ -113,10 +229,60 @@ const plugin: JupyterFrontEndPlugin<void> = {
               Dialog.cancelButton({ label: 'Close' }),
             ]
           });
+
+          // Handle the result
+          if (result.button.label === 'Copy Link') {
+            navigator.clipboard.writeText(shareableLink)
+              .then(() => {
+                console.log('Link copied to clipboard');
+              })
+              .catch((err) => {
+                console.error('Failed to copy link to clipboard:', err);
+              });
+          }
+          firstClick = false; // Update the flag
+        } else {
+          const result = await showDialog({
+            title: 'Progress Saved',
+            body: new Widget({
+              node: (() => {
+                const container = document.createElement('div');
+                container.innerHTML = `
+                  <p>Your work has successfully saved. Make sure to save your link to access your notebook in the future:</p>
+                  <p>
+                    <div style="text-align: center; margin: 10px 0;">
+                      <a href="${shareableLink}" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style="font-size: 1.1em; color: #007bff; text-decoration: underline;">
+                        ${shareableLink}
+                      </a>
+                    </div>
+                  </p>
+                `;
+                return container;
+              })()
+            }),
+            buttons: [
+              Dialog.okButton({ label: 'Copy Link' }),
+              Dialog.cancelButton({ label: 'Close' }),
+            ]
+          });
+    
+          // Handle the result
+          if (result.button.label === 'Copy Link') {
+            navigator.clipboard.writeText(shareableLink)
+              .then(() => {
+                console.log('Link copied to clipboard');
+              })
+              .catch((err) => {
+                console.error('Failed to copy link to clipboard:', err);
+              });
+          }
         }
       },
       isVisible: () => true
-    });
+    });    
 
     // Add the command to a custom toolbar
     const savebutton = new ToolbarButton({
@@ -140,7 +306,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const insertMarkdownBelow = 'jupytereverywhere:insert-markdown-cell';
     commands.addCommand(insertMarkdownBelow, {
       label: 'Execute jupytereverywhere:insert-markdown-cell Command',
-      caption: 'Execute jupytereverywhere:insert-markdown-cell Command',
+      caption: 'Insert Text Cell',
       execute:  args => {
         const current = getCurrent(tracker, shell, args);
   
@@ -165,8 +331,26 @@ const plugin: JupyterFrontEndPlugin<void> = {
     
           // Show a dialog with the shareable link and additional options
           const result = await showDialog({
-            title: 'Share your work!',
-            body: `Here is the shareable link to your notebook: ${shareableLink}`,
+            title: '',
+            body: new Widget({
+              node: (() => {
+                const container = document.createElement('div');
+                container.innerHTML = `
+                  <p>Here is the shareable link to your notebook</p>
+                  <p>
+                    <div style="text-align: center; margin: 10px 0;">
+                      <a href="${shareableLink}" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style="font-size: 1.1em; color: #007bff; text-decoration: underline;">
+                        ${shareableLink}
+                      </a>
+                    </div>
+                  </p>
+                `;
+                return container;
+              })()
+            }),
             buttons: [
               Dialog.okButton({ label: 'Copy Link' }),
               Dialog.cancelButton({ label: 'Close' }),
@@ -192,7 +376,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'Share notebook',
       className: 'jp-ShareableLinkButton',
       iconClass: 'jp-MaterialIcon jp-LinkIcon',
-      tooltip: 'Copy Shareable Link',
+      tooltip: 'Copy shareable link',
       onClick: () => {
         commands.execute(copyShareableLink);
       }

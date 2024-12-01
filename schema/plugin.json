@@ -16,6 +16,7 @@
       {
         "name": "insert",
         "command": "notebook:insert-cell-below",
+        "caption": "Insert Code Cell",
         "rank":12,
         "label": "Code"
       },
@@ -34,6 +35,22 @@
         "disabled": true
       }, 
       {
+        "name": "run",
+        "caption":"Run cell"
+      },
+      {
+        "name": "interrupt",
+        "caption": "Interrupt notebook"
+      },
+      {
+        "name": "restart",
+        "caption": "Restart notebook"
+      },
+      {
+        "name": "restart-and-run",
+        "caption": "Restart and run all cells"
+      },
+      {
         "name": "cellType",
         "command": "",
         "disabled": true
@@ -47,7 +64,7 @@
         "name": "kernelName",
         "args": {},
         "command": "",
-        "disabled": false,
+        "disabled": true,
         "rank": 1000
       },
       {
