@@ -21,6 +21,9 @@ import { Widget } from '@lumino/widgets';
 import { PageConfig} from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { fileUploadIcon } from '@jupyterlab/ui-components'; // Import JupyterLab's built-in upload icon
+import { INotebookContent } from '@jupyterlab/nbformat';
+import { SharingService } from './sharing-service';
+import { API_URL } from './config';
 
 
 /**
@@ -58,6 +61,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     translator: ITranslator,
     docManager: IDocumentManager,
     settingRegistry: ISettingRegistry | null) => {
+    const sharingService = new SharingService(API_URL);
     console.log('JupyterLab extension jupytereverywhere is activated!');
 
     // Check if commands were disabled on system settings via schema/plugin.json
@@ -326,8 +330,21 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'shareable-link',
       execute: async () => {
         try {
-          // Simulate obtaining a shareable link (TODO: REPLACE WITH API LOGIC)
-          const shareableLink = 'https://example.com/notebook/sharelink';
+          // ensure we are in a notebook panel
+          const notebookPanel = tracker.currentWidget;
+          if (!notebookPanel) {
+            throw new Error('No active notebook to share.');
+          }
+
+          // share the notebook
+          await notebookPanel.context.save();
+          const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
+          // TODO: check if the notebook has already been shared, if so, update instead of creating
+          // a new notebook. we could do this by setting the shared ID in the notebook metadata
+          // after the first share (and also by ensuring that the ID is included in that same
+          // metadata when the notebook is retrieved)
+          const response = await sharingService.share(notebookContent); // TODO: password
+          const shareableLink = sharingService.makeRetrieveURL(response.notebook.id);
     
           // Show a dialog with the shareable link and additional options
           const result = await showDialog({
@@ -359,7 +376,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         // Handle the result
         if (result.button.label === 'Copy Link') {
-          navigator.clipboard.writeText(shareableLink);
+          navigator.clipboard.writeText(shareableLink.toString());
           console.log('Link copied to clipboard');
         }
 

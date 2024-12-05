@@ -1,3 +1,7 @@
+_output/
+.jupyterlite.doit.db
+uv.lock
+
 *.bundle.*
 lib/
 node_modules/
