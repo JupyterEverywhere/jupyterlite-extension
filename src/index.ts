@@ -4,7 +4,6 @@ import {
 } from '@jupyterlab/application';
 import {
   INotebookTracker,
-  //INotebookModel,
   NotebookActions,
   NotebookPanel
 } from '@jupyterlab/notebook';
@@ -20,8 +19,6 @@ import {
 import { Widget } from '@lumino/widgets';
 import { PageConfig} from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-import { fileUploadIcon } from '@jupyterlab/ui-components'; // Import JupyterLab's built-in upload icon
-
 
 /**
  * HELP FUNCTIONS 
@@ -73,105 +70,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     // Assign commands and shell properties to local variables 
     const { commands, shell } = app;
 
-    /**
-     * Add custom upload button
-     */
-    const uploadNotebookCommand = 'jupytereverywhere:upload-notebook';
-    commands.addCommand(uploadNotebookCommand, {
-      label: 'Upload Notebook',
-      execute: async () => {
-        const inputElement = document.createElement('input');
-        inputElement.type = 'file';
-        inputElement.accept = '.ipynb'; // Accept only Jupyter Notebook files
-        inputElement.style.display = 'none';
-
-        // Listen for file selection
-        inputElement.onchange = async (event) => {
-          const file = (event.target as HTMLInputElement)?.files?.[0];
-          if (file) {
-            try {
-              // Read the notebook file content
-              const content = await file.text();
-
-              // Create a new notebook and set the content
-              const newModel = await docManager.newUntitled({
-                type: 'notebook',
-                path: '',
-              });
-              const newContext = await docManager.open(newModel.path) as NotebookPanel;
-              if (newContext) {
-                newContext.context.model.fromString(content);
-              }
-
-              console.log('Notebook uploaded successfully');
-            } catch (error) {
-              console.error('Failed to upload notebook:', error);
-              showErrorMessage('Upload Error', 'Failed to upload notebook.');
-            }
-          }
-        };
-
-        // Trigger file input click to open file dialog
-        inputElement.click();
-      },
-    });
-
-    /**
-     * Add the upload button to the toolbar
-     */
-    // Allowed file extensions
-    const allowedExtensions = ['.ipynb', '.csv', '.tsv', '.json', '.png', '.jpg', '.jpeg'];
-
-    // Function to validate file type
-    function validateFile(file: File): boolean {
-      const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
-      return allowedExtensions.includes(extension);
-    }
-
-    // Create the upload button
-    const uploadButton = new ToolbarButton({
-      label: 'Upload',
-      icon: fileUploadIcon,
-      tooltip: 'Upload a notebook, dataset, or image',
-      onClick: async () => {
-        // Create a hidden file input element
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = allowedExtensions.join(','); // Limit to specific file types
-        input.multiple = true; // Allow multiple files if needed
-
-        // Trigger the file picker dialog
-        input.click();
-
-        // Handle file selection
-        input.onchange = async () => {
-          if (input.files) {
-            const files = Array.from(input.files);
-            const invalidFiles = files.filter(file => !validateFile(file));
-
-            if (invalidFiles.length > 0) {
-              // Show a warning dialog for invalid files
-              await showDialog({
-                title: 'Invalid File Type',
-                body: `The following files are not allowed: ${invalidFiles.map(f => f.name).join(', ')}`,
-                buttons: [Dialog.okButton({ label: 'OK' })]
-              });
-            } else {
-              // Proceed with uploading valid files
-              console.log('Valid files:', files.map(f => f.name));
-              // Add your custom upload logic here
-            }
-          }
-        };
-      }
-    });
-
-    // Add the upload button to the toolbar as the first item on the left
-    tracker.widgetAdded.connect((_, notebookPanel) => {
-      if (notebookPanel) {
-        notebookPanel.toolbar.insertItem(0, 'uploadButton', uploadButton); // Insert at position 0
-      }
-    });
 
     /**
     * Add custom save button command 
@@ -183,7 +81,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'Create checkpoint and show link',
       execute: async () => { // Declare the function as async
         // Generate Shareable Link 
-        const shareableLink = 'https://example.com/notebook/sharelink'; // TODO: Replace with dynamic link logic
+        const shareableLink = 'https://example.com/notebook/sharelink'; 
+        const editpassword = 'randompassowrdhere'; 
     
         if (firstClick) {
           // Display the message for the first click
@@ -212,11 +111,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   </p>
                   <p>
                     <div style="text-align: center; margin: 10px 0;">
-                      <a href="${shareableLink}" 
+                      <a
                         target="_blank" 
                         rel="noopener noreferrer" 
                         style="font-size: 1.1em; color: #007bff; text-decoration: underline;">
-                        ${shareableLink}
+                        ${editpassword}
                       </a>
                     </div>
                   </p>
@@ -373,7 +272,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     // Add the command to a custom toolbar
     const button = new ToolbarButton({
-      label: 'Share notebook',
+      label: 'Share',
       className: 'jp-ShareableLinkButton',
       iconClass: 'jp-MaterialIcon jp-LinkIcon',
       tooltip: 'Copy shareable link',
@@ -450,7 +349,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const dropdown = new Widget();
         dropdown.node.innerHTML = `
           <select class="jp-Dropdown">
-            <option value="">Download Notebook</option>
+            <option value="">Download</option>
             <option value="ipynb">as Python Notebook</option>
             <option value="pdf">as PDF</option>
           </select>

@@ -1,0 +1,15 @@
+name: jupytereverywhere
+channels:
+  - https://repo.mamba.pm/emscripten-forge
+  - conda-forge
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+  - https://repo.anaconda.com/pkgs/msys2
+dependencies:
+  - python=3.11
+  - copier=7
+  - git
+  - jinja2-time
+  - jupyterlab=4
+  - nodejs=18
+prefix: C:\Users\Ivonne\anaconda3\envs\jupytereverywhere
