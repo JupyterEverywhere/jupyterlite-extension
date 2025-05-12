@@ -4,7 +4,7 @@ import {
 } from '@jupyterlab/application';
 import {
   INotebookTracker,
-  //INotebookModel,
+  INotebookModel,
   NotebookActions,
   NotebookPanel
 } from '@jupyterlab/notebook';
@@ -24,7 +24,6 @@ import { fileUploadIcon } from '@jupyterlab/ui-components'; // Import JupyterLab
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { SharingService } from './sharing-service';
 import { API_URL } from './config';
-
 
 /**
  * HELP FUNCTIONS 
@@ -187,7 +186,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'Create checkpoint and show link',
       execute: async () => { // Declare the function as async
         // Generate Shareable Link 
-        const shareableLink = 'https://example.com/notebook/sharelink'; // TODO: Replace with dynamic link logic
+        const shareableLink = 'https://example.com/notebook/sharelink'; 
+        const editpassword = 'randompassowrdhere'; 
     
         if (firstClick) {
           // Display the message for the first click
@@ -216,11 +216,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   </p>
                   <p>
                     <div style="text-align: center; margin: 10px 0;">
-                      <a href="${shareableLink}" 
+                      <a
                         target="_blank" 
                         rel="noopener noreferrer" 
                         style="font-size: 1.1em; color: #007bff; text-decoration: underline;">
-                        ${shareableLink}
+                        ${editpassword}
                       </a>
                     </div>
                   </p>
@@ -390,7 +390,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     // Add the command to a custom toolbar
     const button = new ToolbarButton({
-      label: 'Share notebook',
+      label: 'Share',
       className: 'jp-ShareableLinkButton',
       iconClass: 'jp-MaterialIcon jp-LinkIcon',
       tooltip: 'Copy shareable link',
@@ -467,7 +467,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const dropdown = new Widget();
         dropdown.node.innerHTML = `
           <select class="jp-Dropdown">
-            <option value="">Download Notebook</option>
+            <option value="">Download</option>
             <option value="ipynb">as Python Notebook</option>
             <option value="pdf">as PDF</option>
           </select>
