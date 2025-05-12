@@ -12,4 +12,3 @@ dependencies:
   - jinja2-time
   - jupyterlab=4
   - nodejs=18
-prefix: C:\Users\Ivonne\anaconda3\envs\jupytereverywhere
