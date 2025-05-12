@@ -11,4 +11,4 @@ dependencies:
   - git
   - jinja2-time
   - jupyterlab=4
-  - nodejs=18
+  - nodejs=22
