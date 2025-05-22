@@ -97,11 +97,16 @@ jobs:
       run: |
         echo "### JupyterLite App is ready" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "To test it locally, download the `lite-app` artifact and run" >> $GITHUB_STEP_SUMMARY
-        echo "```bash" >> $GITHUB_STEP_SUMMARY
-        echo "unzip lite-app.zip" >> $GITHUB_STEP_SUMMARY
+        echo 'To test it locally, download the `lite-app` artifact and run' >> $GITHUB_STEP_SUMMARY
+        echo '```bash' >> $GITHUB_STEP_SUMMARY
+        echo "rm -r lite-app" >> $GITHUB_STEP_SUMMARY
+        echo "unzip lite-app.zip -d lite-app" >> $GITHUB_STEP_SUMMARY
+        echo "cd lite-app" >> $GITHUB_STEP_SUMMARY
         echo "python -m http.server -b 127.0.0.1" >> $GITHUB_STEP_SUMMARY
-        echo "```" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo 'And navigate to http://127.0.0.1:8000/' >> $GITHUB_STEP_SUMMARY
+        echo 'Press ctrl + c to stop the server.' >> $GITHUB_STEP_SUMMARY
 
   test_isolated:
     needs: build
