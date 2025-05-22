@@ -33,7 +33,6 @@
       "@jupyterlab/inspector-extension:consoles",
       "@jupyterlab/debugger-extension:consoles",
 
-      "@jupyterlab/application-extension:mode-switch",
       "@jupyterlite/application-extension:about",
       "@jupyterlite/application-extension:logo",
       "@jupyterlite/application-extension:share-file"
