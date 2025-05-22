@@ -4,8 +4,41 @@
     "appName": "Jupyter Everywhere",
     "showLoadingIndicator": true,
     "settingsOverrides": {
-      "@jupyterlab/apputils-extension:themes": {
-        "theme": "JupyterLab Dark"
+      "@jupyterlab/mainmenu-extension:plugin": {
+        "menus": [
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-file"
+          },
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-edit"
+          },
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-view"
+          },
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-run"
+          },
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-kernel"
+          },
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-tabs"
+          },
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-settings"
+          },
+          {
+            "disabled": true,
+            "id": "jp-mainmenu-help"
+          }
+        ]
       },
       "@jupyterlab/application-extension:shell": {
         "startMode": "single"
