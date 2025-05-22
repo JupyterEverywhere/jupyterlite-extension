@@ -59,6 +59,47 @@ jobs:
         path: dist/jupytereverywhere*
         if-no-files-found: error
 
+  lite:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - uses: actions/download-artifact@v4
+      with:
+        name: extension-artifacts
+    - name: Install the dependencies
+      run: |
+        cd lite
+        python -m pip install -r requirements.txt
+    - name: Install Jupyter Everywhere extension
+      run: |
+        pip install jupytereverywhere*.whl
+    - name: Build the JupyterLite app
+      run: |
+        cd lite
+        jupyter lite build --output-dir dist
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lite-app
+          path: ./lite/dist
+          if-no-files-found: error
+      - name: Leave instructions for testing
+        run: |
+          echo "### JupyterLite App is ready" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To test it locally, download the `lite-app` artifact and run" >> $GITHUB_STEP_SUMMARY
+          echo "```bash" >> $GITHUB_STEP_SUMMARY
+          echo "unzip lite-app.zip" >> $GITHUB_STEP_SUMMARY
+          echo "python -m http.server -b 127.0.0.1" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
   test_isolated:
     needs: build
     runs-on: ubuntu-latest

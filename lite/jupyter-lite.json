@@ -1,0 +1,42 @@
+{
+  "jupyter-lite-schema-version": 0,
+  "jupyter-config-data": {
+    "appName": "Jupyter Everywhere",
+    "showLoadingIndicator": true,
+    "settingsOverrides": {
+      "@jupyterlab/apputils-extension:themes": {
+        "theme": "JupyterLab Dark"
+      },
+      "@jupyterlab/application-extension:shell": {
+        "startMode": "single"
+      }
+    },
+    "disabledExtensions": [
+      "@jupyterlab/extensionmanager-extension",
+      "@jupyterlab/apputils-extension:announcements",
+      "@jupyterlab/debugger-extension",
+      "@jupyterlab/application-extension:property-inspector",
+
+      "@jupyterlab/statusbar-extension",
+      "@jupyterlab/notebook-extension:kernel-status",
+      "@jupyterlab/apputils-extension:running-sessions-status",
+      "@jupyterlab/apputils-extension:kernel-status",
+
+      "@jupyterlab/help-extension:jupyter-forum",
+
+      "@jupyterlab/lsp-extension",
+      "@jupyterlab/notebook-extension:language-server",
+      "@jupyterlab/fileeditor-extension:language-server",
+
+      "@jupyterlab/console-extension",
+      "@jupyterlab/tooltip-extension:consoles",
+      "@jupyterlab/inspector-extension:consoles",
+      "@jupyterlab/debugger-extension:consoles",
+
+      "@jupyterlab/application-extension:mode-switch",
+      "@jupyterlite/application-extension:about",
+      "@jupyterlite/application-extension:logo",
+      "@jupyterlite/application-extension:share-file"
+    ]
+  }
+}
