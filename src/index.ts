@@ -6,8 +6,9 @@ import { Dialog, showDialog, ToolbarButton } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-import { linkIcon, downloadIcon, fileIcon } from '@jupyterlab/ui-components';
+import { linkIcon, downloadIcon, fileIcon, caretDownIcon } from '@jupyterlab/ui-components';
 import { INotebookContent } from '@jupyterlab/nbformat';
+import { Menu } from '@lumino/widgets';
 import { SharingService } from './sharing-service';
 
 /**
@@ -140,6 +141,77 @@ class ShareDialog extends Widget {
   }
 }
 
+class DownloadDropdownButton extends Widget {
+  private _menu: Menu;
+
+  constructor(commands: any) {
+    super();
+    this.addClass('jp-Toolbar-item');
+    this.addClass('jp-Toolbar-button');
+
+    // Create the menu
+    this._menu = new Menu({ commands });
+    this._menu.addClass('jp-ToolbarButton-menu');
+    this._menu.addItem({ command: 'jupytereverywhere:download-notebook' });
+    this._menu.addItem({ command: 'jupytereverywhere:download-pdf' });
+
+    this._createButton();
+  }
+
+  private _createButton(): void {
+    const button = document.createElement('button');
+    button.className = 'jp-ToolbarButtonComponent jp-Button jp-mod-minimal jp-ToolbarButton';
+    button.setAttribute('data-command', 'download-dropdown');
+    button.title = 'Download notebook';
+
+    // Create button content and icon containers
+    const buttonContent = document.createElement('span');
+    buttonContent.className = 'jp-ToolbarButtonComponent-label';
+
+    const iconContainer = document.createElement('span');
+    iconContainer.className = 'jp-ToolbarButtonComponent-icon';
+
+    downloadIcon.element({
+      container: iconContainer,
+      elementPosition: 'center',
+      height: 16,
+      width: 16
+    });
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent = 'Download';
+    textSpan.style.marginLeft = '4px';
+    textSpan.style.marginRight = '4px';
+
+    const dropdownArrow = document.createElement('span');
+    dropdownArrow.className = 'jp-ToolbarButtonComponent-icon';
+    caretDownIcon.element({
+      container: dropdownArrow,
+      elementPosition: 'center',
+      height: 12,
+      width: 12
+    });
+
+    buttonContent.appendChild(iconContainer);
+    buttonContent.appendChild(textSpan);
+    buttonContent.appendChild(dropdownArrow);
+    button.appendChild(buttonContent);
+
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      this._showMenu(event);
+    });
+
+    this.node.appendChild(button);
+  }
+
+  private _showMenu(event: MouseEvent): void {
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this._menu.open(rect.left, rect.bottom);
+  }
+}
+
 /**
  * JUPYTEREVERYWHERE EXTENSION
  */
@@ -167,7 +239,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
      */
     const downloadNotebookCommand = 'jupytereverywhere:download-notebook';
     commands.addCommand(downloadNotebookCommand, {
-      label: 'Download as Notebook (.ipynb)',
+      label: 'IPyNB',
+      icon: fileIcon,
       execute: args => {
         // Execute the built-in download command
         return commands.execute('docmanager:download');
@@ -179,7 +252,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
      */
     const downloadPDFCommand = 'jupytereverywhere:download-pdf';
     commands.addCommand(downloadPDFCommand, {
-      label: 'Download as PDF',
+      label: 'PDF',
+      icon: fileIcon,
       execute: args => {
         const current = getCurrentNotebook(tracker, shell, args);
         if (!current) {
@@ -403,28 +477,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
 
     /**
-     * Create a "Download IPyNB" button
+     * Create the Download dropdown
      */
-    const downloadIPyNBButton = new ToolbarButton({
-      label: 'Download IPyNB',
-      icon: downloadIcon,
-      tooltip: 'Download this notebook as .ipynb',
-      onClick: () => {
-        void commands.execute(downloadNotebookCommand);
-      }
-    });
-
-    /**
-     * Create a "Download PDF" button
-     */
-    const downloadPDFButton = new ToolbarButton({
-      label: 'Download PDF',
-      icon: fileIcon,
-      tooltip: 'Download this notebook as PDF',
-      onClick: () => {
-        void commands.execute(downloadPDFCommand);
-      }
-    });
+    const downloadDropdownButton = new DownloadDropdownButton(commands);
 
     tracker.widgetAdded.connect((_, notebookPanel) => {
       if (notebookPanel) {
@@ -438,20 +493,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
           }
         });
 
-        // Add download-IPyNB button
+        // Add download dropdown button
         try {
-          toolbar.insertItem(insertIndex, 'downloadIPyNBButton', downloadIPyNBButton);
+          toolbar.insertItem(insertIndex, 'downloadDropdownButton', downloadDropdownButton);
           insertIndex++;
         } catch (error) {
-          toolbar.addItem('downloadIPyNBButton', downloadIPyNBButton);
-        }
-
-        // Add download-PDF button
-        try {
-          toolbar.insertItem(insertIndex, 'downloadPDFButton', downloadPDFButton);
-          insertIndex++;
-        } catch (error) {
-          toolbar.addItem('downloadPDFButton', downloadPDFButton);
+          toolbar.addItem('downloadDropdownButton', downloadDropdownButton);
         }
 
         // Add the share button
