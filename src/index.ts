@@ -6,7 +6,7 @@ import { Dialog, showDialog, ToolbarButton } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-import { linkIcon, downloadIcon, fileIcon, caretDownIcon } from '@jupyterlab/ui-components';
+import { linkIcon, downloadIcon, caretDownIcon } from '@jupyterlab/ui-components';
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { Menu } from '@lumino/widgets';
 import { SharingService } from './sharing-service';
@@ -167,9 +167,14 @@ class DownloadDropdownButton extends Widget {
     // Create button content and icon containers
     const buttonContent = document.createElement('span');
     buttonContent.className = 'jp-ToolbarButtonComponent-label';
+    buttonContent.style.display = 'flex';
+    buttonContent.style.alignItems = 'center';
+    buttonContent.style.gap = '4px';
 
     const iconContainer = document.createElement('span');
     iconContainer.className = 'jp-ToolbarButtonComponent-icon';
+    iconContainer.style.display = 'flex';
+    iconContainer.style.alignItems = 'center';
 
     downloadIcon.element({
       container: iconContainer,
@@ -180,11 +185,11 @@ class DownloadDropdownButton extends Widget {
 
     const textSpan = document.createElement('span');
     textSpan.textContent = 'Download';
-    textSpan.style.marginLeft = '4px';
-    textSpan.style.marginRight = '4px';
 
     const dropdownArrow = document.createElement('span');
     dropdownArrow.className = 'jp-ToolbarButtonComponent-icon';
+    dropdownArrow.style.display = 'flex';
+    dropdownArrow.style.alignItems = 'center';
     caretDownIcon.element({
       container: dropdownArrow,
       elementPosition: 'center',
