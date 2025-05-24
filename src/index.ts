@@ -329,28 +329,49 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   body: new Widget({
                     node: (() => {
                       const container = document.createElement('div');
-                      container.innerHTML = `
-                        <p style="font-size: 1.2em; margin-bottom: 15px;">
-                          ${isNewShare ? 'Your notebook is now shared!' : 'Your notebook has been updated!'}
-                          Use this link to access it:
-                        </p>
-                        <div style="text-align: center; margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-                          <a href="${shareableLink}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style="font-size: 1.1em; color: #007bff; text-decoration: underline; word-break: break-all;">
-                            ${shareableLink}
-                          </a>
-                        </div>
-                        ${
-                          isViewOnly
-                            ? '<p style="margin-top: 15px;"><strong>Note:</strong> This notebook is password-protected.</p>'
-                            : ''
-                        }
-                        <p style="font-size: 0.9em; margin-top: 15px;">
-                          <strong>Important:</strong> Save this link to access your notebook later.
-                        </p>
-                      `;
+                      const mainMessage = document.createElement('p');
+                      mainMessage.style.fontSize = '1.2em';
+                      mainMessage.style.marginBottom = '15px';
+                      mainMessage.textContent = `${isNewShare ? 'Your notebook is now shared!' : 'Your notebook has been updated!'} Use this link to access it:`;
+
+                      const linkContainer = document.createElement('div');
+                      linkContainer.style.textAlign = 'center';
+                      linkContainer.style.margin = '15px 0';
+                      linkContainer.style.padding = '10px';
+                      linkContainer.style.background = '#f5f5f5';
+                      linkContainer.style.borderRadius = '4px';
+
+                      const linkElement = document.createElement('a');
+                      linkElement.href = shareableLink;
+                      linkElement.target = '_blank';
+                      linkElement.rel = 'noopener noreferrer';
+                      linkElement.style.fontSize = '1.1em';
+                      linkElement.style.color = '#007bff';
+                      linkElement.style.textDecoration = 'underline';
+                      linkElement.style.wordBreak = 'break-all';
+                      linkElement.textContent = shareableLink;
+
+                      linkContainer.appendChild(linkElement);
+
+                      if (isViewOnly) {
+                        const passwordNote = document.createElement('p');
+                        passwordNote.style.marginTop = '15px';
+
+                        const strongElement = document.createElement('strong');
+                        strongElement.textContent = 'Note:';
+                        passwordNote.appendChild(strongElement);
+                        passwordNote.appendChild(
+                          document.createTextNode(' This notebook is password-protected.')
+                        );
+
+                        container.appendChild(mainMessage);
+                        container.appendChild(linkContainer);
+                        container.appendChild(passwordNote);
+                      } else {
+                        container.appendChild(mainMessage);
+                        container.appendChild(linkContainer);
+                      }
+
                       return container;
                     })()
                   }),
@@ -374,9 +395,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
                 body: new Widget({
                   node: (() => {
                     const container = document.createElement('div');
-                    container.innerHTML = `
-                      <p>Failed to share notebook: ${error instanceof Error ? error.message : 'Unknown error'}</p>
-                    `;
+
+                    const errorParagraph = document.createElement('p');
+                    errorParagraph.textContent = `Failed to share notebook: ${error instanceof Error ? error.message : 'Unknown error'}`;
+
+                    container.appendChild(errorParagraph);
+
                     return container;
                   })()
                 }),
