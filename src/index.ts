@@ -244,8 +244,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
      */
     const downloadNotebookCommand = 'jupytereverywhere:download-notebook';
     commands.addCommand(downloadNotebookCommand, {
-      label: 'IPyNB',
-      icon: fileIcon,
+      label: 'Download as IPyNB',
       execute: args => {
         // Execute the built-in download command
         return commands.execute('docmanager:download');
@@ -257,8 +256,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
      */
     const downloadPDFCommand = 'jupytereverywhere:download-pdf';
     commands.addCommand(downloadPDFCommand, {
-      label: 'PDF',
-      icon: fileIcon,
+      label: 'Download as PDF',
       execute: args => {
         const current = getCurrentNotebook(tracker, shell, args);
         if (!current) {
