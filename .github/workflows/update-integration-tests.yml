@@ -85,7 +85,7 @@ jobs:
       - name: Build the JupyterLite app
         run: |
           cd lite
-          jupyter lite build --output-dir ..
+          jupyter lite build --output-dir ../dist
 
       - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@v1
         with:
@@ -94,3 +94,4 @@ jobs:
           start_server_script: 'null'
           test_folder: ui-tests
           npm_client: jlpm
+          server_url: http-get://localhost:8899
