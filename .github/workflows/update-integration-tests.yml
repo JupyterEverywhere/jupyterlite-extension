@@ -68,7 +68,7 @@ jobs:
       - name: Base Setup
         uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
 
-      - name: Install dependencies
+      - name: Install jlpm
         run: python -m pip install -U "jupyterlab>=4.0.0,<5"
 
       - name: Install extension
@@ -76,6 +76,11 @@ jobs:
           set -eux
           jlpm
           python -m pip install .
+
+      - name: Build the JupyterLite app
+        run: |
+          cd lite
+          jupyter lite build --output-dir .
 
       - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@v1
         with:
