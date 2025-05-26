@@ -1,6 +1,6 @@
 import { expect, test } from '@jupyterlab/galata';
 
-describe('General', () => {
+test.describe('General', () => {
   test('Should load the app', async ({ page }) => {
     await page.notebook.createNew('Test.ipynb');
     const nbPanel = await page.notebook.getNotebookInPanelLocator();
