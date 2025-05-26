@@ -1,10 +1,14 @@
 /**
  * Configuration for Playwright using default from @jupyterlab/galata
  */
-const baseConfig = require('@jupyterlab/galata/lib/playwright-config');
 
 module.exports = {
-  ...baseConfig,
+  reporter: [
+    [process.env.CI ? 'github' : 'list'],
+    ['html', { open: process.env.CI ? 'never' : 'on-failure' }]
+  ],
+  reportSlowTests: null,
+  timeout: 60000,
   use: {
     acceptDownloads: true,
     appPath: '',

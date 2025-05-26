@@ -3,7 +3,7 @@ import type { JupyterLab } from '@jupyterlab/application';
 
 declare global {
   interface Window {
-    jupyterapp: JupyterLab
+    jupyterapp: JupyterLab;
   }
 }
 
