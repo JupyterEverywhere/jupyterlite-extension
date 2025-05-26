@@ -5,13 +5,13 @@ import { ITranslator } from '@jupyterlab/translation';
 import { Dialog, showDialog, ToolbarButton, ReactWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-import { linkIcon, downloadIcon, caretDownIcon } from '@jupyterlab/ui-components';
+import { linkIcon, downloadIcon, pdfIcon } from '@jupyterlab/ui-components';
 import { INotebookContent } from '@jupyterlab/nbformat';
-import { Menu } from '@lumino/widgets';
 
 import React from 'react';
 
 import { SharingService } from './sharing-service';
+import { DownloadDropdownButton } from './ui-components';
 
 /**
  * Get the current notebook panel
@@ -243,82 +243,6 @@ const createErrorDialog = (error: unknown) => {
   );
 };
 
-class DownloadDropdownButton extends Widget {
-  private _menu: Menu;
-
-  constructor(commands: any) {
-    super();
-    this.addClass('jp-Toolbar-item');
-    this.addClass('jp-Toolbar-button');
-
-    // Create the menu
-    this._menu = new Menu({ commands });
-    this._menu.addClass('jp-ToolbarButton-menu');
-    this._menu.addItem({ command: 'jupytereverywhere:download-notebook' });
-    this._menu.addItem({ command: 'jupytereverywhere:download-pdf' });
-
-    this._createButton();
-  }
-
-  private _createButton(): void {
-    const button = document.createElement('button');
-    button.className = 'jp-ToolbarButtonComponent jp-Button jp-mod-minimal jp-ToolbarButton';
-    button.setAttribute('data-command', 'download-dropdown');
-    button.title = 'Download notebook';
-
-    // Create button content and icon containers
-    const buttonContent = document.createElement('span');
-    buttonContent.className = 'jp-ToolbarButtonComponent-label';
-    buttonContent.style.display = 'flex';
-    buttonContent.style.alignItems = 'center';
-    buttonContent.style.gap = '4px';
-
-    const iconContainer = document.createElement('span');
-    iconContainer.className = 'jp-ToolbarButtonComponent-icon';
-    iconContainer.style.display = 'flex';
-    iconContainer.style.alignItems = 'center';
-
-    downloadIcon.element({
-      container: iconContainer,
-      elementPosition: 'center',
-      height: 16,
-      width: 16
-    });
-
-    const textSpan = document.createElement('span');
-    textSpan.textContent = 'Download';
-
-    const dropdownArrow = document.createElement('span');
-    dropdownArrow.className = 'jp-ToolbarButtonComponent-icon';
-    dropdownArrow.style.display = 'flex';
-    dropdownArrow.style.alignItems = 'center';
-    caretDownIcon.element({
-      container: dropdownArrow,
-      elementPosition: 'center',
-      height: 12,
-      width: 12
-    });
-
-    buttonContent.appendChild(iconContainer);
-    buttonContent.appendChild(textSpan);
-    buttonContent.appendChild(dropdownArrow);
-    button.appendChild(buttonContent);
-
-    button.addEventListener('click', event => {
-      event.preventDefault();
-      event.stopPropagation();
-      this._showMenu(event);
-    });
-
-    this.node.appendChild(button);
-  }
-
-  private _showMenu(event: MouseEvent): void {
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    this._menu.open(rect.left, rect.bottom);
-  }
-}
-
 /**
  * JUPYTEREVERYWHERE EXTENSION
  */
@@ -347,6 +271,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const downloadNotebookCommand = 'jupytereverywhere:download-notebook';
     commands.addCommand(downloadNotebookCommand, {
       label: 'Download as IPyNB',
+      icon: downloadIcon,
       execute: args => {
         // Execute the built-in download command
         return commands.execute('docmanager:download');
@@ -359,6 +284,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const downloadPDFCommand = 'jupytereverywhere:download-pdf';
     commands.addCommand(downloadPDFCommand, {
       label: 'Download as PDF',
+      icon: pdfIcon,
       execute: args => {
         const current = getCurrentNotebook(tracker, shell, args);
         if (!current) {
