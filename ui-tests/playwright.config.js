@@ -5,6 +5,14 @@ const baseConfig = require('@jupyterlab/galata/lib/playwright-config');
 
 module.exports = {
   ...baseConfig,
+  use: {
+    acceptDownloads: true,
+    appPath: '',
+    autoGoto: false,
+    baseURL: 'http://localhost:8888',
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
+  },
   webServer: {
     command: 'jlpm start',
     url: 'http://localhost:8888/lab',
