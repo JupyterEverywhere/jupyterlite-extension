@@ -160,7 +160,7 @@ jobs:
 
   integration-tests:
     name: Integration tests
-    needs: build
+    needs: lite
     runs-on: ubuntu-latest
 
     env:
@@ -176,12 +176,13 @@ jobs:
     - name: Download extension package
       uses: actions/download-artifact@v4
       with:
-        name: extension-artifacts
+        name: lite-app
+        path: dist
 
-    - name: Install the extension
+    - name: Install jlpm
       run: |
         set -eux
-        python -m pip install "jupyterlab>=4.0.0,<5" jupytereverywhere*.whl
+        python -m pip install "jupyterlab>=4.0.0,<5"
 
     - name: Install dependencies
       working-directory: ui-tests
