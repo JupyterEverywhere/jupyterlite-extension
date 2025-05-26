@@ -61,6 +61,7 @@
       "@jupyterlab/lsp-extension",
       "@jupyterlab/notebook-extension:language-server",
       "@jupyterlab/fileeditor-extension:language-server",
+      "@jupyterlite/application-extension:lsp-connection-manager",
 
       "@jupyterlab/console-extension",
       "@jupyterlab/tooltip-extension:consoles",

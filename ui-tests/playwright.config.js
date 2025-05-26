@@ -13,13 +13,14 @@ module.exports = {
     acceptDownloads: true,
     appPath: '',
     autoGoto: false,
-    baseURL: 'http://localhost:8888',
+    baseURL: 'http://localhost:8899',
     trace: 'retain-on-failure',
     video: 'retain-on-failure'
   },
   webServer: {
     command: 'jlpm start',
-    url: 'http://localhost:8888/lab',
+    url: 'http://localhost:8899/lab',
+    port: 8899,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI
   }
