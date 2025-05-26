@@ -93,6 +93,12 @@ jobs:
         name: lite-app
         path: ./lite/dist
         if-no-files-found: error
+
+    - name: Upload GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./lite/dist
+
     - name: Leave instructions for testing
       run: |
         echo "### JupyterLite App is ready" >> $GITHUB_STEP_SUMMARY
@@ -107,6 +113,23 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo 'And navigate to http://127.0.0.1:8000/' >> $GITHUB_STEP_SUMMARY
         echo 'Press ctrl + c to stop the server.' >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    needs: lite
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   test_isolated:
     needs: build
