@@ -16,4 +16,3 @@ python_name: jupytereverywhere
 repository: https://github.com/JupyterEverywhere/jupyterlite-extension
 test: true
 viewer_name: ''
-

@@ -1,6 +1,6 @@
 # Modified BSD License
 
-_Copyright © 2024, CourseKata and Skew The Script_  
+_Copyright © 2024, CourseKata and Skew The Script_
 _All rights reserved._
 
 Redistribution and use in source and binary forms, with or without
