@@ -2,12 +2,14 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { INotebookTracker, NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
 import { ITranslator } from '@jupyterlab/translation';
-import { Dialog, showDialog, ToolbarButton } from '@jupyterlab/apputils';
-import { Widget } from '@lumino/widgets';
+import { Dialog, showDialog, ToolbarButton, ReactWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { linkIcon, downloadIcon, fileIcon } from '@jupyterlab/ui-components';
 import { INotebookContent } from '@jupyterlab/nbformat';
+
+import React from 'react';
+
 import { SharingService } from './sharing-service';
 
 /**
@@ -40,105 +42,206 @@ interface IShareDialogData {
 /**
  * Share dialog widget for notebook sharing preferences (name, view-only, and a password if applicable).
  */
-class ShareDialog extends Widget {
+const ShareDialogComponent = () => {
+  const generateDefaultName = () => {
+    const today = new Date();
+    return `Notebook_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+  };
+
+  // Generate random password
+  // TODO: get this from the sharing service API later on
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const [notebookName, setNotebookName] = React.useState(generateDefaultName());
+  const [isViewOnly, setIsViewOnly] = React.useState(false);
+  const [password, setPassword] = React.useState(generatePassword());
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNotebookName(e.target.value);
+  };
+
+  const handleViewOnlyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsViewOnly(e.target.checked);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
+  return React.createElement(
+    'div',
+    null,
+    React.createElement('label', { htmlFor: 'notebook-name' }, 'Notebook Name:'),
+    React.createElement('input', {
+      id: 'notebook-name',
+      type: 'text',
+      value: notebookName,
+      onChange: handleNameChange,
+      style: {
+        width: '100%',
+        marginBottom: '15px',
+        padding: '5px'
+      },
+      required: true
+    }),
+
+    React.createElement(
+      'div',
+      { style: { marginBottom: '15px' } },
+      React.createElement('input', {
+        id: 'view-only',
+        type: 'checkbox',
+        checked: isViewOnly,
+        onChange: handleViewOnlyChange,
+        style: { marginRight: '5px' }
+      }),
+      React.createElement(
+        'label',
+        { htmlFor: 'view-only' },
+        'Share as view-only notebook (password-protected)'
+      )
+    ),
+
+    React.createElement(
+      'div',
+      { style: { marginBottom: '15px' } },
+      React.createElement('label', { htmlFor: 'password' }, 'Password:'),
+      React.createElement('input', {
+        id: 'password',
+        type: 'text',
+        value: password,
+        onChange: handlePasswordChange,
+        disabled: !isViewOnly,
+        style: {
+          width: '100%',
+          padding: '5px'
+        }
+      })
+    )
+  );
+};
+
+class ShareDialog extends ReactWidget {
+  private _notebookName: string;
+  private _isViewOnly: boolean;
+  private _password: string;
+
   constructor() {
     super();
-    this.node.appendChild(this.createNode());
+    // Generate default values
+    const today = new Date();
+    this._notebookName = `Notebook_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+    this._isViewOnly = false;
+
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    this._password = password;
   }
 
   getValue(): IShareDialogData {
+    // Get current values from the DOM
     const nameInput = this.node.querySelector('#notebook-name') as HTMLInputElement;
     const viewOnlyCheckbox = this.node.querySelector('#view-only') as HTMLInputElement;
     const passwordInput = this.node.querySelector('#password') as HTMLInputElement;
 
+    if (nameInput && viewOnlyCheckbox && passwordInput) {
+      return {
+        notebookName: nameInput.value,
+        isViewOnly: viewOnlyCheckbox.checked,
+        password: passwordInput.value
+      };
+    }
+
+    // Fallback to stored values
     return {
-      notebookName: nameInput.value,
-      isViewOnly: viewOnlyCheckbox.checked,
-      password: passwordInput.value
+      notebookName: this._notebookName,
+      isViewOnly: this._isViewOnly,
+      password: this._password
     };
   }
 
-  private createNode(): HTMLElement {
-    const node = document.createElement('div');
-
-    const nameLabel = document.createElement('label');
-    nameLabel.htmlFor = 'notebook-name';
-    nameLabel.textContent = 'Notebook Name:';
-
-    const nameInput = document.createElement('input');
-    nameInput.id = 'notebook-name';
-    nameInput.type = 'text';
-    nameInput.style.width = '100%';
-    nameInput.style.marginBottom = '15px';
-    nameInput.style.padding = '5px';
-    nameInput.required = true;
-
-    // For now, we can generate a default filename based on the
-    // date sharing the notebook.
-    const today = new Date();
-    const defaultName = `Notebook_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-    nameInput.value = defaultName;
-
-    const viewOnlyContainer = document.createElement('div');
-    viewOnlyContainer.style.marginBottom = '15px';
-
-    const viewOnlyCheckbox = document.createElement('input');
-    viewOnlyCheckbox.id = 'view-only';
-    viewOnlyCheckbox.type = 'checkbox';
-    viewOnlyCheckbox.style.marginRight = '5px';
-
-    const viewOnlyLabel = document.createElement('label');
-    viewOnlyLabel.htmlFor = 'view-only';
-    viewOnlyLabel.textContent = 'Share as view-only notebook (password-protected)';
-
-    viewOnlyContainer.appendChild(viewOnlyCheckbox);
-    viewOnlyContainer.appendChild(viewOnlyLabel);
-
-    // Password field
-    const passwordContainer = document.createElement('div');
-    passwordContainer.style.marginBottom = '15px';
-
-    const passwordLabel = document.createElement('label');
-    passwordLabel.htmlFor = 'password';
-    passwordLabel.textContent = 'Password:';
-
-    const passwordInput = document.createElement('input');
-    passwordInput.id = 'password';
-    passwordInput.type = 'text';
-    passwordInput.style.width = '100%';
-    passwordInput.style.padding = '5px';
-
-    // This should be retrieved from the API but doesn't due to CORS issues;
-    // generate a random password at this time.
-    const generatePassword = () => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let password = '';
-      for (let i = 0; i < 8; i++) {
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return password;
-    };
-
-    passwordInput.value = generatePassword();
-    passwordInput.disabled = !viewOnlyCheckbox.checked;
-
-    // Toggle password field based on checkbox
-    // TODO: doesn't yet dim the password field?
-    viewOnlyCheckbox.addEventListener('change', () => {
-      passwordInput.disabled = !viewOnlyCheckbox.checked;
-    });
-
-    passwordContainer.appendChild(passwordLabel);
-    passwordContainer.appendChild(passwordInput);
-
-    node.appendChild(nameLabel);
-    node.appendChild(nameInput);
-    node.appendChild(viewOnlyContainer);
-    node.appendChild(passwordContainer);
-
-    return node;
+  render() {
+    return React.createElement(ShareDialogComponent);
   }
 }
+
+// TODO: not used until the shareable link works
+const createSuccessDialog = (shareableLink: string, isNewShare: boolean, isViewOnly: boolean) => {
+  const messageElement = React.createElement(
+    'p',
+    {
+      style: { fontSize: '1.2em', marginBottom: '15px' }
+    },
+    `${isNewShare ? 'Your notebook is now shared!' : 'Your notebook has been updated!'} Use this link to access it:`
+  );
+
+  const linkElement = React.createElement(
+    'div',
+    {
+      style: {
+        textAlign: 'center',
+        margin: '15px 0',
+        padding: '10px',
+        background: '#f5f5f5',
+        borderRadius: '4px'
+      }
+    },
+    React.createElement(
+      'a',
+      {
+        href: shareableLink,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        style: {
+          fontSize: '1.1em',
+          color: '#007bff',
+          textDecoration: 'underline',
+          wordBreak: 'break-all'
+        }
+      },
+      shareableLink
+    )
+  );
+
+  const passwordNoteElement = isViewOnly
+    ? React.createElement(
+        'p',
+        {
+          style: { marginTop: '15px' }
+        },
+        React.createElement('strong', null, 'Note:'),
+        ' This notebook is password-protected.'
+      )
+    : null;
+
+  // Filter out null elements and create the container
+  const children = [messageElement, linkElement, passwordNoteElement].filter(Boolean);
+
+  return React.createElement('div', null, ...children);
+};
+
+
+const createErrorDialog = (error: unknown) => {
+  return React.createElement(
+    'div',
+    null,
+    React.createElement(
+      'p',
+      null,
+      `Failed to share notebook: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
+  );
+};
 
 /**
  * JUPYTEREVERYWHERE EXTENSION
@@ -326,55 +429,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   title: isNewShare
                     ? 'Notebook Shared Successfully'
                     : 'Notebook Updated Successfully',
-                  body: new Widget({
-                    node: (() => {
-                      const container = document.createElement('div');
-                      const mainMessage = document.createElement('p');
-                      mainMessage.style.fontSize = '1.2em';
-                      mainMessage.style.marginBottom = '15px';
-                      mainMessage.textContent = `${isNewShare ? 'Your notebook is now shared!' : 'Your notebook has been updated!'} Use this link to access it:`;
-
-                      const linkContainer = document.createElement('div');
-                      linkContainer.style.textAlign = 'center';
-                      linkContainer.style.margin = '15px 0';
-                      linkContainer.style.padding = '10px';
-                      linkContainer.style.background = '#f5f5f5';
-                      linkContainer.style.borderRadius = '4px';
-
-                      const linkElement = document.createElement('a');
-                      linkElement.href = shareableLink;
-                      linkElement.target = '_blank';
-                      linkElement.rel = 'noopener noreferrer';
-                      linkElement.style.fontSize = '1.1em';
-                      linkElement.style.color = '#007bff';
-                      linkElement.style.textDecoration = 'underline';
-                      linkElement.style.wordBreak = 'break-all';
-                      linkElement.textContent = shareableLink;
-
-                      linkContainer.appendChild(linkElement);
-
-                      if (isViewOnly) {
-                        const passwordNote = document.createElement('p');
-                        passwordNote.style.marginTop = '15px';
-
-                        const strongElement = document.createElement('strong');
-                        strongElement.textContent = 'Note:';
-                        passwordNote.appendChild(strongElement);
-                        passwordNote.appendChild(
-                          document.createTextNode(' This notebook is password-protected.')
-                        );
-
-                        container.appendChild(mainMessage);
-                        container.appendChild(linkContainer);
-                        container.appendChild(passwordNote);
-                      } else {
-                        container.appendChild(mainMessage);
-                        container.appendChild(linkContainer);
-                      }
-
-                      return container;
-                    })()
-                  }),
+                  body: ReactWidget.create(
+                    createSuccessDialog(shareableLink, isNewShare, isViewOnly)
+                  ),
                   buttons: [
                     Dialog.okButton({ label: 'Copy Link' }),
                     Dialog.cancelButton({ label: 'Close' })
@@ -392,18 +449,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             } catch (error) {
               await showDialog({
                 title: 'Error',
-                body: new Widget({
-                  node: (() => {
-                    const container = document.createElement('div');
-
-                    const errorParagraph = document.createElement('p');
-                    errorParagraph.textContent = `Failed to share notebook: ${error instanceof Error ? error.message : 'Unknown error'}`;
-
-                    container.appendChild(errorParagraph);
-
-                    return container;
-                  })()
-                }),
+                body: ReactWidget.create(createErrorDialog(error)),
                 buttons: [Dialog.okButton()]
               });
             }
