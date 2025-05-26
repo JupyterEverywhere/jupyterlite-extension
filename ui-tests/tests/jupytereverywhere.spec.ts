@@ -1,21 +1,9 @@
 import { expect, test } from '@jupyterlab/galata';
 
-/**
- * Don't load JupyterLab webpage before running the tests.
- * This is required to ensure we capture all log messages.
- */
-test.use({ autoGoto: false });
-
-test('should emit an activation console message', async ({ page }) => {
-  const logs: string[] = [];
-
-  page.on('console', message => {
-    logs.push(message.text());
+describe('General', () => {
+  test('Should load the app', async ({ page }) => {
+    await page.notebook.createNew('Test.ipynb');
+    const nbPanel = await page.notebook.getNotebookInPanelLocator();
+    expect(await nbPanel!.screenshot()).toMatchSnapshot('empty-notebook.png');
   });
-
-  await page.goto();
-
-  expect(
-    logs.filter(s => s === 'JupyterLab extension jupytereverywhere is activated!')
-  ).toHaveLength(1);
 });
