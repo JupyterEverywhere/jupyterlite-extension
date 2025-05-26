@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import type { CommandRegistry } from '@lumino/commands';
+import type { JupyterLab } from '@jupyterlab/application';
 
 declare global {
   interface Window {
-    jupyterapp: CommandRegistry
+    jupyterapp: JupyterLab
   }
 }
 
