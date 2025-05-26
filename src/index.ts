@@ -5,7 +5,7 @@ import { ITranslator } from '@jupyterlab/translation';
 import { Dialog, showDialog, ToolbarButton, ReactWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-import { linkIcon, downloadIcon, fileIcon } from '@jupyterlab/ui-components';
+import { linkIcon } from '@jupyterlab/ui-components';
 import { INotebookContent } from '@jupyterlab/nbformat';
 
 import React from 'react';
@@ -271,7 +271,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const downloadNotebookCommand = 'jupytereverywhere:download-notebook';
     commands.addCommand(downloadNotebookCommand, {
       label: 'Download as IPyNB',
-      icon: downloadIcon,
       execute: args => {
         // Execute the built-in download command
         return commands.execute('docmanager:download');
@@ -284,7 +283,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const downloadPDFCommand = 'jupytereverywhere:download-pdf';
     commands.addCommand(downloadPDFCommand, {
       label: 'Download as PDF',
-      icon: fileIcon,
       execute: args => {
         const current = getCurrentNotebook(tracker, shell, args);
         if (!current) {
