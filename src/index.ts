@@ -230,7 +230,6 @@ const createSuccessDialog = (shareableLink: string, isNewShare: boolean, isViewO
   return React.createElement('div', null, ...children);
 };
 
-
 const createErrorDialog = (error: unknown) => {
   return React.createElement(
     'div',
