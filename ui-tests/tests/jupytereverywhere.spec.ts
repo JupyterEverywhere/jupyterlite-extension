@@ -10,6 +10,7 @@ declare global {
 test.describe('General', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('lab/index.html');
+    await page.waitForSelector('.jp-LabShell');
   });
   test('Should load the app', async ({ page }) => {
     await page.evaluate(async () => {
