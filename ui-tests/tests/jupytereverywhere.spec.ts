@@ -40,9 +40,13 @@ test.describe('Sharing', () => {
   test('Should open share dialog', async ({ page }) => {
     const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
     await shareButton.click();
-    expect(await page.locator('.jp-Dialog-content').screenshot()).toMatchSnapshot(
-      'share-dialog.png'
-    );
+    const dialog = await page.locator('.jp-Dialog-content');
+    expect(
+      dialog.screenshot({
+        mask: [dialog.locator('input#notebook-name'), dialog.locator('input#password')],
+        maskColor: '#888888'
+      })
+    ).toMatchSnapshot('share-dialog.png');
   });
 });
 
