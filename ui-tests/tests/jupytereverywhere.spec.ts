@@ -32,7 +32,7 @@ test.describe('General', () => {
   test('Should load the notebook', async ({ page }) => {
     expect(
       await page.locator('.jp-LabShell').screenshot({
-        mask: [page.locator('jp-KernelStatus')],
+        mask: [page.locator('.jp-KernelStatus')],
         maskColor: '#888888'
       })
     ).toMatchSnapshot('application-shell.png');
