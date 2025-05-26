@@ -20,12 +20,16 @@ async function runCommnad(page: Page, command: string, args: JSONObject = {}) {
 test.beforeEach(async ({ page }) => {
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-LabShell');
+  const notebookName = 'Untitled.ipynb';
+  const notebookExists = await page.getByText(notebookName).count();
+  if (!notebookExists) {
+    await runCommnad(page, 'docmanager:new-untitled', { type: 'notebook' });
+  }
+  await runCommnad(page, 'docmanager:open', { path: notebookName });
 });
 
 test.describe('General', () => {
   test('Should load the notebook', async ({ page }) => {
-    await runCommnad(page, 'docmanager:new-untitled', { type: 'notebook' });
-    await runCommnad(page, 'docmanager:open', { path: 'Untitled.ipynb' });
     expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot(
       'application-shell.png'
     );
@@ -34,12 +38,20 @@ test.describe('General', () => {
 
 test.describe('Sharing', () => {
   test('Should open share dialog', async ({ page }) => {
-    await runCommnad(page, 'docmanager:new-untitled', { type: 'notebook' });
-    await runCommnad(page, 'docmanager:open', { path: 'Untitled.ipynb' });
     const shareButton = page.locator('.jp-ToolbarButton').getByLabel('Share');
     await shareButton.click();
     expect(await page.locator('.jp-Dialog-content').screenshot()).toMatchSnapshot(
       'share-dialog.png'
+    );
+  });
+});
+
+test.describe('Download', () => {
+  test('Should open download Menu', async ({ page }) => {
+    const downloadButton = page.locator('.je-DownloadButton');
+    await downloadButton.click();
+    expect(await page.locator('.jp-DownloadDropdownButton-menu').screenshot()).toMatchSnapshot(
+      'download-menu.png'
     );
   });
 });

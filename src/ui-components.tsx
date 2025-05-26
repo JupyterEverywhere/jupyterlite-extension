@@ -12,7 +12,7 @@ export class DownloadDropdownButton extends ReactWidget {
     this.addClass('jp-Toolbar-button');
 
     this._menu = new Menu({ commands });
-    this._menu.addClass('jp-ToolbarButton-menu');
+    this._menu.addClass('jp-DownloadDropdownButton-menu');
     this._menu.addItem({ command: 'jupytereverywhere:download-notebook' });
     this._menu.addItem({ command: 'jupytereverywhere:download-pdf' });
   }
