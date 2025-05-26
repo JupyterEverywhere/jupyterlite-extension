@@ -11,7 +11,7 @@ module.exports = {
     autoGoto: false,
     baseURL: 'http://localhost:8888',
     trace: 'retain-on-failure',
-    video: 'retain-on-failure',
+    video: 'retain-on-failure'
   },
   webServer: {
     command: 'jlpm start',
