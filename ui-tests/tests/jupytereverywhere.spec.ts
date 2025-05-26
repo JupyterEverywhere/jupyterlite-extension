@@ -1,10 +1,20 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import type { JupyterLab } from '@jupyterlab/application';
+import type { JSONObject } from '@lumino/coreutils';
 
 declare global {
   interface Window {
     jupyterapp: JupyterLab;
   }
+}
+
+async function runCommnad(page: Page, command: string, args: JSONObject = {}) {
+  await page.evaluate(
+    async ({ command, args }) => {
+      await window.jupyterapp.commands.execute(command, args);
+    },
+    { command, args }
+  );
 }
 
 test.describe('General', () => {
@@ -13,9 +23,8 @@ test.describe('General', () => {
     await page.waitForSelector('.jp-LabShell');
   });
   test('Should load the app', async ({ page }) => {
-    await page.evaluate(async () => {
-      await window.jupyterapp.commands.execute('docmanager:new-untitled', { type: 'notebook' });
-    });
+    await runCommnad(page, 'docmanager:new-untitled', { type: 'notebook' });
+    await runCommnad(page, 'docmanager:open', { path: 'Untitled.ipynb' });
     const nbPanel = page.locator('.jp-NotebookPanel');
     expect(await nbPanel.screenshot()).toMatchSnapshot('empty-notebook.png');
   });
