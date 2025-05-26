@@ -19,7 +19,6 @@ module.exports = {
   },
   webServer: {
     command: 'jlpm start',
-    url: 'http://localhost:8899/lab',
     port: 8899,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI
