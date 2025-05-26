@@ -64,6 +64,21 @@ By default, the `jlpm build` command generates the source maps for this extensio
 jupyter lab build --minimize=False
 ```
 
+### Linting
+
+To ensure the code follows the standard style and does not contain basic issues run:
+
+```bash
+jlpm lint
+```
+
+You can have it run on relevant files automatically before each `git` commit by installing [`pre-commit`](https://pre-commit.com/):
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
 ### Development uninstall
 
 ```bash
