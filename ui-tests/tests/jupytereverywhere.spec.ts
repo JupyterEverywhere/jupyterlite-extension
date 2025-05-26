@@ -22,10 +22,11 @@ test.describe('General', () => {
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-LabShell');
   });
-  test('Should load the app', async ({ page }) => {
+  test('Should load the notebook', async ({ page }) => {
     await runCommnad(page, 'docmanager:new-untitled', { type: 'notebook' });
     await runCommnad(page, 'docmanager:open', { path: 'Untitled.ipynb' });
-    const nbPanel = page.locator('.jp-NotebookPanel');
-    expect(await nbPanel.screenshot()).toMatchSnapshot('empty-notebook.png');
+    expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot(
+      'application-shell.png'
+    );
   });
 });
