@@ -4,7 +4,9 @@
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
 #jp-menu-panel,
-.jp-LabShell[data-shell-mode='single-document'] #jp-menu-panel {
+#jp-top-bar,
+.jp-LabShell[data-shell-mode='single-document'] #jp-menu-panel,
+.jp-LabShell[data-shell-mode='single-document'] #jp-top-bar {
   /* Hide the empty menu panel widget */
   min-height: 0;
   display: none;
