@@ -30,9 +30,12 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('General', () => {
   test('Should load the notebook', async ({ page }) => {
-    expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot(
-      'application-shell.png'
-    );
+    expect(
+      await page.locator('.jp-LabShell').screenshot({
+        mask: [page.locator('jp-KernelStatus')],
+        maskColor: '#888888'
+      })
+    ).toMatchSnapshot('application-shell.png');
   });
 });
 
@@ -40,9 +43,9 @@ test.describe('Sharing', () => {
   test('Should open share dialog', async ({ page }) => {
     const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
     await shareButton.click();
-    const dialog = await page.locator('.jp-Dialog-content');
+    const dialog = page.locator('.jp-Dialog-content');
     expect(
-      dialog.screenshot({
+      await dialog.screenshot({
         mask: [dialog.locator('input#notebook-name'), dialog.locator('input#password')],
         maskColor: '#888888'
       })
