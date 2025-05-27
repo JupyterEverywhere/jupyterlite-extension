@@ -1,5 +1,5 @@
 /**
- * Configuration for Playwright using default from @jupyterlab/galata
+ * Configuration for Playwright.
  */
 
 module.exports = {

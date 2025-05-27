@@ -2,17 +2,21 @@
 
 This folder contains the integration tests of the extension.
 
-They are defined using [Playwright](https://playwright.dev/docs/intro) test runner
-and [Galata](https://github.com/jupyterlab/jupyterlab/tree/main/galata) helper.
+They are defined using [Playwright](https://playwright.dev/docs/intro) test runner.
 
 The Playwright configuration is defined in [playwright.config.js](./playwright.config.js).
-
-The JupyterLab server configuration to use for the integration test is defined
-in [jupyter_server_test_config.py](./jupyter_server_test_config.py).
 
 The default configuration will produce video for failing tests and an HTML report.
 
 > There is a UI mode that you may like; see [that video](https://www.youtube.com/watch?v=jF0yA-JLQW0).
+
+## Writing tests
+
+The primary way to interact with application in tests should be by Playwright-supported
+actions on locators, such as `await page.locator('button').click()`.
+
+For Jupyter-specific actions the use of JupyterLab commands is encouraged,
+see the [list of JupyterLab commands](https://jupyterlab.readthedocs.io/en/stable/user/commands.html#commands-list).
 
 ## Run the tests
 
@@ -20,16 +24,22 @@ The default configuration will produce video for failing tests and an HTML repor
 
 To run the tests, you need to:
 
-1. Compile the extension:
+1. Install the extension in editable mode:
 
 ```sh
-jlpm install
-jlpm build:prod
+pip install -e .
 ```
 
-> Check the extension is installed in JupyterLab.
+2. Build JupyterLite application:
 
-2. Install test dependencies (needed only once):
+```sh
+cd ./lite
+pip install -r requirements.txt  # needed only onnce
+jupyter lite build --output-dir ../dist
+cd ..
+```
+
+3. Install test dependencies (needed only once):
 
 ```sh
 cd ./ui-tests
@@ -38,7 +48,7 @@ jlpm playwright install
 cd ..
 ```
 
-3. Execute the [Playwright](https://playwright.dev/docs/intro) tests:
+4. Execute the [Playwright](https://playwright.dev/docs/intro) tests:
 
 ```sh
 cd ./ui-tests
@@ -57,16 +67,22 @@ for configuring that behavior.
 If you are comparing snapshots to validate your tests, you may need to update
 the reference snapshots stored in the repository. To do that, you need to:
 
-1. Compile the extension:
+1. Install the extension in editable mode:
 
 ```sh
-jlpm install
-jlpm build:prod
+pip install -e .
 ```
 
-> Check the extension is installed in JupyterLab.
+2. Build JupyterLite application:
 
-2. Install test dependencies (needed only once):
+```sh
+cd ./lite
+pip install -r requirements.txt  # needed only onnce
+jupyter lite build --output-dir ../dist
+cd ..
+```
+
+3. Install test dependencies (needed only once):
 
 ```sh
 cd ./ui-tests
@@ -75,7 +91,7 @@ jlpm playwright install
 cd ..
 ```
 
-3. Execute the [Playwright](https://playwright.dev/docs/intro) command:
+4. Execute the [Playwright](https://playwright.dev/docs/intro) command:
 
 ```sh
 cd ./ui-tests
@@ -93,16 +109,22 @@ jlpm playwright test -u
 
 To create tests, the easiest way is to use the code generator tool of playwright:
 
-1. Compile the extension:
+1. Install the extension in editable mode:
 
 ```sh
-jlpm install
-jlpm build:prod
+pip install -e .
 ```
 
-> Check the extension is installed in JupyterLab.
+2. Build JupyterLite application:
 
-2. Install test dependencies (needed only once):
+```sh
+cd ./lite
+pip install -r requirements.txt  # needed only onnce
+jupyter lite build --output-dir ../dist
+cd ..
+```
+
+3. Install test dependencies (needed only once):
 
 ```sh
 cd ./ui-tests
@@ -111,14 +133,14 @@ jlpm playwright install
 cd ..
 ```
 
-3. Start the server:
+4. Start the server:
 
 ```sh
 cd ./ui-tests
 jlpm start
 ```
 
-4. Execute the [Playwright code generator](https://playwright.dev/docs/codegen) in **another terminal**:
+5. Execute the [Playwright code generator](https://playwright.dev/docs/codegen) in **another terminal**:
 
 ```sh
 cd ./ui-tests
@@ -131,16 +153,22 @@ jlpm playwright codegen localhost:8888
 
 To debug tests, a good way is to use the inspector tool of playwright:
 
-1. Compile the extension:
+1. Install the extension in editable mode:
 
 ```sh
-jlpm install
-jlpm build:prod
+pip install -e .
 ```
 
-> Check the extension is installed in JupyterLab.
+2. Build JupyterLite application:
 
-2. Install test dependencies (needed only once):
+```sh
+cd ./lite
+pip install -r requirements.txt  # needed only onnce
+jupyter lite build --output-dir ../dist
+cd ..
+```
+
+3. Install test dependencies (needed only once):
 
 ```sh
 cd ./ui-tests
@@ -149,7 +177,7 @@ jlpm playwright install
 cd ..
 ```
 
-3. Execute the Playwright tests in [debug mode](https://playwright.dev/docs/debug):
+4. Execute the Playwright tests in [debug mode](https://playwright.dev/docs/debug):
 
 ```sh
 cd ./ui-tests
