@@ -17,16 +17,48 @@ async function runCommnad(page: Page, command: string, args: JSONObject = {}) {
   );
 }
 
-test.describe('General', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('lab/index.html');
-    await page.waitForSelector('.jp-LabShell');
-  });
-  test('Should load the notebook', async ({ page }) => {
+test.beforeEach(async ({ page }) => {
+  await page.goto('lab/index.html');
+  await page.waitForSelector('.jp-LabShell');
+  const notebookName = 'Untitled.ipynb';
+  const notebookExists = await page.getByText(notebookName).count();
+  if (!notebookExists) {
     await runCommnad(page, 'docmanager:new-untitled', { type: 'notebook' });
-    await runCommnad(page, 'docmanager:open', { path: 'Untitled.ipynb' });
-    expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot(
-      'application-shell.png'
+  }
+  await runCommnad(page, 'docmanager:open', { path: notebookName });
+});
+
+test.describe('General', () => {
+  test('Should load the notebook', async ({ page }) => {
+    expect(
+      await page.locator('.jp-LabShell').screenshot({
+        mask: [page.locator('.jp-KernelStatus')],
+        maskColor: '#888888'
+      })
+    ).toMatchSnapshot('application-shell.png');
+  });
+});
+
+test.describe('Sharing', () => {
+  test('Should open share dialog', async ({ page }) => {
+    const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
+    await shareButton.click();
+    const dialog = page.locator('.jp-Dialog-content');
+    expect(
+      await dialog.screenshot({
+        mask: [dialog.locator('input#notebook-name'), dialog.locator('input#password')],
+        maskColor: '#888888'
+      })
+    ).toMatchSnapshot('share-dialog.png');
+  });
+});
+
+test.describe('Download', () => {
+  test('Should open download Menu', async ({ page }) => {
+    const downloadButton = page.locator('.je-DownloadButton');
+    await downloadButton.click();
+    expect(await page.locator('.jp-DownloadDropdownButton-menu').screenshot()).toMatchSnapshot(
+      'download-menu.png'
     );
   });
 });
