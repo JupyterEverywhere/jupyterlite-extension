@@ -34,7 +34,7 @@ pip install -e .
 
 ```sh
 cd ./lite
-pip install -r requirements.txt  # needed only onnce
+pip install -r requirements.txt  # needed only once
 jupyter lite build --output-dir ../dist
 cd ..
 ```
@@ -77,7 +77,7 @@ pip install -e .
 
 ```sh
 cd ./lite
-pip install -r requirements.txt  # needed only onnce
+pip install -r requirements.txt  # needed only once
 jupyter lite build --output-dir ../dist
 cd ..
 ```
@@ -119,7 +119,7 @@ pip install -e .
 
 ```sh
 cd ./lite
-pip install -r requirements.txt  # needed only onnce
+pip install -r requirements.txt  # needed only once
 jupyter lite build --output-dir ../dist
 cd ..
 ```
@@ -163,7 +163,7 @@ pip install -e .
 
 ```sh
 cd ./lite
-pip install -r requirements.txt  # needed only onnce
+pip install -r requirements.txt  # needed only once
 jupyter lite build --output-dir ../dist
 cd ..
 ```
