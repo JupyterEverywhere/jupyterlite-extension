@@ -6,15 +6,9 @@ import jsPDF from 'jspdf';
  * Export a notebook panel as a PDF by rasterizing the DOM using jsPDF + html2canvas.
  */
 export function exportNotebookAsPDF(notebook: NotebookPanel): Promise<void> {
-  const name = PathExt.basename(
-    notebook.context.path,
-    PathExt.extname(notebook.context.path)
-  );
+  const name = PathExt.basename(notebook.context.path, PathExt.extname(notebook.context.path));
 
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    format: 'a4'
-  });
+  const doc = new jsPDF({ orientation: 'portrait', format: 'a4' });
 
   return new Promise((resolve, reject) => {
     doc.html(notebook.content.node, {
@@ -26,9 +20,7 @@ export function exportNotebookAsPDF(notebook: NotebookPanel): Promise<void> {
           reject(err);
         }
       },
-      html2canvas: {
-        scale: 0.25
-      }
+      html2canvas: { scale: 0.25 }
     });
   });
 }
