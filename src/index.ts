@@ -1,5 +1,5 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { INotebookTracker, NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
+import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
 import { ITranslator } from '@jupyterlab/translation';
 import { Dialog, showDialog, ToolbarButton, ReactWidget } from '@jupyterlab/apputils';
@@ -16,6 +16,8 @@ import {
   createSuccessDialog,
   createErrorDialog
 } from './share-dialog';
+
+import { exportNotebookAsPDF } from './pdf';
 
 /**
  * Get the current notebook panel
@@ -75,49 +77,23 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const downloadPDFCommand = 'jupytereverywhere:download-pdf';
     commands.addCommand(downloadPDFCommand, {
       label: 'Download as PDF',
-      execute: args => {
+      execute: async args => {
         const current = getCurrentNotebook(tracker, shell, args);
         if (!current) {
-          return Promise.resolve();
+          console.warn('No active notebook to download as PDF');
+          return;
         }
 
-        // Generate the URL for exporting as PDF
-        // TODO: make this not open a new tab but rather download the file directly
-        // Probably a target="_blank" not working issue?
-        const url = PageConfig.getNBConvertURL({
-          format: 'pdf',
-          download: true,
-          path: current.context.path
-        });
-
-        return new Promise<void>(resolve => {
-          // Execute all cells first before the notebook is exported
-          // as the PDF export won't have the latest cell outputs otherwise
-          void NotebookActions.runAll(current.content, current.context.sessionContext)
-            .then(() => {
-              // Save notebook if needed, then open the export URL
-              const { context } = current;
-              if (context.model.dirty && !context.model.readOnly) {
-                void context
-                  .save()
-                  .then(() => {
-                    window.open(url, '_blank', 'noopener');
-                    resolve();
-                  })
-                  .catch(error => {
-                    console.error('Failed to save notebook:', error);
-                    resolve();
-                  });
-              } else {
-                window.open(url, '_blank', 'noopener');
-                resolve();
-              }
-            })
-            .catch(error => {
-              console.error('Failed while running notebook cells:', error);
-              resolve();
-            });
-        });
+        try {
+          await exportNotebookAsPDF(current);
+        } catch (error) {
+          console.error('Failed to export notebook as PDF:', error);
+          await showDialog({
+            title: 'Error exporting PDF',
+            body: ReactWidget.create(createErrorDialog(error)),
+            buttons: [Dialog.okButton()]
+          });
+        }
       }
     });
 
