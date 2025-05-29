@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "composite": true,
     "declaration": true,
     "esModuleInterop": true,
@@ -19,5 +20,5 @@
     "strictNullChecks": true,
     "target": "ES2018"
   },
-  "include": ["src/*"]
+  "include": ["src"],
 }
