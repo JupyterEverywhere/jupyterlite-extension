@@ -71,7 +71,6 @@
         "@lumino/coreutils": "^2.2.0",
         "@lumino/disposable": "^2.1.3",
         "@lumino/widgets": "^2.5.0",
-        "@types/entities": "^2.0.2",
         "jspdf": "^3.0.1"
     },
     "devDependencies": {
