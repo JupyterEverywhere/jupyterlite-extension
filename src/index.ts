@@ -2,7 +2,7 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
 import { ITranslator } from '@jupyterlab/translation';
-import { Dialog, showDialog, ToolbarButton, ReactWidget } from '@jupyterlab/apputils';
+import { Dialog, showDialog, ToolbarButton, ReactWidget, MainAreaWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { linkIcon } from '@jupyterlab/ui-components';
@@ -18,6 +18,7 @@ import {
 } from './share-dialog';
 
 import { exportNotebookAsPDF } from './pdf';
+import { JupyterEverywherePlaceholder } from './view-only/mainarea';
 
 /**
  * Get the current notebook panel
@@ -58,6 +59,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const sharingService = new SharingService(apiUrl);
 
     const { commands, shell } = app;
+
+    const content = new JupyterEverywherePlaceholder();
+    const widget = new MainAreaWidget({ content });
+    widget.id = 'jupytereverywhere-main';
+    widget.title.label = 'JupyterEverywhere';
+    widget.title.closable = true;
+    app.shell.add(widget, 'main');
 
     /**
      * 1. A "Download as IPyNB" command.
