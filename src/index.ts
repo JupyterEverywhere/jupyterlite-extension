@@ -149,7 +149,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           if (result.button.accept) {
             const shareDialogData = result.value as IShareDialogData;
-            const { notebookName, isViewOnly, password } = shareDialogData;
+            const { notebookName, password } = shareDialogData;
 
             try {
               // Show loading indicator
@@ -172,13 +172,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
               if (isNewShare) {
                 shareResponse = await sharingService.share(
                   notebookContent,
-                  isViewOnly ? password : undefined
+                  password
                 );
               } else if (notebookId) {
                 shareResponse = await sharingService.update(
                   notebookId,
                   notebookContent,
-                  isViewOnly ? password : undefined
+                  password
                 );
               }
 
@@ -192,7 +192,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
                 notebookContent.metadata.sharedId = shareResponse.notebook.id;
                 notebookContent.metadata.readableId = shareResponse.notebook.readable_id;
                 notebookContent.metadata.sharedName = notebookName;
-                notebookContent.metadata.isPasswordProtected = isViewOnly;
+                notebookContent.metadata.isPasswordProtected = true;
 
                 notebookPanel.context.model.fromJSON(notebookContent);
               }
@@ -212,7 +212,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
                     ? 'Notebook Shared Successfully'
                     : 'Notebook Updated Successfully',
                   body: ReactWidget.create(
-                    createSuccessDialog(shareableLink, isNewShare, isViewOnly)
+                    createSuccessDialog(shareableLink, isNewShare, true)
                   ),
                   buttons: [
                     Dialog.okButton({ label: 'Copy Link' }),
