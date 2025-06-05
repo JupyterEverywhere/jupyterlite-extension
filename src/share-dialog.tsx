@@ -54,7 +54,10 @@ const ShareDialogComponent = () => {
       />
 
       <div style={{ marginBottom: '15px' }}>
-        <label htmlFor="password">Here's the code required to edit the original notebook. Make sure to save this code as it will not appear again:</label>
+        <label htmlFor="password">
+          Here's the code required to edit the original notebook. Make sure to save this code as it
+          will not appear again:
+        </label>
         <div
           id="password"
           style={{
