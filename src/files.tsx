@@ -37,7 +37,7 @@ export const files: JupyterFrontEndPlugin<void> = {
     const newWidget = () => {
       const content = new Files();
       const widget = new MainAreaWidget({ content });
-      widget.id = 'jupytereverywhere-files';
+      widget.id = 'je-files';
       widget.title.label = 'Files';
       widget.title.closable = true;
       widget.title.icon = EverywhereIcons.folder;

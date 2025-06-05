@@ -1,4 +1,4 @@
-import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
 import { Dialog, showDialog, ToolbarButton, ReactWidget } from '@jupyterlab/apputils';
@@ -53,6 +53,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const sharingService = new SharingService(apiUrl);
 
     const { commands, shell } = app;
+
+    if ((shell as ILabShell).mode !== 'single-document') {
+      // workaround issue with jupyterlite single doc mode
+      commands.execute('application:set-mode', { mode: 'single-document' });
+    }
 
     /**
      * 1. A "Download as IPyNB" command.

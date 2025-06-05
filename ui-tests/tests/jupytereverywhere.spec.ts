@@ -39,6 +39,13 @@ test.describe('General', () => {
   });
 });
 
+test.describe('General', () => {
+  test('Should open files', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('files.png');
+  });
+});
+
 test.describe('Sharing', () => {
   test('Should open share dialog', async ({ page }) => {
     const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
