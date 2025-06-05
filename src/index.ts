@@ -170,16 +170,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
               let shareResponse;
               if (isNewShare) {
-                shareResponse = await sharingService.share(
-                  notebookContent,
-                  password
-                );
+                shareResponse = await sharingService.share(notebookContent, password);
               } else if (notebookId) {
-                shareResponse = await sharingService.update(
-                  notebookId,
-                  notebookContent,
-                  password
-                );
+                shareResponse = await sharingService.update(notebookId, notebookContent, password);
               }
 
               if (shareResponse && shareResponse.notebook) {
@@ -211,9 +204,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   title: isNewShare
                     ? 'Notebook Shared Successfully'
                     : 'Notebook Updated Successfully',
-                  body: ReactWidget.create(
-                    createSuccessDialog(shareableLink, isNewShare, true)
-                  ),
+                  body: ReactWidget.create(createSuccessDialog(shareableLink, isNewShare, true)),
                   buttons: [
                     Dialog.okButton({ label: 'Copy Link' }),
                     Dialog.cancelButton({ label: 'Close' })
