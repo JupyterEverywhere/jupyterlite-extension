@@ -1,8 +1,6 @@
-import { caretDownIcon, ToolbarButtonComponent } from '@jupyterlab/ui-components';
-import { Menu } from '@lumino/widgets';
-import { ReactWidget } from '@jupyterlab/apputils';
+import { ReactWidget, ToolbarButtonComponent, caretDownIcon } from '@jupyterlab/ui-components';
 import { CommandRegistry } from '@lumino/commands';
-
+import { Menu } from '@lumino/widgets';
 import React from 'react';
 
 export class DownloadDropdownButton extends ReactWidget {

@@ -72,6 +72,8 @@
       "@jupyterlab/fileeditor-extension:language-server",
       "@jupyterlite/application-extension:lsp-connection-manager",
 
+      "@jupyterlab/filebrowser-extension:widget",
+
       "@jupyterlab/console-extension",
       "@jupyterlab/tooltip-extension:consoles",
       "@jupyterlab/inspector-extension:consoles",
