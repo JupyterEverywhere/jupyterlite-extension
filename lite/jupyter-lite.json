@@ -59,6 +59,11 @@
       "@jupyterlab/notebook-extension:kernel-status",
       "@jupyterlab/apputils-extension:running-sessions-status",
       "@jupyterlab/apputils-extension:kernel-status",
+      "@jupyterlab/running-extension:sidebar",
+
+      "@jupyterlab/notebook-extension:toc",
+      "@jupyterlab/toc-extension:registry",
+      "@jupyterlab/toc-extension:tracker",
 
       "@jupyterlab/help-extension:jupyter-forum",
 
