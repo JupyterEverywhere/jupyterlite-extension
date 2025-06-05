@@ -31,7 +31,7 @@ export const competitions: JupyterFrontEndPlugin<void> = {
 
     app.shell.add(
       new SidebarIcon({
-        label: 'Files',
+        label: 'Competition',
         icon: EverywhereIcons.competition,
         execute: () => {
           app.commands.execute(Commands.openCompetitions);
