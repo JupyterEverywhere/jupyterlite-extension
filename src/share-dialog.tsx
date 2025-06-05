@@ -30,7 +30,7 @@ const ShareDialogComponent = () => {
     return password;
   };
 
-  const [notebookName, setNotebookName] = React.useState(generateDefaultName());
+  const [notebookName, setNotebookName] = React.useState<string>(generateDefaultName());
   const [password] = React.useState(generatePassword());
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,17 +54,14 @@ const ShareDialogComponent = () => {
       />
 
       <div style={{ marginBottom: '15px' }}>
-        <label htmlFor="password">Password:</label>
+        <label htmlFor="password">Here's the code required to edit the original notebook. Make sure to save this code as it will not appear again:</label>
         <div
           id="password"
           style={{
             width: '100%',
             padding: '5px',
             fontFamily: 'monospace',
-            fontSize: '14px',
-            backgroundColor: '#f5f5f5',
-            border: '1px solid #ccc',
-            borderRadius: '3px'
+            fontSize: '14px'
           }}
         >
           {password}
