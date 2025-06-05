@@ -1,12 +1,12 @@
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
-import { Dialog, showDialog, ToolbarButton, ReactWidget } from '@jupyterlab/apputils';
+import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
 
 import { SharingService } from './sharing-service';
-import { DownloadDropdownButton } from './ui-components/DownloadDropdownButton';
+
 import {
   IShareDialogData,
   ShareDialog,
@@ -15,9 +15,10 @@ import {
 } from './ui-components/share-dialog';
 
 import { exportNotebookAsPDF } from './pdf';
-import { files } from './files';
+import { files } from './pages/files';
 import { Commands } from './commands';
-import { EverywhereIcons } from './icons';
+import { competitions } from './pages/competitions';
+import { notebookPlugin } from './pages/notebook';
 
 /**
  * Get the current notebook panel
@@ -46,18 +47,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [INotebookTracker],
   activate: (app: JupyterFrontEnd, tracker: INotebookTracker) => {
-    // Get API URL from configuration or use a default
-    const apiUrl =
-      PageConfig.getOption('sharing_service_api_url') || 'http://localhost:8080/api/v1';
-
-    const sharingService = new SharingService(apiUrl);
-
     const { commands, shell } = app;
 
     if ((shell as ILabShell).mode !== 'single-document') {
       // workaround issue with jupyterlite single doc mode
       commands.execute('application:set-mode', { mode: 'single-document' });
     }
+
+    // Get API URL from configuration or use a default
+    const apiUrl =
+      PageConfig.getOption('sharing_service_api_url') || 'http://localhost:8080/api/v1';
+
+    const sharingService = new SharingService(apiUrl);
 
     /**
      * 1. A "Download as IPyNB" command.
@@ -224,54 +225,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-
-    /**
-     * Create a "Share" button
-     */
-    const shareButton = new ToolbarButton({
-      label: 'Share',
-      icon: EverywhereIcons.link,
-      tooltip: 'Share this notebook',
-      onClick: () => {
-        void commands.execute(Commands.shareNotebookCommand);
-      }
-    });
-
-    /**
-     * Create the Download dropdown
-     */
-    const downloadDropdownButton = new DownloadDropdownButton(commands);
-
-    tracker.widgetAdded.connect((_, notebookPanel) => {
-      if (notebookPanel) {
-        // Look for the right position to insert the buttons (after the run buttons)
-        let insertIndex = 5;
-        const toolbar = notebookPanel.toolbar;
-
-        Array.from(toolbar.names()).forEach((name, index) => {
-          if (name === 'run-all') {
-            insertIndex = index + 1;
-          }
-        });
-
-        // Add download dropdown button
-        try {
-          toolbar.insertItem(insertIndex, 'downloadDropdownButton', downloadDropdownButton);
-          insertIndex++;
-        } catch (error) {
-          toolbar.addItem('downloadDropdownButton', downloadDropdownButton);
-        }
-
-        // Add the share button
-        try {
-          toolbar.insertItem(insertIndex, 'shareButton', shareButton);
-        } catch (error) {
-          // Fallback: add at the end
-          toolbar.addItem('shareButton', shareButton);
-        }
-      }
-    });
   }
 };
 
-export default [plugin, files];
+export default [plugin, notebookPlugin, files, competitions];

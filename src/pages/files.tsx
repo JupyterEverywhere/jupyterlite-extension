@@ -1,8 +1,8 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
 import { MainAreaWidget, ReactWidget } from '@jupyterlab/apputils';
-import { Commands } from './commands';
-import { SidebarIcon } from './ui-components/SidebarIcon';
-import { EverywhereIcons } from './icons';
+import { Commands } from '../commands';
+import { SidebarIcon } from '../ui-components/SidebarIcon';
+import { EverywhereIcons } from '../icons';
 import React from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
 
@@ -53,9 +53,9 @@ export const files: JupyterFrontEndPlugin<void> = {
           app.commands.execute(Commands.openFiles);
         }
       }),
-      'left'
+      'left',
+      { rank: 200 }
     );
-    console.log('filaaaaes');
 
     app.commands.addCommand(Commands.openFiles, {
       label: 'Open Files',
@@ -68,6 +68,7 @@ export const files: JupyterFrontEndPlugin<void> = {
           // Attach the widget to the main work area if it's not there
           app.shell.add(widget, 'main');
         }
+        app.shell.activateById(widget.id);
       }
     });
   }
