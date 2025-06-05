@@ -40,7 +40,7 @@ test.describe('General', () => {
 });
 
 test.describe('General', () => {
-  test('Should open files', async ({ page }) => {
+  test('Should open files page', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
     expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('files.png');
   });
