@@ -46,7 +46,7 @@ test.describe('Sharing', () => {
     const dialog = page.locator('.jp-Dialog-content');
     expect(
       await dialog.screenshot({
-        mask: [dialog.locator('input#notebook-name'), dialog.locator('input#password')],
+        mask: [dialog.locator('input#notebook-name'), dialog.locator('div#password')],
         maskColor: '#888888'
       })
     ).toMatchSnapshot('share-dialog.png');
