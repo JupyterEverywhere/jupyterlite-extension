@@ -133,7 +133,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           if (result.button.accept) {
             const shareDialogData = result.value as IShareDialogData;
-            const { notebookName, isViewOnly, password } = shareDialogData;
+            const { notebookName, password } = shareDialogData;
 
             try {
               // Show loading indicator
@@ -154,16 +154,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
               let shareResponse;
               if (isNewShare) {
-                shareResponse = await sharingService.share(
-                  notebookContent,
-                  isViewOnly ? password : undefined
-                );
+                shareResponse = await sharingService.share(notebookContent, password);
               } else if (notebookId) {
-                shareResponse = await sharingService.update(
-                  notebookId,
-                  notebookContent,
-                  isViewOnly ? password : undefined
-                );
+                shareResponse = await sharingService.update(notebookId, notebookContent, password);
               }
 
               if (shareResponse && shareResponse.notebook) {
@@ -176,7 +169,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
                 notebookContent.metadata.sharedId = shareResponse.notebook.id;
                 notebookContent.metadata.readableId = shareResponse.notebook.readable_id;
                 notebookContent.metadata.sharedName = notebookName;
-                notebookContent.metadata.isPasswordProtected = isViewOnly;
+                notebookContent.metadata.isPasswordProtected = true;
 
                 notebookPanel.context.model.fromJSON(notebookContent);
               }
@@ -195,9 +188,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   title: isNewShare
                     ? 'Notebook Shared Successfully'
                     : 'Notebook Updated Successfully',
-                  body: ReactWidget.create(
-                    createSuccessDialog(shareableLink, isNewShare, isViewOnly)
-                  ),
+                  body: ReactWidget.create(createSuccessDialog(shareableLink, isNewShare, true)),
                   buttons: [
                     Dialog.okButton({ label: 'Copy Link' }),
                     Dialog.cancelButton({ label: 'Close' })

@@ -585,7 +585,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.37.0":
+"@playwright/test@npm:^1.52.0":
   version: 1.52.0
   resolution: "@playwright/test@npm:1.52.0"
   dependencies:
@@ -597,8 +597,8 @@ __metadata:
   linkType: hard
 
 "@rjsf/core@npm:^5.13.4":
-  version: 5.24.10
-  resolution: "@rjsf/core@npm:5.24.10"
+  version: 5.24.11
+  resolution: "@rjsf/core@npm:5.24.11"
   dependencies:
     lodash: ^4.17.21
     lodash-es: ^4.17.21
@@ -608,13 +608,13 @@ __metadata:
   peerDependencies:
     "@rjsf/utils": ^5.24.x
     react: ^16.14.0 || >=17
-  checksum: 90316d9dd90ae58805fc4f6fa2bb14dfd9a361abebb75bd3b1b7ed55b554e9a7d5145fc09ee5906bc91d362fc8f8c24619d4d4c432bae782da5cebb0a5b9cddf
+  checksum: 7bceac697e7a289fb88c6e88e78a6fc50628ebb3064d63fa7e3244a1189c6a42c582a779c52b828e8b60fdc9ff81b5468c5e60a28392061fa2eab022e6a3c2d4
   languageName: node
   linkType: hard
 
 "@rjsf/utils@npm:^5.13.4":
-  version: 5.24.10
-  resolution: "@rjsf/utils@npm:5.24.10"
+  version: 5.24.11
+  resolution: "@rjsf/utils@npm:5.24.11"
   dependencies:
     json-schema-merge-allof: ^0.8.1
     jsonpointer: ^5.0.1
@@ -623,7 +623,7 @@ __metadata:
     react-is: ^18.2.0
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 64d9bcfea100c4b89128c20473982d316e960c01f9887fb3613bc0ecdaa9fdf8804f96ff99b0b415c2cbc7b4f7d5de941328a1a1a5d53148489d395a1f07a78e
+  checksum: 81e716c5e34b5f194a384c75059aff2cb7c7f639f7998179c7648c280bf9c76b6e97ef22e3a99d4afaf8228f48acc499e39eca8574872ed75a97337c0e6072f6
   languageName: node
   linkType: hard
 
@@ -635,12 +635,12 @@ __metadata:
   linkType: hard
 
 "@types/react@npm:^18.0.26":
-  version: 18.3.22
-  resolution: "@types/react@npm:18.3.22"
+  version: 18.3.23
+  resolution: "@types/react@npm:18.3.23"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
-  checksum: e69bdec2df18397e0ecc48e0e858ba331e56130b0b2cd1561098dcdddf04a8aa1ae0b51a294d60d0ade13bfabe5670131a3bd82bedca3b323d51de2b9cd0debd
+  checksum: d781257d42bf3c66f4bcd21e76a86cd9b6e21fbaf377fe0f840f1ff35049efa59491aa6a4dcf2b3db42af4ab085acebe185f0ae28b7c36d60be5e9094c707bdd
   languageName: node
   linkType: hard
 
@@ -951,14 +951,14 @@ __metadata:
   linkType: hard
 
 "fdir@npm:^6.4.4":
-  version: 6.4.4
-  resolution: "fdir@npm:6.4.4"
+  version: 6.4.5
+  resolution: "fdir@npm:6.4.5"
   peerDependencies:
     picomatch: ^3 || ^4
   peerDependenciesMeta:
     picomatch:
       optional: true
-  checksum: 79043610236579ffbd0647c508b43bd030a2d034a17c43cf96813a00e8e92e51acdb115c6ddecef3b5812cc2692b976155b4f6413e51e3761f1e772fa019a321
+  checksum: 14efd2d6617a6f9fb314916ccff64e00bdb96216f26542ec9dfa532ed60a7ebb45463f7009aa215c14071566bf43caeb8ba268ccb52a11e6b51e4aaa8cb58d81
   languageName: node
   linkType: hard
 
@@ -1205,7 +1205,7 @@ __metadata:
   resolution: "jupytereverywhere-ui-tests@workspace:."
   dependencies:
     "@jupyterlab/application": ^4.0.0
-    "@playwright/test": ^1.37.0
+    "@playwright/test": ^1.52.0
   languageName: unknown
   linkType: soft
 
@@ -1397,7 +1397,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.7, nanoid@npm:^3.3.8":
+"nanoid@npm:^3.3.11, nanoid@npm:^3.3.7":
   version: 3.3.11
   resolution: "nanoid@npm:3.3.11"
   bin:
@@ -1535,13 +1535,13 @@ __metadata:
   linkType: hard
 
 "postcss@npm:^8.3.11":
-  version: 8.5.3
-  resolution: "postcss@npm:8.5.3"
+  version: 8.5.4
+  resolution: "postcss@npm:8.5.4"
   dependencies:
-    nanoid: ^3.3.8
+    nanoid: ^3.3.11
     picocolors: ^1.1.1
     source-map-js: ^1.2.1
-  checksum: da574620eb84ff60e65e1d8fc6bd5ad87a19101a23d0aba113c653434161543918229a0f673d89efb3b6d4906287eb04b957310dbcf4cbebacad9d1312711461
+  checksum: 7ede5eb54aa56767a61541f13ca9994ce56d93340bc3c99328c741e5cc6c0024510e31667be108e3d29e5189d434ae8476c820e8c0ce90cf942d8a2faf1eb876
   languageName: node
   linkType: hard
 
