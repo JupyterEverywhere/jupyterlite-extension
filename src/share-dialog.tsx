@@ -43,9 +43,9 @@ const ShareDialogComponent = () => {
      *
      * Here is the shareable link to your new copy:
      *             <link placeholder>
-     * 
+     *
      * i.e., only a link, not the filename of the notebook.
-    */
+     */
     <div>
       <label htmlFor="notebook-name">Notebook Name:</label>
       <input
