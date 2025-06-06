@@ -29,13 +29,18 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('General', () => {
-  test('Should load the notebook', async ({ page }) => {
+  test('Should load a notebook', async ({ page }) => {
     expect(
       await page.locator('.jp-LabShell').screenshot({
         mask: [page.locator('.jp-KernelStatus')],
         maskColor: '#888888'
       })
     ).toMatchSnapshot('application-shell.png');
+  });
+
+  test('Should open files page', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('files.png');
   });
 });
 

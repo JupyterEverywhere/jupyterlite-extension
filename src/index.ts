@@ -1,30 +1,24 @@
-import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
-import { ITranslator } from '@jupyterlab/translation';
-import {
-  Dialog,
-  showDialog,
-  ToolbarButton,
-  ReactWidget,
-  MainAreaWidget
-} from '@jupyterlab/apputils';
+import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
-import { IDocumentManager } from '@jupyterlab/docmanager';
-import { linkIcon } from '@jupyterlab/ui-components';
 import { INotebookContent } from '@jupyterlab/nbformat';
 
 import { SharingService } from './sharing-service';
-import { DownloadDropdownButton } from './ui-components';
+
 import {
   IShareDialogData,
   ShareDialog,
   createSuccessDialog,
   createErrorDialog
-} from './share-dialog';
+} from './ui-components/share-dialog';
 
 import { exportNotebookAsPDF } from './pdf';
-import { JupyterEverywherePlaceholder } from './view-only/mainarea';
+import { files } from './pages/files';
+import { Commands } from './commands';
+import { competitions } from './pages/competitions';
+import { notebookPlugin } from './pages/notebook';
 
 /**
  * Get the current notebook panel
@@ -51,33 +45,25 @@ const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:plugin',
   description: 'A Jupyter extension for k12 education',
   autoStart: true,
-  requires: [INotebookTracker, ITranslator, IDocumentManager],
-  activate: (
-    app: JupyterFrontEnd,
-    tracker: INotebookTracker,
-    translator: ITranslator,
-    docManager: IDocumentManager
-  ) => {
+  requires: [INotebookTracker],
+  activate: (app: JupyterFrontEnd, tracker: INotebookTracker) => {
+    const { commands, shell } = app;
+
+    if ((shell as ILabShell).mode !== 'single-document') {
+      // workaround issue with jupyterlite single doc mode
+      commands.execute('application:set-mode', { mode: 'single-document' });
+    }
+
     // Get API URL from configuration or use a default
     const apiUrl =
       PageConfig.getOption('sharing_service_api_url') || 'http://localhost:8080/api/v1';
 
     const sharingService = new SharingService(apiUrl);
 
-    const { commands, shell } = app;
-
-    const content = new JupyterEverywherePlaceholder();
-    const widget = new MainAreaWidget({ content });
-    widget.id = 'jupytereverywhere-main';
-    widget.title.label = 'JupyterEverywhere';
-    widget.title.closable = true;
-    app.shell.add(widget, 'main');
-
     /**
      * 1. A "Download as IPyNB" command.
      */
-    const downloadNotebookCommand = 'jupytereverywhere:download-notebook';
-    commands.addCommand(downloadNotebookCommand, {
+    commands.addCommand(Commands.downloadNotebookCommand, {
       label: 'Download as IPyNB',
       execute: args => {
         // Execute the built-in download command
@@ -88,8 +74,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     /**
      * 2. A "Download as PDF" command.
      */
-    const downloadPDFCommand = 'jupytereverywhere:download-pdf';
-    commands.addCommand(downloadPDFCommand, {
+    commands.addCommand(Commands.downloadPDFCommand, {
       label: 'Download as PDF',
       execute: async args => {
         const current = getCurrentNotebook(tracker, shell, args);
@@ -114,8 +99,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     /**
      * Add custom Share notebook command
      */
-    const shareNotebookCommand = 'jupytereverywhere:share-notebook';
-    commands.addCommand(shareNotebookCommand, {
+    commands.addCommand(Commands.shareNotebookCommand, {
       label: 'Share Notebook',
       execute: async () => {
         try {
@@ -232,54 +216,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-
-    /**
-     * Create a "Share" button
-     */
-    const shareButton = new ToolbarButton({
-      label: 'Share',
-      icon: linkIcon,
-      tooltip: 'Share this notebook',
-      onClick: () => {
-        void commands.execute(shareNotebookCommand);
-      }
-    });
-
-    /**
-     * Create the Download dropdown
-     */
-    const downloadDropdownButton = new DownloadDropdownButton(commands);
-
-    tracker.widgetAdded.connect((_, notebookPanel) => {
-      if (notebookPanel) {
-        // Look for the right position to insert the buttons (after the run buttons)
-        let insertIndex = 5;
-        const toolbar = notebookPanel.toolbar;
-
-        Array.from(toolbar.names()).forEach((name, index) => {
-          if (name === 'run-all') {
-            insertIndex = index + 1;
-          }
-        });
-
-        // Add download dropdown button
-        try {
-          toolbar.insertItem(insertIndex, 'downloadDropdownButton', downloadDropdownButton);
-          insertIndex++;
-        } catch (error) {
-          toolbar.addItem('downloadDropdownButton', downloadDropdownButton);
-        }
-
-        // Add the share button
-        try {
-          toolbar.insertItem(insertIndex, 'shareButton', shareButton);
-        } catch (error) {
-          // Fallback: add at the end
-          toolbar.addItem('shareButton', shareButton);
-        }
-      }
-    });
   }
 };
 
-export default plugin;
+export default [plugin, notebookPlugin, files, competitions];

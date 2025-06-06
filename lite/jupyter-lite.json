@@ -59,6 +59,11 @@
       "@jupyterlab/notebook-extension:kernel-status",
       "@jupyterlab/apputils-extension:running-sessions-status",
       "@jupyterlab/apputils-extension:kernel-status",
+      "@jupyterlab/running-extension:sidebar",
+
+      "@jupyterlab/notebook-extension:toc",
+      "@jupyterlab/toc-extension:registry",
+      "@jupyterlab/toc-extension:tracker",
 
       "@jupyterlab/help-extension:jupyter-forum",
 
@@ -66,6 +71,8 @@
       "@jupyterlab/notebook-extension:language-server",
       "@jupyterlab/fileeditor-extension:language-server",
       "@jupyterlite/application-extension:lsp-connection-manager",
+
+      "@jupyterlab/filebrowser-extension:widget",
 
       "@jupyterlab/console-extension",
       "@jupyterlab/tooltip-extension:consoles",

@@ -12,3 +12,26 @@
   min-height: 0;
   display: none;
 }
+
+:root {
+  --je-slate-blue: #412c88;
+}
+
+.je-Tile {
+  border: 0;
+  background: none;
+  padding: 5px;
+  margin: 4px;
+}
+
+.je-Tile-icon {
+  border: 3px solid var(--je-slate-blue);
+  border-radius: 4px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.je-Tile:hover {
+  background: #e8e3e3;
+  cursor: pointer;
+}
