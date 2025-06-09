@@ -63,8 +63,9 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         })
         .then(() => commands.execute('docmanager:open', { path: 'Untitled.ipynb' }));
     } else {
-      commands.execute('docmanager:new-untitled', { type: 'notebook' });
-      commands.execute('docmanager:open', { path: 'Untitled.ipynb' });
+      commands.execute('docmanager:new-untitled', { type: 'notebook' }).then(() => {
+        commands.execute('docmanager:open', { path: 'Untitled.ipynb' });
+      });
     }
 
     shell.add(
