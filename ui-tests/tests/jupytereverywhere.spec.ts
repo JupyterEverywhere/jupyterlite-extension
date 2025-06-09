@@ -33,12 +33,13 @@ test.describe('General', () => {
   });
 
   test('Should load a read-only notebook', async ({ page }) => {
+    await page.goto('lab/index.html?notebook=test');
     expect(
-      await page.locator('.jp-LabShell').screenshot({
+      await page.locator('.jp-NotebookPanel').screenshot({
         mask: [page.locator('.jp-KernelStatus')],
         maskColor: '#888888'
       })
-    ).toMatchSnapshot('application-shell.png');
+    ).toMatchSnapshot('read-only-notebook.png');
   });
 
   test('Should open files page', async ({ page }) => {
