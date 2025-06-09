@@ -20,16 +20,19 @@ async function runCommnad(page: Page, command: string, args: JSONObject = {}) {
 test.beforeEach(async ({ page }) => {
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-LabShell');
-  const notebookName = 'Untitled.ipynb';
-  const notebookExists = await page.getByText(notebookName).count();
-  if (!notebookExists) {
-    await runCommnad(page, 'docmanager:new-untitled', { type: 'notebook' });
-  }
-  await runCommnad(page, 'docmanager:open', { path: notebookName });
 });
 
 test.describe('General', () => {
   test('Should load a notebook', async ({ page }) => {
+    expect(
+      await page.locator('.jp-LabShell').screenshot({
+        mask: [page.locator('.jp-KernelStatus')],
+        maskColor: '#888888'
+      })
+    ).toMatchSnapshot('application-shell.png');
+  });
+
+  test('Should load a read-only notebook', async ({ page }) => {
     expect(
       await page.locator('.jp-LabShell').screenshot({
         mask: [page.locator('.jp-KernelStatus')],
