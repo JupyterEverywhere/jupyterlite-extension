@@ -132,8 +132,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           });
 
           if (result.button.accept) {
-            const shareDialogData = result.value as IShareDialogData;
-            const { notebookName, password } = shareDialogData;
+            const { notebookName, password } = result.value as IShareDialogData;
 
             try {
               // Show loading indicator
