@@ -18,7 +18,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     const notebookId = params.get('notebook');
 
     if (notebookId) {
-      // TODO replace with API call
+      // TODO replace with API call (and iteration over cells to set `editable: false`)
       const content = {
         cells: [
           {
