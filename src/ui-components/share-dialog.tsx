@@ -31,7 +31,7 @@ const ShareDialogComponent = () => {
   };
 
   const [notebookName, setNotebookName] = React.useState<string>(generateDefaultName());
-  const [password] = React.useState(generatePassword());
+  const [password] = React.useState<string>(generatePassword());
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNotebookName(e.target.value);
@@ -84,20 +84,12 @@ const ShareDialogComponent = () => {
 
 export class ShareDialog extends ReactWidget {
   private _notebookName: string;
-  private _password: string;
 
   constructor() {
     super();
     // Generate default values
     const today = new Date();
     this._notebookName = `Notebook_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let password = '';
-    for (let i = 0; i < 8; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    this._password = password;
   }
 
   getValue(): IShareDialogData {
@@ -105,17 +97,17 @@ export class ShareDialog extends ReactWidget {
     const nameInput = this.node.querySelector('#notebook-name') as HTMLInputElement;
     const passwordDiv = this.node.querySelector('#password') as HTMLDivElement;
 
-    if (nameInput && passwordDiv) {
+    if (nameInput && passwordDiv && passwordDiv.textContent) {
       return {
         notebookName: nameInput.value,
-        password: passwordDiv.textContent || this._password
+        password: passwordDiv.textContent
       };
     }
 
     // Fallback to stored values
     return {
       notebookName: this._notebookName,
-      password: this._password
+      password: '' // This shouldn't really happen since the component always renders a password
     };
   }
 
