@@ -12,15 +12,60 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
   requires: [INotebookTracker],
   activate: (app: JupyterFrontEnd, tracker: INotebookTracker) => {
     const { commands, shell } = app;
+    const contents = app.serviceManager.contents;
 
     const params = new URLSearchParams(window.location.search);
+    const notebookId = params.get('notebook');
 
-    if (params.get('notebook')) {
-      // TODO open notebook as view-only
+    if (notebookId) {
+      // TODO replace with API call (and iteration over cells to set `editable: false`)
+      const content = {
+        cells: [
+          {
+            cell_type: 'code',
+            execution_count: null,
+            id: '55eb9a2d-401d-4abd-b0eb-373ded5b408d',
+            metadata: {
+              // This makes cell non-editable
+              editable: false
+            },
+            outputs: [],
+            source: [`# This is notebook '${notebookId}'`]
+          }
+        ],
+        metadata: {
+          kernelspec: {
+            display_name: 'Python 3 (ipykernel)',
+            language: 'python',
+            name: 'python3'
+          },
+          language_info: {
+            codemirror_mode: {
+              name: 'ipython',
+              version: 3
+            },
+            file_extension: '.py',
+            mimetype: 'text/x-python',
+            name: 'python',
+            nbconvert_exporter: 'python',
+            pygments_lexer: 'ipython3'
+          }
+        },
+        nbformat: 4,
+        nbformat_minor: 5
+      };
+      contents
+        .save('Untitled.ipynb', {
+          content,
+          format: 'json',
+          type: 'notebook',
+          writable: false
+        })
+        .then(() => commands.execute('docmanager:open', { path: 'Untitled.ipynb' }));
     } else {
-      // TODO: check if notebook already exists
-      commands.execute('docmanager:new-untitled', { type: 'notebook' });
-      commands.execute('docmanager:open', { path: 'Untitled.ipynb' });
+      commands.execute('docmanager:new-untitled', { type: 'notebook' }).then(() => {
+        commands.execute('docmanager:open', { path: 'Untitled.ipynb' });
+      });
     }
 
     shell.add(
