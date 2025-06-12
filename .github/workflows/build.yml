@@ -121,7 +121,7 @@ jobs:
       run: |
         cd lite
         rm -r dist # jupyter lite will not build in `dist-test/` if `dist/` exists...?
-        cat jupyter-lite.json | jq '.["jupyter-config-data"].["settingsOverrides"] += {"@jupyterlab/codemirror-extension:plugin":{ "defaultConfig": { "cursorBlinkRate": 0 } }, "@jupyterlab/terminal-extension:plugin": { "cursorBlink": false } }' > jupyter-lite.json.tmp
+        cat jupyter-lite.json | jq '.["jupyter-config-data"].["settingsOverrides"] += {"@jupyterlab/codemirror-extension:plugin":{ "defaultConfig": { "cursorBlinkRate": 0 } } }' > jupyter-lite.json.tmp
         mv jupyter-lite.json.tmp jupyter-lite.json
         jupyter lite build --output-dir dist-test
 
