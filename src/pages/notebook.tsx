@@ -2,15 +2,19 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { EverywhereIcons } from '../icons';
-import { ToolbarButton } from '@jupyterlab/apputils';
+import { ToolbarButton, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
 import { DownloadDropdownButton } from '../ui-components/DownloadDropdownButton';
 import { Commands } from '../commands';
 
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:notebook',
   autoStart: true,
-  requires: [INotebookTracker],
-  activate: (app: JupyterFrontEnd, tracker: INotebookTracker) => {
+  requires: [INotebookTracker, IToolbarWidgetRegistry],
+  activate: (
+    app: JupyterFrontEnd,
+    tracker: INotebookTracker,
+    toolbarRegistry: IToolbarWidgetRegistry
+  ) => {
     const { commands, shell } = app;
     const contents = app.serviceManager.contents;
 
@@ -82,51 +86,24 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     app.shell.activateById(sidebarItem.id);
     app.restored.then(() => app.shell.activateById(sidebarItem.id));
 
-    /**
-     * Create a "Share" button
-     */
-    const shareButton = new ToolbarButton({
-      label: 'Share',
-      icon: EverywhereIcons.link,
-      tooltip: 'Share this notebook',
-      onClick: () => {
-        void commands.execute(Commands.shareNotebookCommand);
-      }
-    });
+    toolbarRegistry.addFactory(
+      'Notebook',
+      'downloadDropdown',
+      () => new DownloadDropdownButton(commands)
+    );
 
-    /**
-     * Create the Download dropdown
-     */
-    const downloadDropdownButton = new DownloadDropdownButton(commands);
-
-    tracker.widgetAdded.connect((_, notebookPanel) => {
-      if (notebookPanel) {
-        // Look for the right position to insert the buttons (after the run buttons)
-        let insertIndex = 5;
-        const toolbar = notebookPanel.toolbar;
-
-        Array.from(toolbar.names()).forEach((name, index) => {
-          if (name === 'run-all') {
-            insertIndex = index + 1;
+    toolbarRegistry.addFactory(
+      'Notebook',
+      'share',
+      () =>
+        new ToolbarButton({
+          label: 'Share',
+          icon: EverywhereIcons.link,
+          tooltip: 'Share this notebook',
+          onClick: () => {
+            void commands.execute(Commands.shareNotebookCommand);
           }
-        });
-
-        // Add download dropdown button
-        try {
-          toolbar.insertItem(insertIndex, 'downloadDropdownButton', downloadDropdownButton);
-          insertIndex++;
-        } catch (error) {
-          toolbar.addItem('downloadDropdownButton', downloadDropdownButton);
-        }
-
-        // Add the share button
-        try {
-          toolbar.insertItem(insertIndex, 'shareButton', shareButton);
-        } catch (error) {
-          // Fallback: add at the end
-          toolbar.addItem('shareButton', shareButton);
-        }
-      }
-    });
+        })
+    );
   }
 };

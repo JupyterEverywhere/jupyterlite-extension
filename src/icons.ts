@@ -24,6 +24,7 @@ import runSvg from '../style/icons/run.svg';
 import refreshSvg from '../style/icons/refresh.svg';
 import stopSvg from '../style/icons/stop.svg';
 import fastForwardSvg from '../style/icons/fast-forward.svg';
+import downloadCaretSvg from '../style/icons/download-caret.svg';
 
 export namespace EverywhereIcons {
   // Overwrite Jupyter default icons
@@ -79,5 +80,9 @@ export namespace EverywhereIcons {
   export const logo = new LabIcon({
     name: 'everywhere:logo',
     svgstr: logoSvg
+  });
+  export const downloadCaret = new LabIcon({
+    name: 'everywhere:download-caret',
+    svgstr: downloadCaretSvg
   });
 }

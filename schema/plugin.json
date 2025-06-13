@@ -52,6 +52,14 @@
         "caption": "Restart and run all cells"
       },
       {
+        "name": "share",
+        "rank": 35
+      },
+      {
+        "name": "downloadDropdown",
+        "rank": 36
+      },
+      {
         "name": "cellType",
         "command": "",
         "disabled": true
@@ -70,8 +78,13 @@
       },
       {
         "name": "insert-text",
-        "command": "jupytereverywhere:insert-markdown-cell",
-        "disabled": false,
+        "command": "apputils:run-all-enabled",
+        "args": {
+          "commands": ["notebook:insert-cell-below", "notebook:change-cell-to-markdown"],
+          "args": {
+            "toolbar": true
+          }
+        },
         "rank": 13,
         "icon": "ui-components:add",
         "label": "Text"

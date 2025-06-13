@@ -1,7 +1,8 @@
-import { ReactWidget, ToolbarButtonComponent, caretDownIcon } from '@jupyterlab/ui-components';
+import { ReactWidget, ToolbarButtonComponent } from '@jupyterlab/ui-components';
 import { CommandRegistry } from '@lumino/commands';
 import { Menu } from '@lumino/widgets';
 import React from 'react';
+import { EverywhereIcons } from '../icons';
 
 export class DownloadDropdownButton extends ReactWidget {
   constructor(commands: CommandRegistry) {
@@ -19,7 +20,7 @@ export class DownloadDropdownButton extends ReactWidget {
     return (
       <ToolbarButtonComponent
         className="je-DownloadButton"
-        icon={caretDownIcon}
+        icon={EverywhereIcons.downloadCaret}
         label="Download"
         tooltip="Download notebook"
         onClick={this._showMenu.bind(this)}
