@@ -118,6 +118,7 @@ jobs:
     - name: Build the JupyterLite app (in test mode)
       run: |
         cd lite
+        rm -r dist # jupyter lite will not build in `dist-test/` if `dist/` exists...?
         bash ../ui-tests/inject-test-config.sh
         jupyter lite build --output-dir dist-test
 
