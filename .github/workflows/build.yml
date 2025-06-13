@@ -115,14 +115,11 @@ jobs:
       with:
         path: ./lite/dist
 
-    # Overwrite some settings to disable cursor blinking,
-    # which causes inadvertent playwright snapshot failures
     - name: Build the JupyterLite app (in test mode)
       run: |
         cd lite
         rm -r dist # jupyter lite will not build in `dist-test/` if `dist/` exists...?
-        cat jupyter-lite.json | jq '.["jupyter-config-data"].["settingsOverrides"] += {"@jupyterlab/codemirror-extension:plugin":{ "defaultConfig": { "cursorBlinkRate": 0 } } }' > jupyter-lite.json.tmp
-        mv jupyter-lite.json.tmp jupyter-lite.json
+        bash ../ui-tests/inject-test-config.sh
         jupyter lite build --output-dir dist-test
 
     - name: Upload artifact

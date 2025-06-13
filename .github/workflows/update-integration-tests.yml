@@ -85,6 +85,7 @@ jobs:
       - name: Build the JupyterLite app
         run: |
           cd lite
+          bash ../ui-tests/inject-test-config.sh
           jupyter lite build --output-dir ../dist
 
       - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@v1
