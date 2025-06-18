@@ -89,7 +89,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
           const sharedId = notebookContent.metadata.sharedId as string;
           console.log('Updating notebook:', sharedId);
 
-          await sharingService.token;
           await sharingService.update(sharedId, notebookContent);
 
           console.log('Notebook automatically synced to CKHub');
@@ -106,47 +105,27 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
       if (!isAlreadyShared && !isManualShare) {
         // First save/share; displays a shareable link and shows a password in a dialog
-        const password = generatePassword();
+        sharingService.password = generatePassword();
         const defaultName = `Notebook_${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${new Date().getDate().toString().padStart(2, '0')}`;
 
         try {
-          await sharingService.token;
-          const shareResponse = await sharingService.share(notebookContent, password);
+          const shareResponse = await sharingService.share(
+            notebookContent,
+            sharingService.password
+          );
 
           if (shareResponse && shareResponse.notebook) {
-            if (!notebookContent.metadata) {
-              notebookContent.metadata = {};
-            }
-
-            notebookContent.metadata.sharedId = shareResponse.notebook.id;
-            notebookContent.metadata.readableId = shareResponse.notebook.readable_id;
-            notebookContent.metadata.sharedName = defaultName;
-            notebookContent.metadata.isPasswordProtected = true;
-            notebookContent.metadata.lastShared = new Date().toISOString();
+            notebookContent.metadata = {
+              ...notebookContent.metadata,
+              sharedId: shareResponse.notebook.id,
+              readableId: shareResponse.notebook.readable_id,
+              sharedName: defaultName,
+              isPasswordProtected: true,
+              lastShared: new Date().toISOString()
+            };
 
             notebookPanel.context.model.fromJSON(notebookContent);
             await notebookPanel.context.save();
-
-            const shareableLink = sharingService
-              .makeRetrieveURL(shareResponse.notebook.id)
-              .toString();
-
-            const dialogResult = await showDialog({
-              title: '',
-              body: ReactWidget.create(createSuccessDialog(shareableLink, true, true, password)),
-              buttons: [
-                Dialog.okButton({ label: 'Done' }),
-                Dialog.cancelButton({ label: 'Copy Link' })
-              ]
-            });
-
-            if (dialogResult.button.label === 'Copy Link') {
-              try {
-                await navigator.clipboard.writeText(shareableLink);
-              } catch (err) {
-                console.error('Failed to copy link:', err);
-              }
-            }
           }
         } catch (error) {
           console.error('Failed to share notebook:', error);
@@ -159,14 +138,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
 
       if (isManualShare) {
-        // Manual share button pressed - show actual link (no password)
+        // Manual share button pressed - show link and password
         const readableId = notebookContent.metadata.readableId as string;
         const sharedId = notebookContent.metadata.sharedId as string;
         const shareableLink = sharingService.makeRetrieveURL(readableId || sharedId).toString();
 
         const dialogResult = await showDialog({
           title: '',
-          body: ReactWidget.create(createSuccessDialog(shareableLink, false, true)),
+          body: ReactWidget.create(createSuccessDialog(shareableLink, sharingService.password)),
           buttons: [
             Dialog.okButton({ label: 'Copy Link!' }),
             Dialog.cancelButton({ label: 'Close' })
@@ -249,14 +228,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
           // Check if notebook has already been shared
-          let notebookId: string | undefined;
-          if (
-            notebookContent.metadata &&
-            typeof notebookContent.metadata === 'object' &&
-            'sharedId' in notebookContent.metadata
-          ) {
-            notebookId = notebookContent.metadata.sharedId as string;
-          }
+          const notebookId = notebookContent?.metadata?.sharedId as string;
 
           const isNewShare = !notebookId;
 
@@ -273,25 +245,21 @@ const plugin: JupyterFrontEndPlugin<void> = {
               const password = generatePassword();
 
               try {
-                await sharingService.token;
                 const shareResponse = await sharingService.share(notebookContent, password);
-
-                if (shareResponse && shareResponse.notebook) {
-                  if (!notebookContent.metadata) {
-                    notebookContent.metadata = {};
-                  }
-
-                  notebookContent.metadata.sharedId = shareResponse.notebook.id;
-                  notebookContent.metadata.readableId = shareResponse.notebook.readable_id;
-                  notebookContent.metadata.sharedName = notebookName;
-                  notebookContent.metadata.isPasswordProtected = true;
-
-                  notebookPanel.context.model.fromJSON(notebookContent);
-                  await notebookPanel.context.save();
-                }
 
                 let shareableLink = '';
                 if (shareResponse && shareResponse.notebook) {
+                  notebookContent.metadata = {
+                    ...notebookContent.metadata,
+                    sharedId: shareResponse.notebook.id,
+                    readable_id: shareResponse.notebook.readable_id,
+                    sharedName: notebookName,
+                    isPasswordProtected: true
+                  };
+
+                  notebookPanel.context.model.fromJSON(notebookContent);
+                  await notebookPanel.context.save();
+
                   const id = shareResponse.notebook.readable_id || shareResponse.notebook.id;
                   shareableLink = sharingService.makeRetrieveURL(id).toString();
                 }
@@ -299,9 +267,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
                 if (shareableLink) {
                   const dialogResult = await showDialog({
                     title: '',
-                    body: ReactWidget.create(
-                      createSuccessDialog(shareableLink, true, true, password)
-                    ),
+                    body: ReactWidget.create(createSuccessDialog(shareableLink, password)),
                     buttons: [
                       Dialog.okButton({ label: 'Done' }),
                       Dialog.cancelButton({ label: 'Copy Link' })

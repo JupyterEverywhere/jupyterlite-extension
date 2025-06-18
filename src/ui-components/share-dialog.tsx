@@ -74,18 +74,11 @@ export class ShareDialog extends ReactWidget {
  */
 export const createSuccessDialog = (
   shareableLink: string,
-  isNewShare: boolean,
-  isViewOnly: boolean,
   password?: string
-) => {
+): React.JSX.Element => {
   return (
     <div>
-      <h3>
-        {isNewShare
-          ? 'Here is the shareable link to your new copy:'
-          : 'Here is the shareable link to your notebook:'}
-      </h3>
-
+      <h3>Here is the shareable link to your notebook:</h3>
       <div
         style={{
           backgroundColor: '#f0f0f0',
@@ -99,7 +92,7 @@ export const createSuccessDialog = (
         {shareableLink}
       </div>
 
-      {isNewShare && password && (
+      {password && (
         <>
           <p>
             Here's the code required to edit the original notebook. Make sure to save this code as
