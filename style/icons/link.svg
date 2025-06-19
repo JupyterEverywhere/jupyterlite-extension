@@ -1,14 +1,1 @@
-<svg width="34" height="16" viewBox="0 0 34 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="mask0_link" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="34" height="16">
-<path d="M0.757935 0.304199H33.1641V15.8983H0.757935V0.304199Z" fill="white"/>
-</mask>
-<g mask="url(#mask0_link)">
-<mask id="mask1_link" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="34" height="16">
-<path d="M8.46732 0.304199H25.5042C29.762 0.304199 33.2136 3.75726 33.2136 8.01681C33.2136 12.2764 29.762 15.7294 25.5042 15.7294H8.46732C4.20955 15.7294 0.757935 12.2764 0.757935 8.01681C0.757935 3.75726 4.20955 0.304199 8.46732 0.304199Z" fill="white"/>
-</mask>
-<g mask="url(#mask1_link)">
-<path d="M8.46732 0.304199H25.5042C29.762 0.304199 33.2136 3.75726 33.2136 8.01681C33.2136 12.2764 29.762 15.7294 25.5042 15.7294H8.46732C4.20955 15.7294 0.757935 12.2764 0.757935 8.01681C0.757935 3.75726 4.20955 0.304199 8.46732 0.304199Z" stroke="#F47950" stroke-width="6.70462"/>
-</g>
-</g>
-<path d="M22.4252 8.07462H11.6047M13.6855 2.03613H10.2688M13.6797 14.1131H8.42371M24.378 14.0578H20.9613M24.378 2.03613H20.9613" stroke="#F47950" stroke-width="3.35231" stroke-linecap="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="34" height="16" fill="none"><mask id="a" width="34" height="16" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:luminance"><path fill="#fff" d="M.758.304h32.406v15.594H.758z"/></mask><g mask="url(#a)"><mask id="b" width="34" height="16" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:luminance"><path fill="#fff" d="M8.467.304h17.037a7.71 7.71 0 0 1 7.71 7.713 7.71 7.71 0 0 1-7.71 7.712H8.467a7.71 7.71 0 0 1-7.71-7.712A7.71 7.71 0 0 1 8.468.304Z"/></mask><g mask="url(#b)"><path stroke="#F47950" stroke-width="6.705" d="M8.467.304h17.037a7.71 7.71 0 0 1 7.71 7.713 7.71 7.71 0 0 1-7.71 7.712H8.467a7.71 7.71 0 0 1-7.71-7.712A7.71 7.71 0 0 1 8.468.304Z"/></g></g><path stroke="#F47950" stroke-linecap="round" stroke-width="3.352" d="M22.425 8.075h-10.82m2.08-6.039H10.27m3.41 12.077H8.425m15.954-.055h-3.417m3.417-12.022h-3.417"/></svg>

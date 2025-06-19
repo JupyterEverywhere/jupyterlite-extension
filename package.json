@@ -44,8 +44,9 @@
         "eslint": "jlpm eslint:check --fix",
         "eslint:check": "eslint . --cache --ext .ts,.tsx",
         "install:extension": "jlpm build",
-        "lint": "jlpm stylelint && jlpm prettier && jlpm eslint",
+        "lint": "jlpm stylelint && jlpm prettier && jlpm eslint && jlpm icons",
         "lint:check": "jlpm stylelint:check && jlpm prettier:check && jlpm eslint:check",
+        "icons": "svgo style/icons/ -q",
         "prettier": "jlpm prettier:base --write --list-different",
         "prettier:base": "prettier \"**/*{.ts,.tsx,.js,.jsx,.css,.json,.md}\"",
         "prettier:check": "jlpm prettier:base --check",
@@ -97,6 +98,7 @@
         "stylelint-config-standard": "^34.0.0",
         "stylelint-csstree-validator": "^3.0.0",
         "stylelint-prettier": "^4.0.0",
+        "svgo": "^3.3.2",
         "typescript": "~5.0.2",
         "yjs": "^13.5.0"
     },
