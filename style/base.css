@@ -3,6 +3,9 @@
 
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 #jp-menu-panel,
 #jp-top-bar,
 #jp-top-panel,
@@ -15,6 +18,8 @@
 
 :root {
   --je-slate-blue: #412c88;
+  --je-round-corners: 12px;
+  --je-font-family: 'Inter', sans-serif;
 }
 
 .je-Tile {
@@ -36,13 +41,9 @@
   cursor: pointer;
 }
 
-#jp-main-dock-panel[data-mode='single-document'] {
-  padding: 25px !important;
-  background: #d8b8dc;
-}
-
-#jp-main-dock-panel[data-mode='single-document'] .jp-MainAreaWidget {
-  border-radius: 15px;
+.je-PageTitle {
+  font-weight: 600;
+  font-family: var(--je-font-family);
 }
 
 .jp-SideBar {
@@ -50,4 +51,33 @@
   --jp-layout-color1: #e6e6e6;
   --jp-layout-color2: #fff;
   --jp-border-width: 0px;
+}
+
+.jp-Toolbar {
+  --jp-ui-font-color1: #412c88;
+  --jp-ui-font-family: var(--je-font-family);
+}
+
+.jp-ToolbarButtonComponent-label {
+  font-weight: 600;
+}
+
+#jp-main-dock-panel[data-mode='single-document'] {
+  padding: 25px !important;
+  background: #d8b8dc;
+}
+
+#jp-main-dock-panel[data-mode='single-document'] .jp-MainAreaWidget {
+  border-radius: var(--je-round-corners);
+  background: transparent;
+}
+
+.jp-MainAreaWidget > .jp-Toolbar {
+  border-radius: var(--je-round-corners);
+}
+
+.jp-MainAreaWidget > :not(.jp-Toolbar) {
+  border-radius: var(--je-round-corners);
+  margin-top: 10px;
+  background: white;
 }

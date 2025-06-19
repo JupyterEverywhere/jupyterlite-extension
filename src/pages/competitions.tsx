@@ -2,6 +2,7 @@ import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application'
 import { MainAreaWidget, ReactWidget } from '@jupyterlab/apputils';
 import { Commands } from '../commands';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
+import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import React from 'react';
 
@@ -25,6 +26,11 @@ export const competitions: JupyterFrontEndPlugin<void> = {
       widget.title.label = 'Competitions';
       widget.title.closable = true;
       widget.title.icon = EverywhereIcons.competition;
+      const toolbarTitle = new PageTitle({
+        label: 'Competitions',
+        icon: EverywhereIcons.competition
+      });
+      widget.toolbar.addItem('title', toolbarTitle);
       return widget;
     };
     let widget = newWidget();

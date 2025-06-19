@@ -2,6 +2,7 @@ import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application'
 import { MainAreaWidget, ReactWidget } from '@jupyterlab/apputils';
 import { Commands } from '../commands';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
+import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import React from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
@@ -17,7 +18,7 @@ function Tile(props: { icon: LabIcon; label: string }) {
   );
 }
 
-export class Files extends ReactWidget {
+class Files extends ReactWidget {
   constructor() {
     super();
     this.addClass('je-Files');
@@ -30,6 +31,7 @@ export class Files extends ReactWidget {
     );
   }
 }
+
 export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
@@ -41,6 +43,11 @@ export const files: JupyterFrontEndPlugin<void> = {
       widget.title.label = 'Files';
       widget.title.closable = true;
       widget.title.icon = EverywhereIcons.folder;
+      const toolbarTitle = new PageTitle({
+        label: 'Files',
+        icon: EverywhereIcons.folder
+      });
+      widget.toolbar.addItem('title', toolbarTitle);
       return widget;
     };
     let widget = newWidget();
