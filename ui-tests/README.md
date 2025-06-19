@@ -144,7 +144,7 @@ jlpm start
 
 ```sh
 cd ./ui-tests
-jlpm playwright codegen localhost:8888
+jlpm playwright codegen localhost:3000
 ```
 
 ## Debug tests
