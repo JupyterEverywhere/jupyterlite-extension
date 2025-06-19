@@ -17,7 +17,7 @@ function Tile(props: { icon: LabIcon; label: string }) {
   );
 }
 
-export class Files extends ReactWidget {
+class Files extends ReactWidget {
   constructor() {
     super();
     this.addClass('je-Files');
@@ -30,6 +30,23 @@ export class Files extends ReactWidget {
     );
   }
 }
+
+class FilesLabel extends ReactWidget {
+  constructor() {
+    super();
+    this.addClass('je-Title');
+  }
+  protected render() {
+    const icon = EverywhereIcons.folder;
+    return (
+      <>
+        <icon.react height="24px" />
+        Files
+      </>
+    );
+  }
+}
+
 export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
@@ -41,6 +58,8 @@ export const files: JupyterFrontEndPlugin<void> = {
       widget.title.label = 'Files';
       widget.title.closable = true;
       widget.title.icon = EverywhereIcons.folder;
+      const label = new FilesLabel();
+      widget.toolbar.addItem('title', label);
       return widget;
     };
     let widget = newWidget();
