@@ -118,8 +118,12 @@ export const createSuccessDialog = (
 };
 
 /**
- * An error dialog for sharing failures.
- * Displays a generic error message.
+ * Creates an error dialog component for displaying notebook sharing
+ * failures. It displays a generic error message.
+ *
+ * @param error - The error that occurred during notebook sharing. Can
+ * be an Error object or any other value.
+ * @returns A React JSX element containing the formatted error message.
  */
 export const createErrorDialog = (error: unknown) => {
   return (
