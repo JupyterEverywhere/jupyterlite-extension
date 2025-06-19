@@ -264,6 +264,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
                   const id = shareResponse.notebook.readable_id || shareResponse.notebook.id;
                   shareableLink = sharingService.makeRetrieveURL(id).toString();
+                  notebookPasswords.set(shareResponse.notebook.id, password);
                 }
 
                 if (shareableLink) {
@@ -293,7 +294,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
               }
             }
           } else {
-            // Already shared - just show the link (no password, no name dialog)
             await handleNotebookSave(notebookPanel, true);
           }
         } catch (error) {

@@ -49,19 +49,6 @@ test.describe('General', () => {
   });
 });
 
-test.describe('Save', () => {
-  test('Should open share dialog on save', async ({ page }) => {
-    await runCommand(page, 'jupytereverywhere:share-notebook');
-    expect(
-      await page
-        .locator('div')
-        .filter({ hasText: 'Here is the shareable link to' })
-        .first()
-        .screenshot()
-    ).toMatchSnapshot('share.png');
-  });
-});
-
 test.describe('Sharing', () => {
   test('Should open share dialog', async ({ page }) => {
     const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
