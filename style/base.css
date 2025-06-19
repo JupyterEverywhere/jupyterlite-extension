@@ -19,6 +19,7 @@
 :root {
   --je-slate-blue: #412c88;
   --je-round-corners: 12px;
+  --je-font-family: 'Inter', sans-serif;
 }
 
 .je-Tile {
@@ -40,6 +41,11 @@
   cursor: pointer;
 }
 
+.je-PageTitle {
+  font-weight: 600;
+  font-family: var(--je-font-family);
+}
+
 .jp-SideBar {
   /* Override colors in sidebar */
   --jp-layout-color1: #e6e6e6;
@@ -49,7 +55,7 @@
 
 .jp-Toolbar {
   --jp-ui-font-color1: #412c88;
-  --jp-ui-font-family: 'Inter', sans-serif;
+  --jp-ui-font-family: var(--je-font-family);
 }
 
 .jp-ToolbarButtonComponent-label {
