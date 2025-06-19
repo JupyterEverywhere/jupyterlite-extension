@@ -95,4 +95,4 @@ jobs:
           start_server_script: 'null'
           test_folder: ui-tests
           npm_client: jlpm
-          server_url: http-get://localhost:8899
+          server_url: http-get://localhost:3000
