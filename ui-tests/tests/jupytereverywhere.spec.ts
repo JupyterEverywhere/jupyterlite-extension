@@ -52,7 +52,13 @@ test.describe('General', () => {
 test.describe('Save', () => {
   test('Should open share dialog on save', async ({ page }) => {
     await runCommand(page, 'jupytereverywhere:share-notebook');
-    await page.locator('div').filter({ hasText: 'Here is the shareable link to' }).first().click();
+    expect(
+      await page
+        .locator('div')
+        .filter({ hasText: 'Here is the shareable link to' })
+        .first()
+        .screenshot()
+    ).toMatchSnapshot('share.png');
   });
 });
 

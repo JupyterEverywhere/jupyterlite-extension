@@ -70,6 +70,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const apiUrl =
       PageConfig.getOption('sharing_service_api_url') || 'http://localhost:8080/api/v1';
 
+    const notebookPasswords = new Map();
     const sharingService = new SharingService(apiUrl);
 
     async function handleNotebookSave(
@@ -105,14 +106,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
       if (!isAlreadyShared && !isManualShare) {
         // First save/share; displays a shareable link and shows a password in a dialog
-        sharingService.password = generatePassword();
+        const password = generatePassword();
         const defaultName = `Notebook_${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${new Date().getDate().toString().padStart(2, '0')}`;
 
         try {
-          const shareResponse = await sharingService.share(
-            notebookContent,
-            sharingService.password
-          );
+          const shareResponse = await sharingService.share(notebookContent, password);
 
           if (shareResponse && shareResponse.notebook) {
             notebookContent.metadata = {
@@ -123,6 +121,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
               isPasswordProtected: true,
               lastShared: new Date().toISOString()
             };
+
+            notebookPasswords.set(shareResponse.notebook.id, password);
 
             notebookPanel.context.model.fromJSON(notebookContent);
             await notebookPanel.context.save();
@@ -145,7 +145,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         const dialogResult = await showDialog({
           title: '',
-          body: ReactWidget.create(createSuccessDialog(shareableLink, sharingService.password)),
+          body: ReactWidget.create(
+            createSuccessDialog(shareableLink, notebookPasswords.get(sharedId))
+          ),
           buttons: [
             Dialog.okButton({ label: 'Copy Link!' }),
             Dialog.cancelButton({ label: 'Close' })

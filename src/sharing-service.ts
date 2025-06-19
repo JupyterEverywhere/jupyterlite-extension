@@ -127,15 +127,6 @@ export class SharingService {
 
   /** The current authentication token. */
   private _token?: IToken;
-  private _password?: string;
-
-  get password(): string | undefined {
-    return this._password;
-  }
-
-  set password(newPassword: string | undefined) {
-    this._password = newPassword;
-  }
 
   /**
    * Retrieves the current authentication token, authenticating if necessary.
