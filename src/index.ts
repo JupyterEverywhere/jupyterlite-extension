@@ -32,6 +32,12 @@ function generatePassword(): string {
   return password;
 }
 
+function generateShareURL(notebookId: string): string {
+  const currentUrl = new URL(window.location.href);
+  const baseUrl = `${currentUrl.protocol}//${currentUrl.host}${currentUrl.pathname}`;
+  return `${baseUrl}?notebook=${notebookId}`;
+}
+
 /**
  * Get the current notebook panel
  */
@@ -141,7 +147,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
         // Manual share button pressed - show link and password
         const readableId = notebookContent.metadata.readableId as string;
         const sharedId = notebookContent.metadata.sharedId as string;
-        const shareableLink = sharingService.makeRetrieveURL(readableId || sharedId).toString();
+
+        // Use readable_id if available, otherwise use UUID
+        // Readable ID is not yet available TODO file issue?
+        const notebookId = readableId || sharedId;
+        const shareableLink = generateShareURL(notebookId);
 
         const dialogResult = await showDialog({
           title: '',
@@ -262,8 +272,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   notebookPanel.context.model.fromJSON(notebookContent);
                   await notebookPanel.context.save();
 
-                  const id = shareResponse.notebook.readable_id || shareResponse.notebook.id;
-                  shareableLink = sharingService.makeRetrieveURL(id).toString();
+                  // Use readable_id if available, otherwise use UUID
+                  // Readable ID is not yet available TODO file issue?
+                  const notebookId =
+                    shareResponse.notebook.readable_id || shareResponse.notebook.id;
+                  shareableLink = generateShareURL(notebookId);
                   notebookPasswords.set(shareResponse.notebook.id, password);
                 }
 
