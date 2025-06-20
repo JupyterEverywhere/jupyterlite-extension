@@ -34,11 +34,11 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       try {
         console.log(`Loading shared notebook with ID: ${id}`);
 
-        const apiUrl = "http://localhost:8080/api/v1";
+        const apiUrl = 'http://localhost:8080/api/v1';
         const sharingService = new SharingService(apiUrl);
 
         console.log(`API URL: ${apiUrl}`);
-        console.log("Retrieving notebook from API...");
+        console.log('Retrieving notebook from API...');
 
         const notebookResponse = await sharingService.retrieve(id);
         console.log('API Response received:', notebookResponse); // debug

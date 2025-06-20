@@ -89,29 +89,31 @@ function validateShareResponse(data: unknown): data is IShareResponse {
   if (!hasRequiredKeys<IShareResponse, keyof IShareResponse>(data, ['message', 'notebook'])) {
     return false;
   }
-  
+
   const response = data as IShareResponse;
-  
+
   if (typeof response.message !== 'string') {
     return false;
   }
-  
-  if (!hasRequiredKeys<IShareResponse['notebook'], keyof IShareResponse['notebook']>(
-    response.notebook,
-    ['id', 'readable_id']
-  )) {
+
+  if (
+    !hasRequiredKeys<IShareResponse['notebook'], keyof IShareResponse['notebook']>(
+      response.notebook,
+      ['id', 'readable_id']
+    )
+  ) {
     return false;
   }
-  
+
   if (!validateUUID(response.notebook.id)) {
     return false;
   }
-  
+
   // readable_id can be null or string
   if (response.notebook.readable_id !== null && typeof response.notebook.readable_id !== 'string') {
     return false;
   }
-  
+
   return true;
 }
 
@@ -122,34 +124,36 @@ function validateShareResponse(data: unknown): data is IShareResponse {
  * @returns A boolean indicating whether the data is a valid INotebookResponse.
  */
 function validateNotebookResponse(data: unknown): data is INotebookResponse {
-  if (!hasRequiredKeys<INotebookResponse, keyof INotebookResponse>(data, [
-    'id',
-    'domain_id',
-    'readable_id',
-    'content'
-  ])) {
+  if (
+    !hasRequiredKeys<INotebookResponse, keyof INotebookResponse>(data, [
+      'id',
+      'domain_id',
+      'readable_id',
+      'content'
+    ])
+  ) {
     return false;
   }
 
   const response = data as INotebookResponse;
-  
+
   if (!validateUUID(response.id)) {
     return false;
   }
-  
+
   if (typeof response.domain_id !== 'string') {
     return false;
   }
-  
+
   // readable_id can be null or string
   if (response.readable_id !== null && typeof response.readable_id !== 'string') {
     return false;
   }
-  
+
   if (!validateNotebookContent(response.content)) {
     return false;
   }
-  
+
   return true;
 }
 
