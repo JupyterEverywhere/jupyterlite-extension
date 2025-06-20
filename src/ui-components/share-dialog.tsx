@@ -7,11 +7,10 @@ import React from 'react';
  */
 export interface IShareDialogData {
   notebookName: string;
-  password?: string;
 }
 
 /**
- * Share dialog widget for notebook sharing preferences (name, view-only, and a password if applicable).
+ * Share dialog widget component.
  */
 const ShareDialogComponent: React.FC = () => {
   const generateDefaultName = () => {
@@ -69,12 +68,10 @@ export class ShareDialog extends ReactWidget {
 }
 
 /**
- * Success dialog - shows actual URLs and passwords, minimal styling
- * Shows password only when isNewShare is true.
+ * Success dialog - shows the shareable link after a successful notebook save operation.
  */
 export const createSuccessDialog = (
   shareableLink: string,
-  password?: string
 ): React.JSX.Element => {
   return (
     <div>
@@ -91,28 +88,6 @@ export const createSuccessDialog = (
       >
         {shareableLink}
       </div>
-
-      {password && (
-        <>
-          <p>
-            Here's the code required to edit the original notebook. Make sure to save this code as
-            it will not appear again:
-          </p>
-          <div
-            style={{
-              backgroundColor: '#f0f0f0',
-              padding: '10px',
-              borderRadius: '5px',
-              marginBottom: '20px',
-              fontFamily: 'monospace',
-              fontSize: '14px',
-              letterSpacing: '1px'
-            }}
-          >
-            {password}
-          </div>
-        </>
-      )}
     </div>
   );
 };
