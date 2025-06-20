@@ -21,17 +21,6 @@ import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 
-function generatePassword(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  let password = '';
-  for (let i = 0; i < array.length; i++) {
-    password += chars.charAt(array[i] % chars.length);
-  }
-  return password;
-}
-
 /**
  * Get the current notebook panel
  */
