@@ -20,7 +20,6 @@ export interface IShareResponse {
   notebook: {
     id: UUID;
     readable_id: string;
-    password?: string; // Optional password from API
   };
 }
 
@@ -251,19 +250,15 @@ export class SharingService {
    * Stores a notebook on the server and returns a share response with the notebook ID and metadata.
    *
    * @param notebook - The notebook content to be shared.
-   * @param password - An optional password to allow editing the shared notebook later.
    * @returns A promise that resolves to the share response.
    * @throws {Error} If the notebook content is invalid or if the sharing request fails.
    */
-  async share(notebook: INotebookContent, password?: string): Promise<IShareResponse> {
+  async share(notebook: INotebookContent): Promise<IShareResponse> {
     if (!validateNotebookContent(notebook)) {
       throw new Error('Invalid notebook content');
     }
 
     const requestData: Record<string, any> = { notebook };
-    if (password) {
-      requestData.password = password;
-    }
 
     const endpoint = new URL('notebooks', this.api_url);
 
@@ -291,7 +286,6 @@ export class SharingService {
    * Updates an existing shared notebook
    * @param id - Notebook ID
    * @param notebook - Updated notebook content
-   * @param password - Password if notebook is protected
    * @returns API response with updated notebook details
    */
   async update(id: string, notebook: INotebookContent): Promise<IShareResponse> {
