@@ -19,7 +19,7 @@ export interface IShareResponse {
   message: string;
   notebook: {
     id: UUID;
-    readable_id: string | null; // Can be null if no readable ID assigned
+    readable_id: string | null;
   };
 }
 
@@ -29,7 +29,7 @@ export interface IShareResponse {
 export interface INotebookResponse {
   id: UUID;
   domain_id: string;
-  readable_id: string | null; // Can be null if no readable ID assigned
+  readable_id: string | null;
   content: INotebookContent;
 }
 
