@@ -12,13 +12,13 @@ export interface IShareDialogData {
 /**
  * Share dialog widget component.
  */
-const ShareDialogComponent: React.FC = () => {
-  const generateDefaultName = () => {
-    const today = new Date();
-    return `Notebook_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-  };
-
-  const [notebookName, setNotebookName] = React.useState<string>(generateDefaultName());
+function generateDefaultNotebookName(): string {
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const time = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+  return `Notebook_${date}_${time}`;
+}
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNotebookName(e.target.value);
@@ -49,8 +49,7 @@ export class ShareDialog extends ReactWidget {
   constructor() {
     super();
     // Generate default values
-    const today = new Date();
-    this._notebookName = `Notebook_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+    this._notebookName = generateDefaultNotebookName();
   }
 
   getValue(): IShareDialogData {
@@ -63,16 +62,15 @@ export class ShareDialog extends ReactWidget {
   }
 
   render() {
-    return <ShareDialogComponent />;
+    const [notebookName, setNotebookName] = React.useState(this._notebookName);
+    return <ShareDialogComponent notebookName={notebookName} onNameChange={setNotebookName} />;
   }
 }
 
 /**
  * Success dialog - shows the shareable link after a successful notebook save operation.
  */
-export const createSuccessDialog = (
-  shareableLink: string,
-): React.JSX.Element => {
+export const createSuccessDialog = (shareableLink: string): React.JSX.Element => {
   return (
     <div>
       <h3>Here is the shareable link to your notebook:</h3>
