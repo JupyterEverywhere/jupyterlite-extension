@@ -8,29 +8,14 @@ import { INotebookContent } from '@jupyterlab/nbformat';
 import { customSidebar } from './sidebar';
 import { SharingService } from './sharing-service';
 
-import {
-  IShareDialogData,
-  ShareDialog,
-  createSuccessDialog,
-  createErrorDialog
-} from './ui-components/share-dialog';
+import { createSuccessDialog, createErrorDialog } from './ui-components/share-dialog';
 
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
 import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
-
-function generatePassword(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  let password = '';
-  for (let i = 0; i < array.length; i++) {
-    password += chars.charAt(array[i] % chars.length);
-  }
-  return password;
-}
+import { generateDefaultNotebookName } from './notebook-name';
 
 function generateShareURL(notebookId: string): string {
   const currentUrl = new URL(window.location.href);
@@ -56,6 +41,84 @@ function getCurrentNotebook(
   return widget;
 }
 
+const manuallySharing = new WeakSet<NotebookPanel>();
+
+/**
+ * Show a dialog with a shareable link for the notebook.
+ * @param sharingService - The sharing service instance to use for generating the shareable link.
+ * @param notebookContent - The content of the notebook to share, from which we extract the ID.
+ */
+async function showShareDialog(sharingService: SharingService, notebookContent: INotebookContent) {
+  const id = (notebookContent.metadata.readableId || notebookContent.metadata.sharedId) as string;
+  const shareableLink = sharingService.makeRetrieveURL(id).toString();
+
+  const dialogResult = await showDialog({
+    title: '',
+    body: ReactWidget.create(createSuccessDialog(shareableLink)),
+    buttons: [Dialog.okButton({ label: 'Copy Link!' }), Dialog.cancelButton({ label: 'Close' })]
+  });
+
+  if (dialogResult.button.label === 'Copy Link!') {
+    try {
+      await navigator.clipboard.writeText(shareableLink);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+    }
+  }
+}
+
+/**
+ * Notebook share/save handler. This function handles both sharing a new notebook and
+ * updating an existing shared notebook.
+ * @param notebookPanel - The notebook panel to handle sharing for.
+ * @param sharingService - The sharing service instance to use for sharing operations.
+ * @param manual - Whether this is a manual share operation triggered by the user, i.e., it is
+ * true when the user clicks "Share Notebook" from the menu.
+ */
+async function handleNotebookSharing(
+  notebookPanel: NotebookPanel,
+  sharingService: SharingService,
+  manual: boolean
+) {
+  const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
+
+  const sharedId = notebookContent.metadata?.sharedId as string | undefined;
+  const defaultName = generateDefaultNotebookName();
+
+  try {
+    if (sharedId) {
+      console.log('Updating notebook:', sharedId);
+      await sharingService.update(sharedId, notebookContent);
+
+      console.log('Notebook automatically synced to CKHub');
+    } else {
+      const shareResponse = await sharingService.share(notebookContent);
+
+      notebookContent.metadata = {
+        ...notebookContent.metadata,
+        sharedId: shareResponse.notebook.id,
+        readableId: shareResponse.notebook.readable_id,
+        sharedName: defaultName,
+        lastShared: new Date().toISOString()
+      };
+
+      notebookPanel.context.model.fromJSON(notebookContent);
+      await notebookPanel.context.save();
+    }
+
+    if (manual) {
+      await showShareDialog(sharingService, notebookContent);
+    }
+  } catch (error) {
+    console.warn('Failed to sync notebook to CKHub:', error);
+    await showDialog({
+      title: manual ? 'Error Sharing Notebook' : 'Sync Failed',
+      body: ReactWidget.create(createErrorDialog(error)),
+      buttons: [Dialog.okButton()]
+    });
+  }
+}
+
 /**
  * JUPYTEREVERYWHERE EXTENSION
  */
@@ -76,103 +139,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const apiUrl =
       PageConfig.getOption('sharing_service_api_url') || 'http://localhost:8080/api/v1';
 
-    const notebookPasswords = new Map();
     const sharingService = new SharingService(apiUrl);
-
-    async function handleNotebookSave(
-      notebookPanel: NotebookPanel,
-      isManualShare: boolean = false
-    ) {
-      const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
-
-      // Check if notebook has already been shared
-      const isAlreadyShared =
-        notebookContent.metadata &&
-        typeof notebookContent.metadata === 'object' &&
-        'sharedId' in notebookContent.metadata;
-
-      if (isAlreadyShared && !isManualShare) {
-        try {
-          const sharedId = notebookContent.metadata.sharedId as string;
-          console.log('Updating notebook:', sharedId);
-
-          await sharingService.update(sharedId, notebookContent);
-
-          console.log('Notebook automatically synced to CKHub');
-        } catch (error) {
-          console.warn('Failed to sync notebook to CKHub:', error);
-          await showDialog({
-            title: 'Sync Failed',
-            body: ReactWidget.create(createErrorDialog(error)),
-            buttons: [Dialog.okButton()]
-          });
-        }
-        return;
-      }
-
-      if (!isAlreadyShared && !isManualShare) {
-        // First save/share; displays a shareable link and shows a password in a dialog
-        const password = generatePassword();
-        const defaultName = `Notebook_${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${new Date().getDate().toString().padStart(2, '0')}`;
-
-        try {
-          const shareResponse = await sharingService.share(notebookContent, password);
-
-          if (shareResponse && shareResponse.notebook) {
-            notebookContent.metadata = {
-              ...notebookContent.metadata,
-              sharedId: shareResponse.notebook.id,
-              readableId: shareResponse.notebook.readable_id,
-              sharedName: defaultName,
-              isPasswordProtected: true,
-              lastShared: new Date().toISOString()
-            };
-
-            notebookPasswords.set(shareResponse.notebook.id, password);
-
-            notebookPanel.context.model.fromJSON(notebookContent);
-            await notebookPanel.context.save();
-          }
-        } catch (error) {
-          console.error('Failed to share notebook:', error);
-          await showDialog({
-            title: 'Error Sharing Notebook',
-            body: ReactWidget.create(createErrorDialog(error)),
-            buttons: [Dialog.okButton()]
-          });
-        }
-      }
-
-      if (isManualShare) {
-        // Manual share button pressed - show link and password
-        const readableId = notebookContent.metadata.readableId as string;
-        const sharedId = notebookContent.metadata.sharedId as string;
-
-        // Use readable_id if available, otherwise use UUID
-        // Readable ID is not yet available TODO file issue?
-        const notebookId = readableId || sharedId;
-        const shareableLink = generateShareURL(notebookId);
-
-        const dialogResult = await showDialog({
-          title: '',
-          body: ReactWidget.create(
-            createSuccessDialog(shareableLink, notebookPasswords.get(sharedId))
-          ),
-          buttons: [
-            Dialog.okButton({ label: 'Copy Link!' }),
-            Dialog.cancelButton({ label: 'Close' })
-          ]
-        });
-
-        if (dialogResult.button.label === 'Copy Link!') {
-          try {
-            await navigator.clipboard.writeText(shareableLink);
-          } catch (err) {
-            console.error('Failed to copy link:', err);
-          }
-        }
-      }
-    }
 
     /**
      * Hook into notebook saves using the saveState signal to handle CKHub sharing
@@ -181,7 +148,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
       widget.context.saveState.connect(async (sender, saveState) => {
         // Only trigger when save is completed (not dirty and not saving)
         if (saveState === 'completed') {
-          await handleNotebookSave(widget, false);
+          if (manuallySharing.has(widget)) {
+            // Skip auto-sync if it's a manual share.
+            return;
+          }
+          await handleNotebookSharing(widget, sharingService, false);
         }
       });
     });
@@ -234,81 +205,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
             return;
           }
 
+          // Mark this notebook as being shared manually (i.e., the user has
+          // clicked the "Share Notebook" command).
+          manuallySharing.add(notebookPanel);
+
           // Save the notebook before we share it.
           await notebookPanel.context.save();
 
-          const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
-
-          // Check if notebook has already been shared
-          const notebookId = notebookContent?.metadata?.sharedId as string;
-
-          const isNewShare = !notebookId;
-
-          if (isNewShare) {
-            // First time sharing - show dialog to get notebook name
-            const result = await showDialog({
-              title: 'Share Notebook',
-              body: new ShareDialog(),
-              buttons: [Dialog.cancelButton(), Dialog.okButton()]
-            });
-
-            if (result.button.accept) {
-              const { notebookName } = result.value as IShareDialogData;
-              const password = generatePassword();
-
-              try {
-                const shareResponse = await sharingService.share(notebookContent, password);
-
-                let shareableLink = '';
-                if (shareResponse && shareResponse.notebook) {
-                  notebookContent.metadata = {
-                    ...notebookContent.metadata,
-                    sharedId: shareResponse.notebook.id,
-                    readable_id: shareResponse.notebook.readable_id,
-                    sharedName: notebookName,
-                    isPasswordProtected: true
-                  };
-
-                  notebookPanel.context.model.fromJSON(notebookContent);
-                  await notebookPanel.context.save();
-
-                  // Use readable_id if available, otherwise use UUID
-                  // Readable ID is not yet available TODO file issue?
-                  const notebookId =
-                    shareResponse.notebook.readable_id || shareResponse.notebook.id;
-                  shareableLink = generateShareURL(notebookId);
-                  notebookPasswords.set(shareResponse.notebook.id, password);
-                }
-
-                if (shareableLink) {
-                  const dialogResult = await showDialog({
-                    title: '',
-                    body: ReactWidget.create(createSuccessDialog(shareableLink, password)),
-                    buttons: [
-                      Dialog.okButton({ label: 'Done' }),
-                      Dialog.cancelButton({ label: 'Copy Link' })
-                    ]
-                  });
-
-                  if (dialogResult.button.label === 'Copy Link') {
-                    try {
-                      await navigator.clipboard.writeText(shareableLink);
-                    } catch (err) {
-                      console.error('Failed to copy link:', err);
-                    }
-                  }
-                }
-              } catch (error) {
-                await showDialog({
-                  title: 'Error',
-                  body: ReactWidget.create(createErrorDialog(error)),
-                  buttons: [Dialog.okButton()]
-                });
-              }
-            }
-          } else {
-            await handleNotebookSave(notebookPanel, true);
-          }
+          await handleNotebookSharing(notebookPanel, sharingService, true);
         } catch (error) {
           console.error('Error in share command:', error);
         }

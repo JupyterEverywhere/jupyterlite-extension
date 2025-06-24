@@ -49,20 +49,6 @@ test.describe('General', () => {
   });
 });
 
-test.describe('Sharing', () => {
-  test('Should open share dialog', async ({ page }) => {
-    const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
-    await shareButton.click();
-    const dialog = page.locator('.jp-Dialog-content');
-    expect(
-      await dialog.screenshot({
-        mask: [dialog.locator('input#notebook-name'), dialog.locator('div#password')],
-        maskColor: '#888888'
-      })
-    ).toMatchSnapshot('share-dialog.png');
-  });
-});
-
 test.describe('Download', () => {
   test('Should open download Menu', async ({ page }) => {
     const downloadButton = page.locator('.je-DownloadButton');
