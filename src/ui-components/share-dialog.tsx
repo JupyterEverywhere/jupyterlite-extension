@@ -1,5 +1,4 @@
 import { ReactWidget } from '@jupyterlab/apputils';
-
 import React from 'react';
 
 /**
@@ -10,18 +9,36 @@ export interface IShareDialogData {
 }
 
 /**
- * Share dialog widget component.
+ * Generates a default notebook name based on the current date and time.
+ *
+ * @returns A string representing the default notebook name, with
+ *          the format: "Notebook_YYYY-MM-DD_HH-MM-SS"
  */
 function generateDefaultNotebookName(): string {
   const now = new Date();
+
   const pad = (n: number) => n.toString().padStart(2, '0');
+
   const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
   const time = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+
   return `Notebook_${date}_${time}`;
 }
 
+/**
+ * Share dialog widget component.
+ *
+ * @param props - The component props are:
+ *   - notebookName: The current notebook name to display in the input field.
+ *   - onNameChange: Callback invoked when the notebook name is edited.
+ * @returns A JSX element containing a labelled input field for renaming the notebook.
+ */
+const ShareDialogComponent: React.FC<{
+  notebookName: string;
+  onNameChange: (name: string) => void;
+}> = ({ notebookName, onNameChange }) => {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNotebookName(e.target.value);
+    onNameChange(e.target.value);
   };
 
   return (
@@ -52,15 +69,24 @@ export class ShareDialog extends ReactWidget {
     this._notebookName = generateDefaultNotebookName();
   }
 
+  /**
+   * Retrieve the notebook name from the input field.
+   *
+   * @returns An object containing the notebook name entered by the user.
+   */
   getValue(): IShareDialogData {
     // Get current values from the DOM
     const nameInput = this.node.querySelector('#notebook-name') as HTMLInputElement;
-
     return {
       notebookName: nameInput?.value || this._notebookName
     };
   }
 
+  /**
+   * Renders the React component for the share dialog.
+   *
+   * @returns A JSX element that represents the share dialog.
+   */
   render() {
     const [notebookName, setNotebookName] = React.useState(this._notebookName);
     return <ShareDialogComponent notebookName={notebookName} onNameChange={setNotebookName} />;
@@ -69,6 +95,9 @@ export class ShareDialog extends ReactWidget {
 
 /**
  * Success dialog - shows the shareable link after a successful notebook save operation.
+ *
+ * @param shareableLink - The URL that allows users to view the shared notebook.
+ * @returns A React element containing the shareable link with styling.
  */
 export const createSuccessDialog = (shareableLink: string): React.JSX.Element => {
   return (
@@ -95,10 +124,10 @@ export const createSuccessDialog = (shareableLink: string): React.JSX.Element =>
  * failures. It displays a generic error message.
  *
  * @param error - The error that occurred during notebook sharing. Can
- * be an Error object or any other value.
+ *                be an Error object or any other value.
  * @returns A React JSX element containing the formatted error message.
  */
-export const createErrorDialog = (error: unknown) => {
+export const createErrorDialog = (error: unknown): React.JSX.Element => {
   return (
     <div>
       <p>Failed to share notebook: {error instanceof Error ? error.message : 'Unknown error'}</p>
