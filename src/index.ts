@@ -36,6 +36,11 @@ function getCurrentNotebook(
 
 const manuallySharing = new WeakSet<NotebookPanel>();
 
+/**
+ * Show a dialog with a shareable link for the notebook.
+ * @param sharingService - The sharing service instance to use for generating the shareable link.
+ * @param notebookContent - The content of the notebook to share, from which we extract the ID.
+ */
 async function showShareDialog(sharingService: SharingService, notebookContent: INotebookContent) {
   const id = (notebookContent.metadata.readableId || notebookContent.metadata.sharedId) as string;
   const shareableLink = sharingService.makeRetrieveURL(id).toString();
