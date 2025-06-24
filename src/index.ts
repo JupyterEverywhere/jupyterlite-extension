@@ -209,6 +209,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
           await handleNotebookSharing(notebookPanel, sharingService, true);
         } catch (error) {
           console.error('Error in share command:', error);
+        } finally {
+          if (tracker.currentWidget) {
+            manuallySharing.delete(tracker.currentWidget);
+          }
         }
       }
     });
