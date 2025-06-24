@@ -34,6 +34,7 @@ function getCurrentNotebook(
   return widget;
 }
 
+const manuallySharing = new WeakSet<NotebookPanel>();
 
 async function showShareDialog(sharingService: SharingService, notebookContent: INotebookContent) {
   const id = (notebookContent.metadata.readableId || notebookContent.metadata.sharedId) as string;
@@ -128,6 +129,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
       widget.context.saveState.connect(async (sender, saveState) => {
         // Only trigger when save is completed (not dirty and not saving)
         if (saveState === 'completed') {
+          if (manuallySharing.has(widget)) {
+            // Skip auto-sync if it's a manual share.
+            return;
+          }
           await handleNotebookSharing(widget, sharingService, false);
         }
       });
@@ -180,6 +185,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
           if (!notebookPanel) {
             return;
           }
+
+          // Mark this notebook as being shared manually (i.e., the user has
+          // clicked the "Share Notebook" command).
+          manuallySharing.add(notebookPanel);
 
           // Save the notebook before we share it.
           await notebookPanel.context.save();
