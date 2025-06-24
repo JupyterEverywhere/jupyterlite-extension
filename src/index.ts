@@ -15,6 +15,7 @@ import { files } from './pages/files';
 import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
+import { generateDefaultNotebookName } from './notebook-name';
 
 /**
  * Get the current notebook panel
@@ -76,7 +77,7 @@ async function handleNotebookSharing(
   const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
   const sharedId = notebookContent.metadata?.sharedId as string | undefined;
-  const defaultName = `Notebook_${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${new Date().getDate().toString().padStart(2, '0')}`;
+  const defaultName = generateDefaultNotebookName();
 
   try {
     if (sharedId) {
