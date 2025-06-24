@@ -17,10 +17,15 @@ import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 import { generateDefaultNotebookName } from './notebook-name';
 
-function generateShareURL(notebookId: string): string {
+/**
+ * Generate a shareable URL for the currently active notebook.
+ * @param notebookID – The ID of the notebook to share (can be readable_id or sharedId).
+ * @returns A URL string that points to the notebook with the given notebookID.
+ */
+function generateShareURL(notebookID: string): string {
   const currentUrl = new URL(window.location.href);
   const baseUrl = `${currentUrl.protocol}//${currentUrl.host}${currentUrl.pathname}`;
-  return `${baseUrl}?notebook=${notebookId}`;
+  return `${baseUrl}?notebook=${notebookID}`;
 }
 
 /**
