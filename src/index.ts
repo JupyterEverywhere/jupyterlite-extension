@@ -60,7 +60,6 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
   }
 }
 
-
 /**
  * /**
  * Notebook share/save handler. This function handles both sharing a new notebook and
