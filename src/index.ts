@@ -61,7 +61,6 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
 }
 
 /**
- * /**
  * Notebook share/save handler. This function handles both sharing a new notebook and
  * updating an existing shared notebook.
  * @param notebookPanel - The notebook panel to handle sharing for.
