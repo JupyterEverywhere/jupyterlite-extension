@@ -49,20 +49,20 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         // by iterating over each cell in the notebook content.
         if (content.cells) {
           content.cells.forEach(cell => {
-            if (!cell.metadata) {
-              cell.metadata = {};
-            }
-            cell.metadata.editable = false;
+            cell.metadata = {
+              ...cell.metadata,
+              editable: false
+            };
           });
         }
 
-        if (!content.metadata) {
-          content.metadata = {};
-        }
-        content.metadata.isSharedNotebook = true;
-        content.metadata.sharedId = notebookResponse.id;
-        content.metadata.readableId = notebookResponse.readable_id;
-        content.metadata.domainId = notebookResponse.domain_id;
+        content.metadata = {
+          ...content.metadata,
+          isSharedNotebook: true,
+          sharedId: notebookResponse.id,
+          readableId: notebookResponse.readable_id,
+          domainId: notebookResponse.domain_id
+        };
 
         // Generate a meaningful filename for the shared notebook
         const filename = `Shared_${notebookResponse.readable_id || notebookResponse.id}.ipynb`;
