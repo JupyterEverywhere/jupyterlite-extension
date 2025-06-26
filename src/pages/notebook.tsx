@@ -23,7 +23,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     const params = new URLSearchParams(window.location.search);
     let notebookId = params.get('notebook');
 
-    if (notebookId && notebookId.endsWith('.ipynb')) {
+    if (notebookId?.endsWith('.ipynb')) {
       notebookId = notebookId.slice(0, -6);
     }
 

@@ -58,7 +58,7 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
   const readableID = notebookContent.metadata?.readableId as string | null;
   const sharedID = notebookContent.metadata?.sharedId as string;
 
-  const notebookID = readableID && readableID !== null ? readableID : sharedID;
+  const notebookID = readableID ?? sharedID;
 
   if (!notebookID) {
     console.error('No notebook ID found for sharing');
