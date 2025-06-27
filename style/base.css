@@ -21,12 +21,24 @@
   --je-round-corners: 12px;
   --je-font-family: 'Inter', sans-serif;
   --je-dialog-round-corners: 12px;
+  --je-document-padding: 25px;
+  --je-sidebar-width: var(--jp-private-sidebar-tab-width);
+  --je-toolbar-height: var(--jp-private-toolbar-height);
+  --je-margin-below-toolbar: 10px;
 }
 
 .jp-Dialog-content {
   border: 3px solid var(--je-slate-blue);
   border-radius: var(--je-dialog-round-corners);
   box-shadow: 3px 3px 3px rgb(0 0 0 / 25%);
+}
+
+.jp-Dialog {
+  clip-path: rect(
+    calc(var(--je-document-padding) + var(--je-toolbar-height) + var(--je-margin-below-toolbar))
+      calc(100% - var(--je-document-padding)) calc(100% - var(--je-document-padding))
+      calc(var(--je-document-padding) + var(--je-sidebar-width)) round var(--je-round-corners)
+  );
 }
 
 .jp-Dialog-content .jp-Dialog-button {
@@ -81,7 +93,7 @@
 }
 
 #jp-main-dock-panel[data-mode='single-document'] {
-  padding: 25px !important;
+  padding: var(--je-document-padding) !important;
   background: #d8b8dc;
 }
 
@@ -96,6 +108,6 @@
 
 .jp-MainAreaWidget > :not(.jp-Toolbar) {
   border-radius: var(--je-round-corners);
-  margin-top: 10px;
+  margin-top: var(--je-margin-below-toolbar);
   background: white;
 }
