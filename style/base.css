@@ -20,6 +20,36 @@
   --je-slate-blue: #412c88;
   --je-round-corners: 12px;
   --je-font-family: 'Inter', sans-serif;
+  --je-dialog-round-corners: 12px;
+  --je-document-padding: 25px;
+  --je-sidebar-width: var(--jp-private-sidebar-tab-width);
+  --je-toolbar-height: var(--jp-private-toolbar-height);
+  --je-margin-below-toolbar: 10px;
+}
+
+.jp-Dialog-content {
+  border: 3px solid var(--je-slate-blue);
+  border-radius: var(--je-dialog-round-corners);
+  box-shadow: 3px 3px 3px rgb(0 0 0 / 25%);
+}
+
+.jp-Dialog {
+  clip-path: rect(
+    calc(var(--je-document-padding) + var(--je-toolbar-height) + var(--je-margin-below-toolbar))
+      calc(100% - var(--je-document-padding)) calc(100% - var(--je-document-padding))
+      calc(var(--je-document-padding) + var(--je-sidebar-width)) round var(--je-round-corners)
+  );
+}
+
+.jp-Dialog-content .jp-Dialog-button {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187 !important;
+  box-shadow: 0 1.5px 3px rgb(0 0 0 / 5%);
+  border-radius: var(--je-dialog-round-corners);
+  font-family: var(--je-font-family);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%;
+  color: #fff;
 }
 
 .je-Tile {
@@ -63,7 +93,7 @@
 }
 
 #jp-main-dock-panel[data-mode='single-document'] {
-  padding: 25px !important;
+  padding: var(--je-document-padding) !important;
   background: #d8b8dc;
 }
 
@@ -78,6 +108,6 @@
 
 .jp-MainAreaWidget > :not(.jp-Toolbar) {
   border-radius: var(--je-round-corners);
-  margin-top: 10px;
+  margin-top: var(--je-margin-below-toolbar);
   background: white;
 }
