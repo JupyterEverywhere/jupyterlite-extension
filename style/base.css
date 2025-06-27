@@ -20,6 +20,24 @@
   --je-slate-blue: #412c88;
   --je-round-corners: 12px;
   --je-font-family: 'Inter', sans-serif;
+  --je-dialog-round-corners: 12px;
+}
+
+.jp-Dialog-content {
+  border: 3px solid var(--je-slate-blue);
+  border-radius: var(--je-dialog-round-corners);
+  box-shadow: 3px 3px 3px rgb(0 0 0 / 25%);
+}
+
+.jp-Dialog-content .jp-Dialog-button {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187 !important;
+  box-shadow: 0 1.5px 3px rgb(0 0 0 / 5%);
+  border-radius: var(--je-dialog-round-corners);
+  font-family: var(--je-font-family);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%;
+  color: #fff;
 }
 
 .je-Tile {
