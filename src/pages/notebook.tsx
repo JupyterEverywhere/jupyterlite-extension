@@ -138,24 +138,26 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     app.shell.activateById(sidebarItem.id);
     app.restored.then(() => app.shell.activateById(sidebarItem.id));
 
-    toolbarRegistry.addFactory(
-      'Notebook',
-      'downloadDropdown',
-      () => new DownloadDropdownButton(commands)
-    );
+    for (const toolbarName of ['Notebook', 'ViewOnlyNotebook']) {
+      toolbarRegistry.addFactory(
+        toolbarName,
+        'downloadDropdown',
+        () => new DownloadDropdownButton(commands)
+      );
 
-    toolbarRegistry.addFactory(
-      'Notebook',
-      'share',
-      () =>
-        new ToolbarButton({
-          label: 'Share',
-          icon: EverywhereIcons.link,
-          tooltip: 'Share this notebook',
-          onClick: () => {
-            void commands.execute(Commands.shareNotebookCommand);
-          }
-        })
-    );
+      toolbarRegistry.addFactory(
+        toolbarName,
+        'share',
+        () =>
+          new ToolbarButton({
+            label: 'Share',
+            icon: EverywhereIcons.link,
+            tooltip: 'Share this notebook',
+            onClick: () => {
+              void commands.execute(Commands.shareNotebookCommand);
+            }
+          })
+      );
+    }
   }
 };
