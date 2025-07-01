@@ -7,16 +7,16 @@ import { ToolbarButton, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
 import { DownloadDropdownButton } from '../ui-components/DownloadDropdownButton';
 import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
-import { READONLY_NOTEBOOK_FACTORY, IReadonlyNotebookTracker } from '../readonly-notebook';
+import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:notebook',
   autoStart: true,
-  requires: [INotebookTracker, IReadonlyNotebookTracker, IToolbarWidgetRegistry],
+  requires: [INotebookTracker, IViewOnlyNotebookTracker, IToolbarWidgetRegistry],
   activate: (
     app: JupyterFrontEnd,
     tracker: INotebookTracker,
-    readonlyTracker: IReadonlyNotebookTracker,
+    readonlyTracker: IViewOnlyNotebookTracker,
     toolbarRegistry: IToolbarWidgetRegistry
   ) => {
     const { commands, shell, serviceManager } = app;
@@ -76,7 +76,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
         await commands.execute('docmanager:open', {
           path: filename,
-          factory: READONLY_NOTEBOOK_FACTORY
+          factory: VIEW_ONLY_NOTEBOOK_FACTORY
         });
 
         console.log(`Successfully loaded shared notebook: ${filename}`);

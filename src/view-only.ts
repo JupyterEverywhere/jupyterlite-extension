@@ -11,7 +11,7 @@ import { createToolbarFactory, IToolbarWidgetRegistry } from '@jupyterlab/apputi
 import { Widget } from '@lumino/widgets';
 import { Token } from '@lumino/coreutils';
 
-export const READONLY_NOTEBOOK_FACTORY = 'ReadonlyNotebook';
+export const VIEW_ONLY_NOTEBOOK_FACTORY = 'ViewOnlyNotebook';
 
 const NOTEBOOK_PANEL_CLASS = 'jp-NotebookPanel';
 
@@ -19,14 +19,14 @@ const NOTEBOOK_PANEL_TOOLBAR_CLASS = 'jp-NotebookPanel-toolbar';
 
 const NOTEBOOK_PANEL_NOTEBOOK_CLASS = 'jp-NotebookPanel-notebook';
 
-export const IReadonlyNotebookTracker = new Token<IReadonlyNotebookTracker>(
-  'jupytereverywhere:readonly-notebook:IReadonlyNotebookTracker'
+export const IViewOnlyNotebookTracker = new Token<IViewOnlyNotebookTracker>(
+  'jupytereverywhere:view-only-notebook:IViewOnlyNotebookTracker'
 );
 
-export interface IReadonlyNotebookTracker extends IWidgetTracker<ReadonlyNotebookPanel> {}
+export interface IViewOnlyNotebookTracker extends IWidgetTracker<ViewOnlyNotebookPanel> {}
 
 /**
- * Creates a "View Only" header widget for read-only notebooks.
+ * Creates a "View Only" header widget for view-only notebooks.
  */
 class ViewOnlyHeader extends Widget {
   constructor() {
@@ -39,15 +39,15 @@ class ViewOnlyHeader extends Widget {
   }
 }
 
-class ReadonlyNotebook extends StaticNotebook {
-  // Add any customization for read-only notebook here if needed
+class ViewOnlyNotebook extends StaticNotebook {
+  // Add any customization for view-only notebook here if needed
 }
 
-class ReadonlyNotebookPanel extends DocumentWidget<ReadonlyNotebook, INotebookModel> {
+class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookModel> {
   /**
-   * Construct a new readonly notebook panel.
+   * Construct a new view-only notebook panel.
    */
-  constructor(options: DocumentWidget.IOptions<ReadonlyNotebook, INotebookModel>) {
+  constructor(options: DocumentWidget.IOptions<ViewOnlyNotebook, INotebookModel>) {
     super(options);
 
     this.addClass(NOTEBOOK_PANEL_CLASS);
@@ -61,8 +61,8 @@ class ReadonlyNotebookPanel extends DocumentWidget<ReadonlyNotebook, INotebookMo
   }
 }
 
-namespace ReadonlyNotebookWidgetFactory {
-  export interface IOptions extends DocumentRegistry.IWidgetFactoryOptions<ReadonlyNotebookPanel> {
+namespace ViewOnlyNotebookWidgetFactory {
+  export interface IOptions extends DocumentRegistry.IWidgetFactoryOptions<ViewOnlyNotebookPanel> {
     rendermime: IRenderMimeRegistry;
     contentFactory: Notebook.IContentFactory;
     mimeTypeService: IEditorMimeTypeService;
@@ -72,8 +72,8 @@ namespace ReadonlyNotebookWidgetFactory {
   }
 }
 
-class ReadonlyNotebookWidgetFactory extends ABCWidgetFactory<
-  ReadonlyNotebookPanel,
+class ViewOnlyNotebookWidgetFactory extends ABCWidgetFactory<
+  ViewOnlyNotebookPanel,
   INotebookModel
 > {
   /**
@@ -81,7 +81,7 @@ class ReadonlyNotebookWidgetFactory extends ABCWidgetFactory<
    *
    * @param options - The options used to construct the factory.
    */
-  constructor(private _options: ReadonlyNotebookWidgetFactory.IOptions) {
+  constructor(private _options: ViewOnlyNotebookWidgetFactory.IOptions) {
     super(_options);
   }
 
@@ -90,8 +90,8 @@ class ReadonlyNotebookWidgetFactory extends ABCWidgetFactory<
    */
   protected createNewWidget(
     context: DocumentRegistry.IContext<INotebookModel>,
-    source?: ReadonlyNotebookPanel
-  ): ReadonlyNotebookPanel {
+    source?: ViewOnlyNotebookPanel
+  ): ViewOnlyNotebookPanel {
     const translator = (context as any).translator;
     const { contentFactory, mimeTypeService, rendermime } = this._options;
     const nbOptions = {
@@ -108,14 +108,14 @@ class ReadonlyNotebookWidgetFactory extends ABCWidgetFactory<
         : this._options.notebookConfig || StaticNotebook.defaultNotebookConfig,
       translator
     };
-    const content = new ReadonlyNotebook(nbOptions);
+    const content = new ViewOnlyNotebook(nbOptions);
 
-    return new ReadonlyNotebookPanel({ context, content });
+    return new ViewOnlyNotebookPanel({ context, content });
   }
 }
 
-export const readonlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IReadonlyNotebookTracker> = {
-  id: 'jupytereverywhere:readonly-notebook',
+export const viewOnlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IViewOnlyNotebookTracker> = {
+  id: 'jupytereverywhere:view-only-notebook',
   requires: [
     NotebookPanel.IContentFactory,
     IEditorServices,
@@ -124,7 +124,7 @@ export const readonlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IReadonlyNoteb
     ISettingRegistry,
     ITranslator
   ],
-  provides: IReadonlyNotebookTracker,
+  provides: IViewOnlyNotebookTracker,
   autoStart: true,
   activate: (
     app: JupyterFrontEnd,
@@ -140,16 +140,16 @@ export const readonlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IReadonlyNoteb
     const toolbarFactory = createToolbarFactory(
       toolbarRegistry,
       settingRegistry,
-      READONLY_NOTEBOOK_FACTORY,
+      VIEW_ONLY_NOTEBOOK_FACTORY,
       PANEL_SETTINGS,
       translator
     );
 
     const trans = translator.load('jupyterlab');
 
-    const factory = new ReadonlyNotebookWidgetFactory({
-      name: READONLY_NOTEBOOK_FACTORY,
-      label: trans.__('Readonly Notebook'),
+    const factory = new ViewOnlyNotebookWidgetFactory({
+      name: VIEW_ONLY_NOTEBOOK_FACTORY,
+      label: trans.__('View-only Notebook'),
       fileTypes: ['notebook'],
       modelName: 'notebook',
       preferKernel: false,
@@ -162,8 +162,8 @@ export const readonlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IReadonlyNoteb
       toolbarFactory,
       translator
     });
-    const tracker = new WidgetTracker<ReadonlyNotebookPanel>({
-      namespace: 'readonly-notebook'
+    const tracker = new WidgetTracker<ViewOnlyNotebookPanel>({
+      namespace: 'view-only-notebook'
     });
     factory.widgetCreated.connect((sender, widget) => {
       void tracker.add(widget);
