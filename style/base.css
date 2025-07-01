@@ -76,15 +76,9 @@
 /* View Only header */
 .je-ViewOnlyHeader {
   min-height: 40px;
-  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: var(--je-slate-blue) !important;
-  border-radius: var(--je-round-corners) var(--je-round-corners) 0 0 !important;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  background: var(--je-slate-blue);
 }
 
 .je-ViewOnlyHeader-content {
@@ -97,38 +91,14 @@
   width: 100%;
 }
 
-/* Content header visibility */
-.jp-MainAreaWidget-contentHeader {
-  display: flex;
-  flex-direction: column;
-  min-height: auto;
-  background: transparent;
+.jp-MainAreaWidget > .je-ViewOnlyHeader-wrapper {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
-.jp-MainAreaWidget-contentHeader .je-ViewOnlyHeader {
-  order: -1;
-  flex-shrink: 0;
-}
-
-/* Shared notebook styling */
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget {
-  border-radius: 0 !important;
-}
-
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget,
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget-contentHeader,
-.jp-NotebookPanel.je-shared-notebook .lm-BoxPanel-child {
-  background: transparent;
-}
-
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget-contentHeader {
-  background: transparent !important;
-  padding: 0;
-  margin: 0;
-}
-
-.jp-NotebookPanel.je-shared-notebook [data-jp-item-name='read-only-indicator'] {
-  display: none;
+.je-ViewOnlyHeader-wrapper + .jp-Notebook {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 #jp-main-dock-panel[data-mode='single-document'] {
