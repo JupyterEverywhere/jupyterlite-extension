@@ -64,7 +64,7 @@ export namespace EverywhereIcons {
     name: fastForwardIcon.name,
     svgstr: fastForwardSvg
   });
-  // Addd custom icons
+  // Add custom icons
   export const folderSidebar = new LabIcon({
     name: 'everywhere:folder-sidebar',
     svgstr: folderSidebarSvg
