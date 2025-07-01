@@ -62,16 +62,7 @@
   font-weight: 600;
 }
 
-#jp-main-dock-panel[data-mode='single-document'] {
-  padding: 25px !important;
-  background: #d8b8dc;
-}
-
-#jp-main-dock-panel[data-mode='single-document'] .jp-MainAreaWidget {
-  border-radius: var(--je-round-corners);
-  background: transparent;
-}
-
+/* Main area widget base styles */
 .jp-MainAreaWidget > .jp-Toolbar {
   border-radius: var(--je-round-corners);
 }
@@ -80,27 +71,6 @@
   border-radius: var(--je-round-corners);
   margin-top: 10px;
   background: white;
-}
-
-/* Shared notebook styling */
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget {
-  border-radius: 0 !important;
-}
-
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget,
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget-contentHeader,
-.jp-NotebookPanel.je-shared-notebook .lm-BoxPanel-child {
-  background: transparent;
-}
-
-.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget-contentHeader {
-  background: transparent !important;
-  padding: 0;
-  margin: 0;
-}
-
-.jp-NotebookPanel.je-shared-notebook [data-jp-item-name='read-only-indicator'] {
-  display: none;
 }
 
 /* View Only header */
@@ -138,4 +108,35 @@
 .jp-MainAreaWidget-contentHeader .je-ViewOnlyHeader {
   order: -1;
   flex-shrink: 0;
+}
+
+/* Shared notebook styling */
+.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget {
+  border-radius: 0 !important;
+}
+
+.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget,
+.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget-contentHeader,
+.jp-NotebookPanel.je-shared-notebook .lm-BoxPanel-child {
+  background: transparent;
+}
+
+.jp-NotebookPanel.je-shared-notebook .jp-MainAreaWidget-contentHeader {
+  background: transparent !important;
+  padding: 0;
+  margin: 0;
+}
+
+.jp-NotebookPanel.je-shared-notebook [data-jp-item-name='read-only-indicator'] {
+  display: none;
+}
+
+#jp-main-dock-panel[data-mode='single-document'] {
+  padding: 25px !important;
+  background: #d8b8dc;
+}
+
+#jp-main-dock-panel[data-mode='single-document'] .jp-MainAreaWidget {
+  border-radius: var(--je-round-corners);
+  background: transparent;
 }
