@@ -22,50 +22,8 @@ interface UploadedFile {
   size: number;
   type: string;
   lastModified: number;
-  thumbnail?: string;
   content: string; // base64 content
 }
-
-/**
- * Generates a thumbnail for an image file or Blob object.
- * @param file File or Blob object to generate a thumbnail for.
- * @returns A Promise that resolves to a base64 string of the thumbnail image, or undefined if the file is not an image.
- */
-const generateThumbnail = (file: File | Blob): Promise<string | undefined> => {
-  return new Promise(resolve => {
-    if (!file.type.startsWith('image/')) {
-      resolve(undefined);
-      return;
-    }
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-
-    img.onload = () => {
-      const maxSize = 150;
-      let { width, height } = img;
-      if (width > height && width > maxSize) {
-        height = (height * maxSize) / width;
-        width = maxSize;
-      } else if (height > maxSize) {
-        width = (width * maxSize) / height;
-        height = maxSize;
-      }
-      canvas.width = width;
-      canvas.height = height;
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.8)); // I suppose can be tweaked later;
-      } else {
-        resolve(undefined);
-      }
-    };
-
-    img.onerror = () => resolve(undefined);
-    img.src = URL.createObjectURL(file);
-  });
-};
 
 /**
  * Generates a unique file ID based on UUIDs
@@ -103,18 +61,6 @@ const isSupportedFileType = (file: File): boolean => {
   const supportedExtensions = ['png', 'jpg', 'jpeg', 'csv'];
   return supportedMimeTypes.includes(file.type) || supportedExtensions.includes(extension);
 };
-
-/**
- * Converts a base64 string to a Blob object, used for image thumbnails.
- * @param base64 - The base64 string to convert.
- * @param mime - The MIME type of the Blob.
- * @returns - A Blob object representing the base64 data.
- */
-function base64ToBlob(base64: string, mime: string): Blob {
-  const binary = atob(base64);
-  const array = Uint8Array.from(binary, c => c.charCodeAt(0));
-  return new Blob([array], { type: mime });
-}
 
 /**
  * A React component for uploading files to the Jupyter Contents Manager.
@@ -161,9 +107,7 @@ const FileUploader = React.forwardRef<FileUploaderRef, FileUploaderProps>((props
             reader.readAsDataURL(file);
           });
 
-          // Generate a thumbnail if it's an image
           const isImage = file.type.startsWith('image/');
-          const thumbnail = await generateThumbnail(file);
           const base64 = content.split(',')[1];
           const finalContent = isImage ? base64 : atob(base64);
           const finalFileName = file.name;
@@ -181,7 +125,6 @@ const FileUploader = React.forwardRef<FileUploaderRef, FileUploaderProps>((props
               size: file.size,
               type: file.type,
               lastModified: file.lastModified,
-              thumbnail,
               content
             });
           } catch (error) {
@@ -258,13 +201,9 @@ function FileThumbnail(props: FileThumbnailProps) {
   return (
     <div className="je-FileThumbnail">
       <div className="je-FileThumbnail-preview">
-        {file.thumbnail ? (
-          <img src={file.thumbnail} alt={file.name} className="je-FileThumbnail-image" />
-        ) : (
           <div className="je-FileThumbnail-icon">
             <fileIcon.react />
           </div>
-        )}
       </div>
       <div className="je-FileThumbnail-info">
         <div className="je-FileThumbnail-name" title={file.name}>
@@ -335,20 +274,12 @@ function FilesApp(props: FilesAppProps) {
                   ? (content.content as string)
                   : btoa(content.content as string);
 
-                let thumbnail: string | undefined = undefined;
-
-                if (isImage && base64Content) {
-                  const blob = base64ToBlob(base64Content, content.mimetype!);
-                  thumbnail = await generateThumbnail(blob);
-                }
-
                 return {
                   id: generateFileId(),
                   name: f.name,
                   size: f.size ?? 0,
                   type: content.mimetype ?? '',
                   lastModified: Date.now(),
-                  thumbnail,
                   content: `data:${content.mimetype};base64,${base64Content}`
                 };
               })
