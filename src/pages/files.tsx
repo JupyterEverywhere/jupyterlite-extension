@@ -4,7 +4,6 @@ import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
 import { Commands } from '../commands';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
-import { UUID } from '@lumino/coreutils';
 import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
@@ -24,12 +23,6 @@ interface IUploadedFile {
   lastModified: number;
   content: string; // base64 content
 }
-
-/**
- * Generates a unique file ID based on UUIDs
- * @returns A unique file ID
- */
-const generateFileId = (): string => UUID.uuid4();
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -67,7 +60,6 @@ const isSupportedFileType = (file: File): boolean => {
  * It handles file selection, reading, thumbnail generation, and uploading.
  */
 interface IFileUploaderProps {
-  onFilesUploaded: (files: IUploadedFile[]) => void;
   contentsManager: Contents.IManager;
   onUploadStart: () => void;
   onUploadEnd: () => void;
@@ -99,12 +91,9 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
       }
 
       props.onUploadStart();
-      const uploadedFiles: IUploadedFile[] = [];
 
       try {
         for (const file of supportedFiles) {
-          const fileId = generateFileId();
-
           const content = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -123,22 +112,9 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
               format: isImage ? 'base64' : 'text',
               content: finalContent
             });
-
-            uploadedFiles.push({
-              id: fileId,
-              name: finalFileName,
-              size: file.size,
-              type: file.type,
-              lastModified: file.lastModified,
-              content
-            });
           } catch (error) {
             console.warn(`Upload skipped or failed for ${finalFileName}`, error);
           }
-        }
-
-        if (uploadedFiles.length > 0) {
-          props.onFilesUploaded(uploadedFiles);
         }
       } finally {
         props.onUploadEnd();
@@ -218,71 +194,38 @@ interface IFilesAppProps {
 }
 
 function FilesApp(props: IFilesAppProps) {
+  const [listing, setListing] = useState<Contents.IModel | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileUploaderRef = useRef<IFileUploaderRef>(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const listing = await props.contentsManager.get('', { content: true });
-        if (listing.type === 'directory' && listing.content) {
-          const files = await Promise.all(
-            (listing.content as Contents.IModel[])
-              .filter(f => {
-                return (
-                  f.type === 'file' &&
-                  isSupportedFileType({
-                    name: f.name,
-                    type: f.mimetype ?? '',
-                    size: f.size ?? 0,
-                    lastModified: Date.now()
-                  } as File)
-                );
-              })
-              .map(async f => {
-                const content = await props.contentsManager.get(f.path, { content: true });
-                const isImage = content.mimetype?.startsWith('image/');
-                const base64Content = isImage
-                  ? (content.content as string)
-                  : btoa(content.content as string);
-
-                return {
-                  id: generateFileId(),
-                  name: f.name,
-                  size: f.size ?? 0,
-                  type: content.mimetype ?? '',
-                  lastModified: Date.now(),
-                  content: `data:${content.mimetype};base64,${base64Content}`
-                };
-              })
-          );
-
-          setUploadedFiles(files);
-        }
-      } catch (err) {
-        await showErrorMessage(
-          'Error loading files',
-          `Could not load files from the contents manager: ${
-            err instanceof Error ? err.message : String(err)
-          }`
-        );
-      }
-    })();
+  const refreshListing = useCallback(async () => {
+    try {
+      const dirListing = await props.contentsManager.get('', { content: true });
+      setListing(dirListing);
+    } catch (err) {
+      await showErrorMessage(
+        'Error loading files',
+        `Could not load files from the contents manager: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+    }
   }, [props.contentsManager]);
+
+  useEffect(() => {
+    void refreshListing();
+  }, [refreshListing]);
 
   return (
     <div className="je-FilesApp">
       <FileUploader
         ref={fileUploaderRef}
-        onFilesUploaded={newFiles =>
-          setUploadedFiles(prev => {
-            const filtered = prev.filter(f => !newFiles.some(nf => nf.name === f.name));
-            return [...filtered, ...newFiles];
-          })
-        }
-        contentsManager={props.contentsManager}
         onUploadStart={() => setIsUploading(true)}
-        onUploadEnd={() => setIsUploading(false)}
+        onUploadEnd={async () => {
+          setIsUploading(false);
+          await refreshListing();
+        }}
+        contentsManager={props.contentsManager}
       />
       <div className="je-FilesApp-content">
         <div className="je-FilesApp-grid">
@@ -302,9 +245,33 @@ function FilesApp(props: IFilesAppProps) {
           </div>
 
           {/* File thumbnails, and the rest of the tiles. */}
-          {uploadedFiles.map(file => (
-            <FileThumbnail key={file.id} file={file} />
-          ))}
+          {listing &&
+            listing.type === 'directory' &&
+            (listing.content as Contents.IModel[])
+              .filter(f => {
+                return (
+                  f.type === 'file' &&
+                  isSupportedFileType({
+                    name: f.name,
+                    type: f.mimetype ?? '',
+                    size: f.size ?? 0,
+                    lastModified: Date.now()
+                  } as File)
+                );
+              })
+              .map(f => (
+                <FileThumbnail
+                  key={f.path}
+                  file={{
+                    id: f.path,
+                    name: f.name,
+                    size: f.size ?? 0,
+                    type: f.mimetype ?? '',
+                    lastModified: Date.now(),
+                    content: ''
+                  }}
+                />
+              ))}
         </div>
       </div>
       <FilesWarningBanner />
