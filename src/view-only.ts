@@ -135,7 +135,7 @@ export const viewOnlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IViewOnlyNoteb
     settingRegistry: ISettingRegistry,
     translator: ITranslator
   ) => {
-    const PANEL_SETTINGS = '@jupyterlab/notebook-extension:panel';
+    const PANEL_SETTINGS = 'jupytereverywhere:plugin';
 
     const toolbarFactory = createToolbarFactory(
       toolbarRegistry,
