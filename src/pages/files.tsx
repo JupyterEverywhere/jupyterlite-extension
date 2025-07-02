@@ -52,7 +52,7 @@ const isSupportedFileType = (file: File): boolean => {
  */
 interface IFileUploaderProps {
   contentsManager: Contents.IManager;
-  onUploadStart: () => void;
+  onUploadStart: (count: number) => void;
   onUploadEnd: () => void;
 }
 
@@ -81,7 +81,7 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
         return;
       }
 
-      props.onUploadStart();
+      props.onUploadStart(supportedFiles.length);
 
       try {
         for (const file of supportedFiles) {
@@ -154,6 +154,7 @@ interface IFilesAppProps {
 function FilesApp(props: IFilesAppProps) {
   const [listing, setListing] = useState<Contents.IModel | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingCount, setUploadingCount] = useState(0);
   const fileUploaderRef = useRef<IFileUploaderRef>(null);
 
   const refreshListing = useCallback(async () => {
@@ -178,8 +179,12 @@ function FilesApp(props: IFilesAppProps) {
     <div className="je-FilesApp">
       <FileUploader
         ref={fileUploaderRef}
-        onUploadStart={() => setIsUploading(true)}
+        onUploadStart={count => {
+          setUploadingCount(count);
+          setIsUploading(true);
+        }}
         onUploadEnd={async () => {
+          setUploadingCount(0);
           setIsUploading(false);
           await refreshListing();
         }}
@@ -199,7 +204,11 @@ function FilesApp(props: IFilesAppProps) {
                 <EverywhereIcons.addFile.react />
               )}
             </div>
-            <div className="je-FileTile-label">{isUploading ? 'Uploading file...' : 'add new'}</div>
+            <div className="je-FileTile-label">
+              {uploadingCount > 0
+                ? `Uploading ${uploadingCount} file${uploadingCount > 1 ? 's' : ''}...`
+                : 'add new'}
+            </div>
           </div>
 
           {/* File thumbnails, and the rest of the tiles. */}
