@@ -25,7 +25,7 @@ import refreshSvg from '../style/icons/refresh.svg';
 import stopSvg from '../style/icons/stop.svg';
 import fastForwardSvg from '../style/icons/fast-forward.svg';
 import downloadCaretSvg from '../style/icons/download-caret.svg';
-import imageIconSvg from '../style/icons/image-icon.svg'; // unsure how to use this as we display thumbnails for images already
+import imageIconSvg from '../style/icons/image-icon.svg';
 import fileIconSvg from '../style/icons/file-icon.svg';
 
 export namespace EverywhereIcons {
