@@ -7,6 +7,7 @@ import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { UUID } from '@lumino/coreutils';
 import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
+import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
 
@@ -390,6 +391,7 @@ function FilesApp(props: FilesAppProps) {
           ))}
         </div>
       </div>
+      <FilesWarningBanner />
     </div>
   );
 }
