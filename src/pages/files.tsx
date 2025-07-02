@@ -295,9 +295,11 @@ function FilesApp(props: IFilesAppProps) {
           setUploadedFiles(files);
         }
       } catch (err) {
-        showErrorMessage(
+        await showErrorMessage(
           'Error loading files',
-          `Could not load files from the contents manager: ${err instanceof Error ? err.message : String(err)}`
+          `Could not load files from the contents manager: ${
+            err instanceof Error ? err.message : String(err)
+          }`
         );
       }
     })();
