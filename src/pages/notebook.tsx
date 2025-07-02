@@ -70,8 +70,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         await contents.save(filename, {
           content,
           format: 'json',
-          type: 'notebook',
-          writable: false
+          type: 'notebook'
         });
 
         await commands.execute('docmanager:open', {
