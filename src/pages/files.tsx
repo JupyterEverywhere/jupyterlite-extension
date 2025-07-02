@@ -269,7 +269,10 @@ export const files: JupyterFrontEndPlugin<void> = {
       new SidebarIcon({
         label: 'Files',
         icon: EverywhereIcons.folderSidebar,
-        execute: () => app.commands.execute(Commands.openFiles)
+        execute: () => {
+          void app.commands.execute(Commands.openFiles);
+          return undefined;
+        }
       }),
       'left',
       { rank: 200 }
