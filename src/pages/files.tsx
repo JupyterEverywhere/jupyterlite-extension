@@ -42,7 +42,7 @@ const getFileIcon = (fileName: string, fileType: string): LabIcon => {
 const isSupportedFileType = (file: File): boolean => {
   const supportedMimeTypes = ['image/png', 'image/jpeg', 'text/csv'];
   const extension = file.name.split('.').pop()?.toLowerCase() || '';
-  const supportedExtensions = ['png', 'jpg', 'jpeg', 'csv'];
+  const supportedExtensions = ['png', 'jpg', 'jpeg', 'csv', 'tsv'];
   return supportedMimeTypes.includes(file.type) || supportedExtensions.includes(extension);
 };
 
