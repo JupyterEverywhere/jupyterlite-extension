@@ -27,6 +27,21 @@
   background: none;
   padding: 5px;
   margin: 4px;
+  transition: all 0.2s ease;
+}
+
+.je-Tile-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.je-Tile-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgb(65 44 136 / 30%);
+  border-top: 2px solid var(--je-slate-blue);
+  border-radius: 50%;
+  animation: je-spin 1s linear infinite;
 }
 
 .je-Tile-icon {
@@ -81,3 +96,218 @@
   margin-top: 10px;
   background: white;
 }
+
+/* Files Widget styles */
+
+.je-Files {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--je-font-family);
+}
+
+.je-FilesApp {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 16px;
+}
+
+.je-FilesApp-header {
+  flex-shrink: 0;
+}
+
+.je-FilesApp-content {
+  flex: 1;
+  overflow: auto;
+}
+
+@keyframes je-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Files Grid */
+.je-FilesApp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px 0;
+}
+
+/* File Thumbnail Styles */
+.je-FileThumbnail {
+  display: flex;
+  flex-direction: column;
+  background: rgb(255 255 255 / 90%);
+  border: 2px solid var(--je-slate-blue);
+  border-radius: var(--je-round-corners);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+  font-family: var(--je-font-family);
+  animation: je-fade-in-up 0.3s ease-out;
+}
+
+.je-FileThumbnail:hover {
+  border-color: var(--je-slate-blue);
+  background: rgb(232 227 227 / 90%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgb(65 44 136 / 15%);
+}
+
+.je-FileThumbnail-preview {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 70%);
+  overflow: hidden;
+  position: relative;
+}
+
+.je-FileThumbnail-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.je-FileThumbnail-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--je-slate-blue);
+  opacity: 0.8;
+}
+
+.je-FileThumbnail-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.je-FileThumbnail-info {
+  padding: 12px;
+  flex: 1;
+  background: rgb(255 255 255 / 95%);
+}
+
+.je-FileThumbnail-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--je-slate-blue);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--je-font-family);
+}
+
+.je-FileThumbnail-size {
+  font-size: 12px;
+  color: rgb(65 44 136 / 70%);
+  font-family: var(--je-font-family);
+}
+
+.je-FileThumbnail-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 95%);
+  border: 2px solid var(--je-slate-blue);
+  color: var(--je-slate-blue);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  line-height: 1;
+  font-family: var(--je-font-family);
+}
+
+.je-FileThumbnail-remove:hover {
+  background: var(--je-slate-blue);
+  color: white;
+  transform: scale(1.1);
+}
+
+.je-FileThumbnail-remove:focus {
+  outline: 2px solid var(--je-slate-blue);
+  outline-offset: 2px;
+}
+
+.je-FileThumbnail:focus {
+  outline: 2px solid var(--je-slate-blue);
+  outline-offset: 2px;
+}
+
+.je-FileThumbnail:hover .je-FileThumbnail-remove {
+  opacity: 1;
+}
+
+@keyframes je-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (width <= 768px) {
+  .je-FilesApp {
+    padding: 8px;
+    gap: 12px;
+  }
+
+  .je-FilesApp-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .je-FileThumbnail-preview {
+    height: 120px;
+  }
+}
+
+.je-WarningBanner {
+  background: var(--je-slate-blue);
+  color: white;
+  padding: 16px;
+  margin-top: 16px;
+  border-radius: var(--je-round-corners);
+  font-family: var(--je-font-family);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.je-WarningBanner-content strong {
+  color: white;
+  font-weight: bold;
+}
+
+/* Override parent white background */
+.jp-MainAreaWidget .je-WarningBanner {
+  background: var(--je-slate-blue);
+  color: white;
+  border-radius: var(--je-round-corners);
+}
+
