@@ -2,7 +2,6 @@
 
 .je-Files {
   height: 100%;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   font-family: var(--je-font-family);
@@ -16,10 +15,6 @@
   gap: 16px;
 }
 
-.je-FilesApp-header {
-  flex-shrink: 0;
-}
-
 .je-FilesApp-content {
   flex: 1;
   overflow: auto;
@@ -27,113 +22,78 @@
 
 .je-FilesApp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
   padding: 16px 0;
 }
 
 @media (width <= 768px) {
-  .je-FilesApp {
-    padding: 8px;
-    gap: 12px;
-  }
-
   .je-FilesApp-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
   }
 }
 
-/* Tile styles - used for both add new and file tiles */
-
-.je-TileContainer {
+.je-FileTile {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  text-align: center;
+  font-family: var(--je-font-family);
+}
+
+.je-FileTile-box {
+  width: 100%;
   aspect-ratio: 1 / 1;
   border: 2px solid var(--je-slate-blue);
   border-radius: var(--je-round-corners);
   background: white;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-  width: 100%;
-  padding: 16px;
-}
-
-.je-TileContainer:hover {
-  background: #e8e3e3;
-}
-
-.je-TileContainer--addNew {
-  border-style: dashed;
-}
-
-.je-Tile-icon > svg {
-  width: 48px;
-  height: 48px;
-}
-
-.je-Tile-label {
-  margin-top: 8px;
-  font-family: var(--je-font-family);
-  font-size: 14px;
-  color: var(--je-slate-blue);
-  font-weight: 500;
-  text-align: center;
-  word-break: break-word;
-}
-
-/* File Thumbnail styles */
-
-.je-FileThumbnail {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  aspect-ratio: 1 / 1;
-  border: 2px solid var(--je-slate-blue);
-  border-radius: var(--je-round-corners);
-  background: white;
   transition: all 0.2s ease;
   box-sizing: border-box;
-  width: 100%;
   padding: 16px;
-  font-family: var(--je-font-family);
-  animation: je-fade-in-up 0.3s ease-out;
+  margin-bottom: 8px;
 }
 
-.je-FileThumbnail:hover {
+.je-FileTile-box:hover {
   background: #e8e3e3;
+  cursor: pointer;
 }
 
-.je-FileThumbnail-icon > svg {
+.je-FileTile-box svg {
   width: 48px;
   height: 48px;
 }
 
-.je-FileThumbnail-name {
-  margin-top: 8px;
-  font-family: var(--je-font-family);
+.je-FileTile-label {
   font-size: 14px;
-  color: var(--je-slate-blue);
   font-weight: 500;
-  text-align: center;
+  color: var(--je-slate-blue);
   word-break: break-word;
 }
 
-@keyframes je-fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.je-FileTile-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgb(65 44 136 / 30%);
+  border-top: 2px solid var(--je-slate-blue);
+  border-radius: 50%;
+  animation: je-spin 1s linear infinite;
+}
+
+@keyframes je-spin {
+  0% {
+    transform: rotate(0deg);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  100% {
+    transform: rotate(360deg);
   }
 }
 
-/* Warning Banner */
+/* Styling for the warning banner */
 
 .je-WarningBanner {
   background: var(--je-slate-blue);
@@ -141,18 +101,6 @@
   padding: 16px;
   margin-top: 16px;
   border-radius: var(--je-round-corners);
-  font-family: var(--je-font-family);
   font-size: 14px;
   line-height: 1.5;
-}
-
-.je-WarningBanner-content strong {
-  color: white;
-  font-weight: bold;
-}
-
-.jp-MainAreaWidget .je-WarningBanner {
-  background: var(--je-slate-blue);
-  color: white;
-  border-radius: var(--je-round-corners);
 }

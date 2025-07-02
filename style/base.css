@@ -22,45 +22,6 @@
   --je-font-family: 'Inter', sans-serif;
 }
 
-.je-Tile {
-  border: 0;
-  background: none;
-  padding: 5px;
-  margin: 4px;
-  transition: all 0.2s ease;
-}
-
-.je-Tile-loading {
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.je-Tile-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgb(65 44 136 / 30%);
-  border-top: 2px solid var(--je-slate-blue);
-  border-radius: 50%;
-  animation: je-spin 1s linear infinite;
-}
-
-.je-Tile-icon {
-  border: 3px dashed var(--je-slate-blue);
-  border-radius: var(--je-round-corners);
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.je-Tile:hover {
-  background: #e8e3e3;
-  cursor: pointer;
-}
-
 .je-PageTitle {
   font-weight: 600;
   font-family: var(--je-font-family);
@@ -106,6 +67,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }

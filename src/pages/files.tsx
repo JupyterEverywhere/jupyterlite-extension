@@ -11,20 +11,6 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
 
 /**
- * Interface for uploaded files. This includes metadata such as
- * ID, name, size, type, last modified date, thumbnail (optional),
- * and content in base64 format.
- */
-interface IUploadedFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  lastModified: number;
-  content: string; // base64 content
-}
-
-/**
  * File type icons mapping function. We currently implement four common file types:
  * 1. Image files (PNG, JPEG/JPG)
  * 2. CSV files (text)
@@ -153,39 +139,6 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
 FileUploader.displayName = 'FileUploader';
 
 /**
- * This component displays a thumbnail for each uploaded image or file.
- * We use the `getFileIcon` function to determine the icon based on file type.
- */
-interface IFileThumbnailProps {
-  file: IUploadedFile;
-}
-
-/**
- * FileThumbnail component displays a thumbnail for an uploaded file.
- * @param props - The properties for the FileThumbnail component, including the file to display and a callback for removing the file.
- * @returns A JSX element representing the file thumbnail.
- */
-function FileThumbnail(props: IFileThumbnailProps) {
-  const { file } = props;
-  const fileIcon = getFileIcon(file.name, file.type);
-
-  return (
-    <div className="je-FileTile">
-      <div className="je-FileThumbnail">
-        <div className="je-FileThumbnail-preview">
-          <div className="je-FileThumbnail-icon">
-            <fileIcon.react />
-          </div>
-        </div>
-      </div>
-      <div className="je-FileTile-label" title={file.name}>
-        {file.name}
-      </div>
-    </div>
-  );
-}
-
-/**
  * The main Files page component. It manages the state of uploaded files,
  * handles file uploads, and renders the file thumbnails.
  */
@@ -231,22 +184,17 @@ function FilesApp(props: IFilesAppProps) {
         <div className="je-FilesApp-grid">
           {/* "add new" tile */}
           <div className="je-FileTile">
-            <button
-              className={`je-Tile ${isUploading ? 'je-Tile-loading' : ''}`}
+            <div
+              className="je-FileTile-box"
               onClick={() => fileUploaderRef.current?.triggerFileSelect()}
-              disabled={isUploading}
             >
-              <div className="je-Tile-icon">
-                {isUploading ? (
-                  <div className="je-Tile-spinner" />
-                ) : (
-                  <EverywhereIcons.addFile.react />
-                )}
-              </div>
-            </button>
-            <div className="je-FileTile-label">
-              {isUploading ? 'Uploading file...' : 'add new'}
+              {isUploading ? (
+                <div className="je-FileTile-spinner" />
+              ) : (
+                <EverywhereIcons.addFile.react />
+              )}
             </div>
+            <div className="je-FileTile-label">{isUploading ? 'Uploading file...' : 'add new'}</div>
           </div>
 
           {/* File thumbnails, and the rest of the tiles. */}
@@ -264,19 +212,17 @@ function FilesApp(props: IFilesAppProps) {
                   } as File)
                 );
               })
-              .map(f => (
-                <FileThumbnail
-                  key={f.path}
-                  file={{
-                    id: f.path,
-                    name: f.name,
-                    size: f.size ?? 0,
-                    type: f.mimetype ?? '',
-                    lastModified: Date.now(),
-                    content: ''
-                  }}
-                />
-              ))}
+              .map(f => {
+                const fileIcon = getFileIcon(f.name, f.mimetype ?? '');
+                return (
+                  <div className="je-FileTile" key={f.path}>
+                    <div className="je-FileTile-box">
+                      <fileIcon.react />
+                    </div>
+                    <div className="je-FileTile-label">{f.name}</div>
+                  </div>
+                );
+              })}
         </div>
       </div>
       <FilesWarningBanner />
