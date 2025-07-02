@@ -16,6 +16,7 @@ import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 import { generateDefaultNotebookName } from './notebook-name';
+import '../style/index.css';
 
 /**
  * Generate a shareable URL for the currently active notebook.
