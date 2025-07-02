@@ -5,6 +5,7 @@ import { IContentsManager } from '@jupyterlab/services';
 import { Commands } from '../commands';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { UUID } from '@lumino/coreutils';
+import { showErrorMessage } from '@jupyterlab/apputils';
 import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
@@ -91,7 +92,10 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
 
       const supportedFiles = Array.from(files).filter(isSupportedFileType);
       if (supportedFiles.length === 0) {
-        alert('Please upload only PNG, JPEG, or CSV files.'); // TODO: Use a better UI alert?
+        await showErrorMessage(
+          'Unsupported file type',
+          'Please upload only PNG, JPG/JPEG, or CSV files.'
+        );
         return;
       }
 
