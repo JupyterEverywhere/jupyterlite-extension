@@ -374,7 +374,12 @@ function FilesApp(props: FilesAppProps) {
       </div>
       <FileUploader
         ref={fileUploaderRef}
-        onFilesUploaded={newFiles => setUploadedFiles(prev => [...prev, ...newFiles])}
+        onFilesUploaded={newFiles =>
+          setUploadedFiles(prev => {
+            const filtered = prev.filter(f => !newFiles.some(nf => nf.name === f.name));
+            return [...filtered, ...newFiles];
+          })
+        }
         contentsManager={props.contentsManager}
         onUploadStart={() => setIsUploading(true)}
         onUploadEnd={() => setIsUploading(false)}
