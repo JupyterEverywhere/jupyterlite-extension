@@ -17,6 +17,39 @@ async function runCommand(page: Page, command: string, args: JSONObject = {}) {
   );
 }
 
+const TEST_NOTEBOOK = {
+  cells: [
+    {
+      cell_type: 'code',
+      execution_count: null,
+      id: '55eb9a2d-401d-4abd-b0eb-373ded5b408d',
+      outputs: [],
+      metadata: {},
+      source: [`# This is a test notebook`]
+    }
+  ],
+  metadata: {
+    kernelspec: {
+      display_name: 'Python 3 (ipykernel)',
+      language: 'python',
+      name: 'python3'
+    },
+    language_info: {
+      codemirror_mode: {
+        name: 'ipython',
+        version: 3
+      },
+      file_extension: '.py',
+      mimetype: 'text/x-python',
+      name: 'python',
+      nbconvert_exporter: 'python',
+      pygments_lexer: 'ipython3'
+    }
+  },
+  nbformat: 4,
+  nbformat_minor: 5
+};
+
 test.beforeEach(async ({ page }) => {
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-LabShell');
@@ -33,8 +66,25 @@ test.describe('General', () => {
     ).toMatchSnapshot('application-shell.png');
   });
 
-  test('Should load a read-only notebook', async ({ page }) => {
-    await page.goto('lab/index.html?notebook=test');
+  test('Should load a view-only notebook', async ({ page }) => {
+    await page.route('**/api/v1/auth/issue', async route => {
+      const json = { token: 'test-token' };
+      await route.fulfill({ json });
+    });
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+
+    await page.route('**/api/v1/notebooks/*', async route => {
+      const json = {
+        id: notebookId,
+        domain_id: 'domain',
+        readable_id: null,
+        content: TEST_NOTEBOOK
+      };
+      await route.fulfill({ json });
+    });
+
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+
     expect(
       await page.locator('.jp-NotebookPanel').screenshot({
         mask: [page.locator('.jp-KernelStatus')],
