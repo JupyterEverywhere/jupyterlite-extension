@@ -1,11 +1,10 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
-import { MainAreaWidget, ReactWidget } from '@jupyterlab/apputils';
+import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
 import { Commands } from '../commands';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { UUID } from '@lumino/coreutils';
-import { showErrorMessage } from '@jupyterlab/apputils';
 import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
@@ -183,8 +182,6 @@ FileUploader.displayName = 'FileUploader';
  */
 interface IFileThumbnailProps {
   file: IUploadedFile;
-  onRemove: (fileId: string) => void;
-  contentsManager: Contents.IManager;
 }
 
 /**
@@ -194,18 +191,8 @@ interface IFileThumbnailProps {
  */
 function FileThumbnail(props: IFileThumbnailProps) {
   const { file } = props;
-
-  const handleRemove = async () => {
-    try {
-      await props.contentsManager.delete(file.name);
-    } catch (err) {
-      console.error('Error removing file:', err);
-    } finally {
-      props.onRemove(file.id);
-    }
-  };
-
   const fileIcon = getFileIcon(file.name, file.type);
+
   return (
     <div className="je-FileThumbnail">
       <div className="je-FileThumbnail-preview">
@@ -218,42 +205,19 @@ function FileThumbnail(props: IFileThumbnailProps) {
           {file.name}
         </div>
       </div>
-      <button className="je-FileThumbnail-remove" onClick={handleRemove}>
-        ×
-      </button>
     </div>
   );
 }
 
 /**
- * Represents a clickable tile in the Files area.
- * @param props - The properties for the Tile component, including the icon, label, click handler, and loading state.
- * @returns A JSX element representing the tile.
- */
-function Tile(props: { icon: LabIcon; label: string; onClick?: () => void; isLoading?: boolean }) {
-  return (
-    <button
-      className={`je-Tile ${props.isLoading ? 'je-Tile-loading' : ''}`}
-      onClick={props.onClick}
-      disabled={props.isLoading}
-    >
-      <div className="je-Tile-icon">
-        {props.isLoading ? <div className="je-Tile-spinner" /> : <props.icon.react />}
-      </div>
-      {props.isLoading ? 'Uploading file...' : props.label}
-    </button>
-  );
-}
-
-/**
- * The main component for the Files page, to display and manage uploaded files.
+ * The main Files page component. It manages the state of uploaded files,
+ * handles file uploads, and renders the file thumbnails.
  */
 interface IFilesAppProps {
   contentsManager: Contents.IManager;
 }
 
 function FilesApp(props: IFilesAppProps) {
-  const [uploadedFiles, setUploadedFiles] = useState<IUploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileUploaderRef = useRef<IFileUploaderRef>(null);
 
@@ -264,8 +228,8 @@ function FilesApp(props: IFilesAppProps) {
         if (listing.type === 'directory' && listing.content) {
           const files = await Promise.all(
             (listing.content as Contents.IModel[])
-              .filter(
-                f =>
+              .filter(f => {
+                return (
                   f.type === 'file' &&
                   isSupportedFileType({
                     name: f.name,
@@ -273,7 +237,8 @@ function FilesApp(props: IFilesAppProps) {
                     size: f.size ?? 0,
                     lastModified: Date.now()
                   } as File)
-              )
+                );
+              })
               .map(async f => {
                 const content = await props.contentsManager.get(f.path, { content: true });
                 const isImage = content.mimetype?.startsWith('image/');
@@ -307,14 +272,6 @@ function FilesApp(props: IFilesAppProps) {
 
   return (
     <div className="je-FilesApp">
-      <div className="je-FilesApp-header">
-        <Tile
-          icon={EverywhereIcons.addFile}
-          label="add new"
-          onClick={() => fileUploaderRef.current?.triggerFileSelect()}
-          isLoading={isUploading}
-        />
-      </div>
       <FileUploader
         ref={fileUploaderRef}
         onFilesUploaded={newFiles =>
@@ -329,13 +286,24 @@ function FilesApp(props: IFilesAppProps) {
       />
       <div className="je-FilesApp-content">
         <div className="je-FilesApp-grid">
+          {/* "add new" tile */}
+          <div
+            className={`je-Tile ${isUploading ? 'je-Tile-loading' : ''}`}
+            onClick={() => fileUploaderRef.current?.triggerFileSelect()}
+          >
+            <div className="je-Tile-icon">
+              {isUploading ? (
+                <div className="je-Tile-spinner" />
+              ) : (
+                <EverywhereIcons.addFile.react />
+              )}
+            </div>
+            <div className="je-Tile-label">{isUploading ? 'Uploading file...' : 'add new'}</div>
+          </div>
+
+          {/* File thumbnails, and the rest of the tiles. */}
           {uploadedFiles.map(file => (
-            <FileThumbnail
-              key={file.id}
-              file={file}
-              onRemove={id => setUploadedFiles(prev => prev.filter(f => f.id !== id))}
-              contentsManager={props.contentsManager}
-            />
+            <FileThumbnail key={file.id} file={file} />
           ))}
         </div>
       </div>
