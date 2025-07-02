@@ -337,11 +337,9 @@ function FilesApp(props: IFilesAppProps) {
 }
 
 class Files extends ReactWidget {
-  private _contentsManager: Contents.IManager;
-  constructor(contentsManager: Contents.IManager) {
+  constructor(private _contentsManager: Contents.IManager) {
     super();
     this.addClass('je-Files');
-    this._contentsManager = contentsManager;
   }
 
   protected render() {
