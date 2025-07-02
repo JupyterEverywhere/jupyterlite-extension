@@ -201,9 +201,9 @@ function FileThumbnail(props: FileThumbnailProps) {
   return (
     <div className="je-FileThumbnail">
       <div className="je-FileThumbnail-preview">
-          <div className="je-FileThumbnail-icon">
-            <fileIcon.react />
-          </div>
+        <div className="je-FileThumbnail-icon">
+          <fileIcon.react />
+        </div>
       </div>
       <div className="je-FileThumbnail-info">
         <div className="je-FileThumbnail-name" title={file.name}>
