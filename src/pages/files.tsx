@@ -23,7 +23,12 @@ const getFileIcon = (fileName: string, fileType: string): LabIcon => {
   if (fileType.startsWith('image/') || ['png', 'jpg', 'jpeg'].includes(extension)) {
     return EverywhereIcons.imageIcon;
   }
-  if (fileType === 'text/csv' || extension === 'csv') {
+  if (
+    fileType === 'text/csv' ||
+    extension === 'csv' ||
+    fileType === 'text/tab-separated-values' ||
+    extension === 'tsv'
+  ) {
     return EverywhereIcons.fileIcon;
   }
   return EverywhereIcons.addFile;
@@ -131,7 +136,7 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
       multiple
       onChange={handleInputChange}
       style={{ display: 'none' }}
-      accept=".png,.jpg,.jpeg,.csv,image/png,image/jpeg,text/csv"
+      accept=".png,.jpg,.jpeg,.csv,.tsv,image/png,image/jpeg,text/csv,text/tab-separated-values"
     />
   );
 });
