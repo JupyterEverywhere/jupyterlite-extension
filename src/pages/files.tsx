@@ -170,16 +170,16 @@ function FileThumbnail(props: IFileThumbnailProps) {
   const fileIcon = getFileIcon(file.name, file.type);
 
   return (
-    <div className="je-FileThumbnail">
-      <div className="je-FileThumbnail-preview">
-        <div className="je-FileThumbnail-icon">
-          <fileIcon.react />
+    <div className="je-FileTile">
+      <div className="je-FileThumbnail">
+        <div className="je-FileThumbnail-preview">
+          <div className="je-FileThumbnail-icon">
+            <fileIcon.react />
+          </div>
         </div>
       </div>
-      <div className="je-FileThumbnail-info">
-        <div className="je-FileThumbnail-name" title={file.name}>
-          {file.name}
-        </div>
+      <div className="je-FileTile-label" title={file.name}>
+        {file.name}
       </div>
     </div>
   );
@@ -230,18 +230,23 @@ function FilesApp(props: IFilesAppProps) {
       <div className="je-FilesApp-content">
         <div className="je-FilesApp-grid">
           {/* "add new" tile */}
-          <div
-            className={`je-Tile ${isUploading ? 'je-Tile-loading' : ''}`}
-            onClick={() => fileUploaderRef.current?.triggerFileSelect()}
-          >
-            <div className="je-Tile-icon">
-              {isUploading ? (
-                <div className="je-Tile-spinner" />
-              ) : (
-                <EverywhereIcons.addFile.react />
-              )}
+          <div className="je-FileTile">
+            <button
+              className={`je-Tile ${isUploading ? 'je-Tile-loading' : ''}`}
+              onClick={() => fileUploaderRef.current?.triggerFileSelect()}
+              disabled={isUploading}
+            >
+              <div className="je-Tile-icon">
+                {isUploading ? (
+                  <div className="je-Tile-spinner" />
+                ) : (
+                  <EverywhereIcons.addFile.react />
+                )}
+              </div>
+            </button>
+            <div className="je-FileTile-label">
+              {isUploading ? 'Uploading file...' : 'add new'}
             </div>
-            <div className="je-Tile-label">{isUploading ? 'Uploading file...' : 'add new'}</div>
           </div>
 
           {/* File thumbnails, and the rest of the tiles. */}
