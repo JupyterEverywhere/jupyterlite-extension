@@ -16,6 +16,8 @@ import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 import { generateDefaultNotebookName } from './notebook-name';
+import { viewOnlyNotebookFactoryPlugin } from './view-only';
+
 import '../style/index.css';
 
 /**
@@ -237,4 +239,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
   }
 };
 
-export default [plugin, notebookPlugin, files, competitions, customSidebar];
+export default [
+  viewOnlyNotebookFactoryPlugin,
+  plugin,
+  notebookPlugin,
+  files,
+  competitions,
+  customSidebar
+];

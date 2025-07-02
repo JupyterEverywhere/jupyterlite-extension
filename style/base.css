@@ -43,16 +43,7 @@
   font-weight: 600;
 }
 
-#jp-main-dock-panel[data-mode='single-document'] {
-  padding: 25px !important;
-  background: #d8b8dc;
-}
-
-#jp-main-dock-panel[data-mode='single-document'] .jp-MainAreaWidget {
-  border-radius: var(--je-round-corners);
-  background: transparent;
-}
-
+/* Main area widget base styles */
 .jp-MainAreaWidget > .jp-Toolbar {
   border-radius: var(--je-round-corners);
 }
@@ -63,21 +54,40 @@
   background: white;
 }
 
-@keyframes je-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+/* View Only header */
+.je-ViewOnlyHeader {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  background: var(--je-slate-blue);
 }
 
-.je-Tile-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgb(65 44 136 / 30%);
-  border-top: 2px solid var(--je-slate-blue);
-  border-radius: 50%;
-  animation: je-spin 1s linear infinite;
+.je-ViewOnlyHeader-content {
+  color: white;
+  font-family: var(--je-font-family);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 16px;
+  width: 100%;
+}
+
+.jp-MainAreaWidget > .je-ViewOnlyHeader-wrapper {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.je-ViewOnlyHeader-wrapper + .jp-Notebook {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+#jp-main-dock-panel[data-mode='single-document'] {
+  padding: 25px !important;
+  background: #d8b8dc;
+}
+
+#jp-main-dock-panel[data-mode='single-document'] .jp-MainAreaWidget {
+  border-radius: var(--je-round-corners);
+  background: transparent;
 }

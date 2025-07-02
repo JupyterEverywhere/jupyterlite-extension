@@ -3,14 +3,65 @@
   "title": "jupytereverywhere",
   "description": "jupytereverywhere settings.",
   "type": "object",
-  "properties": {},
   "additionalProperties": false,
   "jupyter.lab.toolbars": {
+    "ViewOnlyNotebook": [
+      {
+        "name": "save",
+        "disabled": true
+      },
+      {
+        "name": "cut",
+        "command": "notebook:cut-cell",
+        "disabled": true
+      },
+      {
+        "name": "copy",
+        "command": "notebook:copy-cell",
+        "disabled": true
+      },
+      {
+        "name": "paste",
+        "command": "notebook:paste-cell-below",
+        "disabled": true
+      },
+      {
+        "name": "run",
+        "caption": "Run cell",
+        "disabled": true
+      },
+      {
+        "name": "interrupt",
+        "caption": "Interrupt notebook",
+        "disabled": true
+      },
+      {
+        "name": "restart",
+        "caption": "Restart notebook",
+        "disabled": true
+      },
+      {
+        "name": "restart-and-run",
+        "caption": "Restart and run all cells",
+        "disabled": true
+      },
+      {
+        "name": "cellType",
+        "command": "",
+        "disabled": true
+      },
+      {
+        "name": "share",
+        "rank": 35
+      },
+      {
+        "name": "downloadDropdown",
+        "rank": 36
+      }
+    ],
     "Notebook": [
       {
         "name": "save",
-        "command": "",
-        "disabled": true,
         "rank": 10
       },
       {
@@ -106,5 +157,13 @@
         "disabled": true
       }
     ]
+  },
+  "jupyter.lab.transform": true,
+  "properties": {
+    "toolbar": {
+      "title": "View-only notebook panel toolbar items",
+      "type": "array",
+      "default": []
+    }
   }
 }
