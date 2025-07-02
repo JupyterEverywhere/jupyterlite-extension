@@ -287,7 +287,7 @@ function FileThumbnail(props: FileThumbnailProps) {
 function Tile(props: { icon: LabIcon; label: string; onClick?: () => void; isLoading?: boolean }) {
   return (
     <button
-      className={`je-Tile ${props.isLoading ? 'je-Tile_loading' : ''}`}
+      className={`je-Tile ${props.isLoading ? 'je-Tile-loading' : ''}`}
       onClick={props.onClick}
       disabled={props.isLoading}
     >
