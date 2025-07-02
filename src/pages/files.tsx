@@ -217,7 +217,6 @@ function FileThumbnail(props: IFileThumbnailProps) {
         <div className="je-FileThumbnail-name" title={file.name}>
           {file.name}
         </div>
-        <div className="je-FileThumbnail-size">{(file.size / 1024).toFixed(1)} KB</div>
       </div>
       <button className="je-FileThumbnail-remove" onClick={handleRemove}>
         ×
