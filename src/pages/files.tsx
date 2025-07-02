@@ -16,7 +16,7 @@ import { LabIcon } from '@jupyterlab/ui-components';
  * ID, name, size, type, last modified date, thumbnail (optional),
  * and content in base64 format.
  */
-interface UploadedFile {
+interface IUploadedFile {
   id: string;
   name: string;
   size: number;
@@ -66,8 +66,8 @@ const isSupportedFileType = (file: File): boolean => {
  * A React component for uploading files to the Jupyter Contents Manager.
  * It handles file selection, reading, thumbnail generation, and uploading.
  */
-interface FileUploaderProps {
-  onFilesUploaded: (files: UploadedFile[]) => void;
+interface IFileUploaderProps {
+  onFilesUploaded: (files: IUploadedFile[]) => void;
   contentsManager: Contents.IManager;
   onUploadStart: () => void;
   onUploadEnd: () => void;
@@ -76,16 +76,18 @@ interface FileUploaderProps {
 /**
  * Ref interface for the FileUploader component.
  */
-interface FileUploaderRef {
+interface IFileUploaderRef {
   triggerFileSelect: () => void;
 }
 
-const FileUploader = React.forwardRef<FileUploaderRef, FileUploaderProps>((props, ref) => {
+const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((props, ref) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = useCallback(
     async (files: FileList) => {
-      if (!files.length) return;
+      if (!files.length) {
+        return;
+      }
 
       const supportedFiles = Array.from(files).filter(isSupportedFileType);
       if (supportedFiles.length === 0) {
@@ -94,7 +96,7 @@ const FileUploader = React.forwardRef<FileUploaderRef, FileUploaderProps>((props
       }
 
       props.onUploadStart();
-      const uploadedFiles: UploadedFile[] = [];
+      const uploadedFiles: IUploadedFile[] = [];
 
       try {
         for (const file of supportedFiles) {
@@ -143,7 +145,9 @@ const FileUploader = React.forwardRef<FileUploaderRef, FileUploaderProps>((props
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) handleFileSelect(e.target.files);
+    if (e.target.files) {
+      handleFileSelect(e.target.files);
+    }
   };
 
   const triggerFileSelect = () => {
@@ -173,8 +177,8 @@ FileUploader.displayName = 'FileUploader';
  * This component displays a thumbnail for each uploaded image or file.
  * We use the `getFileIcon` function to determine the icon based on file type.
  */
-interface FileThumbnailProps {
-  file: UploadedFile;
+interface IFileThumbnailProps {
+  file: IUploadedFile;
   onRemove: (fileId: string) => void;
   contentsManager: Contents.IManager;
 }
@@ -184,7 +188,7 @@ interface FileThumbnailProps {
  * @param props - The properties for the FileThumbnail component, including the file to display and a callback for removing the file.
  * @returns A JSX element representing the file thumbnail.
  */
-function FileThumbnail(props: FileThumbnailProps) {
+function FileThumbnail(props: IFileThumbnailProps) {
   const { file } = props;
 
   const handleRemove = async () => {
@@ -241,14 +245,14 @@ function Tile(props: { icon: LabIcon; label: string; onClick?: () => void; isLoa
 /**
  * The main component for the Files page, to display and manage uploaded files.
  */
-interface FilesAppProps {
+interface IFilesAppProps {
   contentsManager: Contents.IManager;
 }
 
-function FilesApp(props: FilesAppProps) {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+function FilesApp(props: IFilesAppProps) {
+  const [uploadedFiles, setUploadedFiles] = useState<IUploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const fileUploaderRef = useRef<FileUploaderRef>(null);
+  const fileUploaderRef = useRef<IFileUploaderRef>(null);
 
   useEffect(() => {
     (async () => {
