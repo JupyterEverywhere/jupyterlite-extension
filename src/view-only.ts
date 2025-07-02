@@ -1,15 +1,17 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { IEditorMimeTypeService } from '@jupyterlab/codeeditor';
 import { WidgetTracker, IWidgetTracker } from '@jupyterlab/apputils';
+import { ReactiveToolbar, Toolbar } from '@jupyterlab/ui-components';
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { ABCWidgetFactory, DocumentRegistry, DocumentWidget } from '@jupyterlab/docregistry';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { ITranslator } from '@jupyterlab/translation';
-import { INotebookModel, NotebookPanel, Notebook, StaticNotebook } from '@jupyterlab/notebook';
+import { INotebookModel, Notebook, StaticNotebook } from '@jupyterlab/notebook';
 import { createToolbarFactory, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
 import { Token } from '@lumino/coreutils';
+import { MarkdownCell } from '@jupyterlab/cells';
 
 export const VIEW_ONLY_NOTEBOOK_FACTORY = 'ViewOnlyNotebook';
 
@@ -39,6 +41,27 @@ class ViewOnlyHeader extends Widget {
   }
 }
 
+namespace FilteredToolbar {
+  export interface IOptions extends Toolbar.IOptions {
+    itemsToFilterOut: Set<string>;
+  }
+}
+
+class FilteredToolbar extends ReactiveToolbar {
+  constructor(options: FilteredToolbar.IOptions) {
+    super(options);
+    this._itemsToFilterOut = options.itemsToFilterOut;
+  }
+  insertItem(index: number, name: string, widget: Widget): boolean {
+    if (this._itemsToFilterOut?.has(name)) {
+      return false;
+    }
+    return super.insertItem(index, name, widget);
+  }
+  // This can be undefined during the super() call in constructor
+  private _itemsToFilterOut: Set<string> | undefined;
+}
+
 class ViewOnlyNotebook extends StaticNotebook {
   // Add any customization for view-only notebook here if needed
 }
@@ -48,7 +71,12 @@ class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookMo
    * Construct a new view-only notebook panel.
    */
   constructor(options: DocumentWidget.IOptions<ViewOnlyNotebook, INotebookModel>) {
-    super(options);
+    super({
+      ...options,
+      toolbar: new FilteredToolbar({
+        itemsToFilterOut: new Set(['read-only-indicator'])
+      })
+    });
 
     this.addClass(NOTEBOOK_PANEL_CLASS);
     this.toolbar.addClass(NOTEBOOK_PANEL_TOOLBAR_CLASS);
@@ -114,10 +142,17 @@ class ViewOnlyNotebookWidgetFactory extends ABCWidgetFactory<
   }
 }
 
+class ViewOnlyContentFactory extends Notebook.ContentFactory {
+  createMarkdownCell(options: MarkdownCell.IOptions): MarkdownCell {
+    const cell = super.createMarkdownCell(options);
+    cell.showEditorForReadOnly = false;
+    return cell;
+  }
+}
+
 export const viewOnlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IViewOnlyNotebookTracker> = {
   id: 'jupytereverywhere:view-only-notebook',
   requires: [
-    NotebookPanel.IContentFactory,
     IEditorServices,
     IRenderMimeRegistry,
     IToolbarWidgetRegistry,
@@ -128,13 +163,13 @@ export const viewOnlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IViewOnlyNoteb
   autoStart: true,
   activate: (
     app: JupyterFrontEnd,
-    contentFactory: NotebookPanel.IContentFactory,
     editorServices: IEditorServices,
     rendermime: IRenderMimeRegistry,
     toolbarRegistry: IToolbarWidgetRegistry,
     settingRegistry: ISettingRegistry,
     translator: ITranslator
   ) => {
+    // This needs to have a `toolbar` property with an array
     const PANEL_SETTINGS = 'jupytereverywhere:plugin';
 
     const toolbarFactory = createToolbarFactory(
@@ -146,6 +181,7 @@ export const viewOnlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IViewOnlyNoteb
     );
 
     const trans = translator.load('jupyterlab');
+    const editorFactory = editorServices.factoryService.newInlineEditor;
 
     const factory = new ViewOnlyNotebookWidgetFactory({
       name: VIEW_ONLY_NOTEBOOK_FACTORY,
@@ -155,7 +191,7 @@ export const viewOnlyNotebookFactoryPlugin: JupyterFrontEndPlugin<IViewOnlyNoteb
       preferKernel: false,
       canStartKernel: false,
       rendermime,
-      contentFactory,
+      contentFactory: new ViewOnlyContentFactory({ editorFactory }),
       editorConfig: StaticNotebook.defaultEditorConfig,
       notebookConfig: StaticNotebook.defaultNotebookConfig,
       mimeTypeService: editorServices.mimeTypeService,

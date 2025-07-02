@@ -3,7 +3,6 @@
   "title": "jupytereverywhere",
   "description": "jupytereverywhere settings.",
   "type": "object",
-  "properties": {},
   "additionalProperties": false,
   "jupyter.lab.toolbars": {
     "ViewOnlyNotebook": [
@@ -158,5 +157,13 @@
         "disabled": true
       }
     ]
+  },
+  "jupyter.lab.transform": true,
+  "properties": {
+    "toolbar": {
+      "title": "View-only notebook panel toolbar items",
+      "type": "array",
+      "default": []
+    }
   }
 }

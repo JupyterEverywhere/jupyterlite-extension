@@ -47,6 +47,11 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
         const { content }: { content: INotebookContent } = notebookResponse;
 
+        // We make all cells read-only by setting editable: false.
+        // This is still required with a custom widget factory as
+        // it is not trivial to coerce the cells to respect the `readOnly`
+        // property otherwise (Mike tried swapping `Notebook.ContentFactory`
+        // and it does not work without further hacks).
         if (content.cells) {
           content.cells.forEach(cell => {
             cell.metadata = {
@@ -70,7 +75,12 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         await contents.save(filename, {
           content,
           format: 'json',
-          type: 'notebook'
+          type: 'notebook',
+          // Even though we have a custom view-only factory, we still
+          // want to indicate that notebook is read-only to avoid
+          // error on Ctrl + S and instead get a nice notification that
+          // the notebook cannot be saved unless using save-as.
+          writable: false
         });
 
         await commands.execute('docmanager:open', {
