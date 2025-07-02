@@ -84,6 +84,7 @@ test.describe('General', () => {
     });
 
     await page.goto(`lab/index.html?notebook=${notebookId}`);
+    page.waitForTimeout(1000);
 
     expect(
       await page.locator('.jp-NotebookPanel').screenshot({
