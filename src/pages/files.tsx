@@ -296,7 +296,10 @@ function FilesApp(props: IFilesAppProps) {
           setUploadedFiles(files);
         }
       } catch (err) {
-        console.error('Error loading files:', err); // TODO: Use a better UI alert?
+        showErrorMessage(
+          'Error loading files',
+          `Could not load files from the contents manager: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     })();
   }, [props.contentsManager]);
