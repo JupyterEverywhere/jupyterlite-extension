@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import path from 'path';
 import type { JupyterLab } from '@jupyterlab/application';
 import type { JSONObject } from '@lumino/coreutils';
 
@@ -106,5 +107,33 @@ test.describe('Download', () => {
     expect(await page.locator('.jp-DownloadDropdownButton-menu').screenshot()).toMatchSnapshot(
       'download-menu.png'
     );
+  });
+});
+
+test.describe('Files', () => {
+  test('Should upload two files and display their thumbnails', async ({ page }) => {
+    await page.goto('lab/index.html');
+    await page.waitForSelector('.jp-LabShell');
+
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();  // the first tile will always be the "add new" one
+
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    // Wait some time for thumbnails to appear as the files
+    // are being uploaded to the contents manager
+    await page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' }).waitFor({ state: 'visible' });
+    await page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' }).waitFor({ state: 'visible' });
+
+    expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
+      'uploaded-files-grid.png'
+    );
+
+    await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
   });
 });
