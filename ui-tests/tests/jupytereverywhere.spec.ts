@@ -117,7 +117,7 @@ test.describe('Files', () => {
 
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
-    await page.locator('.je-FileTile').first().click();  // the first tile will always be the "add new" one
+    await page.locator('.je-FileTile').first().click(); // the first tile will always be the "add new" one
 
     const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
     const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
@@ -126,8 +126,12 @@ test.describe('Files', () => {
 
     // Wait some time for thumbnails to appear as the files
     // are being uploaded to the contents manager
-    await page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' }).waitFor({ state: 'visible' });
-    await page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' }).waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
+      .waitFor({ state: 'visible' });
 
     expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
       'uploaded-files-grid.png'
