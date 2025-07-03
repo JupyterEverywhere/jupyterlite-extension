@@ -1,24 +1,26 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker } from '@jupyterlab/notebook';
+import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { EverywhereIcons } from '../icons';
 import { ToolbarButton, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
 import { DownloadDropdownButton } from '../ui-components/DownloadDropdownButton';
 import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
-import { INotebookContent } from '@jupyterlab/nbformat';
+import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:notebook',
   autoStart: true,
-  requires: [INotebookTracker, IToolbarWidgetRegistry],
+  requires: [INotebookTracker, IViewOnlyNotebookTracker, IToolbarWidgetRegistry],
   activate: (
     app: JupyterFrontEnd,
     tracker: INotebookTracker,
+    readonlyTracker: IViewOnlyNotebookTracker,
     toolbarRegistry: IToolbarWidgetRegistry
   ) => {
-    const { commands, shell } = app;
-    const contents = app.serviceManager.contents;
+    const { commands, shell, serviceManager } = app;
+    const { contents } = serviceManager;
 
     const params = new URLSearchParams(window.location.search);
     let notebookId = params.get('notebook');
@@ -41,12 +43,15 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         console.log('Retrieving notebook from API...');
 
         const notebookResponse = await sharingService.retrieve(id);
-        console.log('API Response received:', notebookResponse); // debug
+        console.log('API Response received:', notebookResponse);
 
-        const content: INotebookContent = notebookResponse.content;
+        const { content }: { content: INotebookContent } = notebookResponse;
 
-        // We make all cells read-only by setting editable: false
-        // by iterating over each cell in the notebook content.
+        // We make all cells read-only by setting editable: false.
+        // This is still required with a custom widget factory as
+        // it is not trivial to coerce the cells to respect the `readOnly`
+        // property otherwise (Mike tried swapping `Notebook.ContentFactory`
+        // and it does not work without further hacks).
         if (content.cells) {
           content.cells.forEach(cell => {
             cell.metadata = {
@@ -56,27 +61,31 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           });
         }
 
+        const { id: responseId, readable_id, domain_id } = notebookResponse;
         content.metadata = {
           ...content.metadata,
           isSharedNotebook: true,
-          sharedId: notebookResponse.id,
-          readableId: notebookResponse.readable_id,
-          domainId: notebookResponse.domain_id
+          sharedId: responseId,
+          readableId: readable_id,
+          domainId: domain_id
         };
 
-        // Generate a meaningful filename for the shared notebook
-        const filename = `Shared_${notebookResponse.readable_id || notebookResponse.id}.ipynb`;
+        const filename = `Shared_${readable_id || responseId}.ipynb`;
 
         await contents.save(filename, {
           content,
           format: 'json',
           type: 'notebook',
+          // Even though we have a custom view-only factory, we still
+          // want to indicate that notebook is read-only to avoid
+          // error on Ctrl + S and instead get a nice notification that
+          // the notebook cannot be saved unless using save-as.
           writable: false
         });
 
         await commands.execute('docmanager:open', {
           path: filename,
-          factory: 'Notebook'
+          factory: VIEW_ONLY_NOTEBOOK_FACTORY
         });
 
         console.log(`Successfully loaded shared notebook: ${filename}`);
@@ -125,8 +134,11 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       label: 'Notebook',
       icon: EverywhereIcons.notebook,
       execute: () => {
+        if (readonlyTracker.currentWidget) {
+          return shell.activateById(readonlyTracker.currentWidget.id);
+        }
         if (tracker.currentWidget) {
-          shell.activateById(tracker.currentWidget.id);
+          return shell.activateById(tracker.currentWidget.id);
         }
       }
     });
@@ -135,24 +147,26 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     app.shell.activateById(sidebarItem.id);
     app.restored.then(() => app.shell.activateById(sidebarItem.id));
 
-    toolbarRegistry.addFactory(
-      'Notebook',
-      'downloadDropdown',
-      () => new DownloadDropdownButton(commands)
-    );
+    for (const toolbarName of ['Notebook', 'ViewOnlyNotebook']) {
+      toolbarRegistry.addFactory(
+        toolbarName,
+        'downloadDropdown',
+        () => new DownloadDropdownButton(commands)
+      );
 
-    toolbarRegistry.addFactory(
-      'Notebook',
-      'share',
-      () =>
-        new ToolbarButton({
-          label: 'Share',
-          icon: EverywhereIcons.link,
-          tooltip: 'Share this notebook',
-          onClick: () => {
-            void commands.execute(Commands.shareNotebookCommand);
-          }
-        })
-    );
+      toolbarRegistry.addFactory(
+        toolbarName,
+        'share',
+        () =>
+          new ToolbarButton({
+            label: 'Share',
+            icon: EverywhereIcons.link,
+            tooltip: 'Share this notebook',
+            onClick: () => {
+              void commands.execute(Commands.shareNotebookCommand);
+            }
+          })
+      );
+    }
   }
 };

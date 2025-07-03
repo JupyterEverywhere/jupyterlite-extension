@@ -24,7 +24,6 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
         const newWidget = args.currentTitle
           ? leftHandler._findWidgetByTitle(args.currentTitle)
           : null;
-        console.log(newWidget);
         if (newWidget && newWidget instanceof SidebarIcon) {
           const cancel = newWidget.execute();
           if (cancel) {

@@ -16,6 +16,7 @@ import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 import { generateDefaultNotebookName } from './notebook-name';
+import { viewOnlyNotebookFactoryPlugin } from './view-only';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -236,4 +237,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
   }
 };
 
-export default [plugin, notebookPlugin, files, competitions, customSidebar];
+export default [
+  viewOnlyNotebookFactoryPlugin,
+  plugin,
+  notebookPlugin,
+  files,
+  competitions,
+  customSidebar
+];
