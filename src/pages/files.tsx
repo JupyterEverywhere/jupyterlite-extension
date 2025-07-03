@@ -294,10 +294,12 @@ export const files: JupyterFrontEndPlugin<void> = {
     app.commands.addCommand(Commands.openFiles, {
       label: 'Open Files',
       execute: () => {
+        // Regenerate the widget if disposed
         if (widget.isDisposed) {
           widget = createWidget();
         }
         if (!widget.isAttached) {
+          // Attach the widget to the main work area if it's not there
           app.shell.add(widget, 'main');
         }
         app.shell.activateById(widget.id);
