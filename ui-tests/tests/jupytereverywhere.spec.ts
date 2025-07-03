@@ -74,12 +74,16 @@ test.describe('General', () => {
   });
 
   test('Dialog windows should shade the notebook area only', async ({ page }) => {
+    const firstCell = page.locator('.jp-Cell');
+    await firstCell
+      .getByRole('textbox')
+      .fill('The shaded area should cover the notebook content, but not the toolbar.');
     const promise = runCommand(page, 'notebook:restart-kernel');
     const dialog = page.locator('.jp-Dialog');
 
     expect(
       await dialog.screenshot({
-        mask: [dialog.locator('.jp-Dialog-content')],
+        mask: [dialog.locator('.jp-Dialog-content'), page.locator('.jp-KernelStatus')],
         maskColor: '#fff'
       })
     ).toMatchSnapshot('empty-dialog-over-notebook.png');
