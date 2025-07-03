@@ -69,9 +69,9 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
   const shareableLink = generateShareURL(notebookID);
 
   const dialogResult = await showDialog({
-    title: '',
+    title: 'Here is the shareable link to your notebook:',
     body: ReactWidget.create(createSuccessDialog(shareableLink)),
-    buttons: [Dialog.okButton({ label: 'Copy Link!' }), Dialog.cancelButton({ label: 'Close' })]
+    buttons: [Dialog.okButton({ label: 'Copy Link!' })]
   });
 
   if (dialogResult.button.label === 'Copy Link!') {

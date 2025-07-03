@@ -31,6 +31,11 @@
   border: 3px solid var(--je-slate-blue);
   border-radius: var(--je-dialog-round-corners);
   box-shadow: 3px 3px 3px rgb(0 0 0 / 25%);
+  font-family: var(--je-font-family);
+}
+
+.jp-Dialog-footer {
+  justify-content: center;
 }
 
 .jp-Dialog {
@@ -50,6 +55,23 @@
   font-weight: 500;
   line-height: 150%;
   color: #fff;
+}
+
+.jp-Dialog-header {
+  color: var(--je-slate-blue);
+  font-family: var(--je-font-family);
+  font-weight: 600;
+  text-align: center;
+  justify-content: center;
+}
+
+.je-share-link {
+  background: #f0f0f0;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  word-break: break-all;
+  font-family: monospace;
 }
 
 .je-Tile {

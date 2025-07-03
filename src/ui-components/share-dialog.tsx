@@ -85,23 +85,7 @@ export class ShareDialog extends ReactWidget {
  * @returns A React element containing the shareable link with styling.
  */
 export const createSuccessDialog = (shareableLink: string): React.JSX.Element => {
-  return (
-    <div>
-      <h3>Here is the shareable link to your notebook:</h3>
-      <div
-        style={{
-          backgroundColor: '#f0f0f0',
-          padding: '10px',
-          borderRadius: '5px',
-          marginBottom: '20px',
-          wordBreak: 'break-all',
-          fontFamily: 'monospace'
-        }}
-      >
-        {shareableLink}
-      </div>
-    </div>
-  );
+  return <div className="je-share-link">{shareableLink}</div>;
 };
 
 /**
