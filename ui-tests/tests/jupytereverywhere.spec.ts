@@ -89,7 +89,7 @@ test.describe('General', () => {
     ).toMatchSnapshot('empty-dialog-over-notebook.png');
 
     // Close dialog
-    dialog.press('Esc');
+    await dialog.press('Escape');
     await promise;
   });
 
