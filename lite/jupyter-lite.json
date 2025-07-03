@@ -4,6 +4,8 @@
     "appName": "Jupyter Everywhere",
     "exposeAppInBrowser": true,
     "showLoadingIndicator": true,
+    "enableMemoryStorage": true,
+    "contentsStorageDrivers": "memoryStorageDriver",
     "settingsOverrides": {
       "@jupyterlab/mainmenu-extension:plugin": {
         "menus": [
