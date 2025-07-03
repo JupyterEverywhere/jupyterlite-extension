@@ -22,14 +22,14 @@
 
 .je-FilesApp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, 100px);
   gap: 16px;
   padding: 16px 0;
 }
 
 @media (width <= 768px) {
   .je-FilesApp-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, 100px);
     gap: 12px;
   }
 }
@@ -43,9 +43,9 @@
 }
 
 .je-FileTile-box {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border: 2px solid var(--je-slate-blue);
+  width: 100px;
+  height: 100px;
+  border: 2px solid transparent;
   border-radius: var(--je-round-corners);
   background: white;
   display: flex;
@@ -55,6 +55,10 @@
   box-sizing: border-box;
   padding: 16px;
   margin-bottom: 8px;
+}
+
+.je-FileTile-box-addNew {
+  border-color: var(--je-slate-blue);
 }
 
 .je-FileTile-box:hover {

@@ -195,7 +195,7 @@ function FilesApp(props: IFilesAppProps) {
           {/* "add new" tile */}
           <div className="je-FileTile">
             <div
-              className="je-FileTile-box"
+              className="je-FileTile-box je-FileTile-box-addNew"
               onClick={() => fileUploaderRef.current?.triggerFileSelect()}
             >
               {isUploading ? (
@@ -210,7 +210,6 @@ function FilesApp(props: IFilesAppProps) {
                 : 'add new'}
             </div>
           </div>
-
           {/* File thumbnails, and the rest of the tiles. */}
           {listing &&
             listing.type === 'directory' &&
