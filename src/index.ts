@@ -286,7 +286,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
             path: result.path
           });
 
+          // Remove notebook URL params from the URL, so that we
+          // no longer point to the view-only notebook.
+          const currentUrl = new URL(window.location.href);
+          currentUrl.searchParams.delete('notebook');
+
           console.log(`Notebook copied as: ${result.path}`);
+
+          window.history.replaceState({}, '', currentUrl.toString());
         } catch (error) {
           console.error('Failed to create notebook copy:', error);
           await showDialog({
