@@ -150,6 +150,19 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     for (const toolbarName of ['Notebook', 'ViewOnlyNotebook']) {
       toolbarRegistry.addFactory(
         toolbarName,
+        'createCopy',
+        () =>
+          new ToolbarButton({
+            label: 'Create Copy',
+            icon: EverywhereIcons.add,
+            tooltip: 'Create an editable copy of this notebook',
+            onClick: () => {
+              void commands.execute(Commands.createCopyNotebookCommand);
+            }
+          })
+      );
+      toolbarRegistry.addFactory(
+        toolbarName,
         'downloadDropdown',
         () => new DownloadDropdownButton(commands)
       );
@@ -167,20 +180,6 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
             }
           })
       );
-      toolbarRegistry.addFactory(
-        toolbarName,
-        'createCopy',
-        () =>
-          new ToolbarButton({
-            label: 'Create Copy',
-            icon: EverywhereIcons.add,
-            tooltip: 'Create an editable copy of this notebook',
-            onClick: () => {
-              void commands.execute(Commands.createCopyNotebookCommand);
-            }
-          })
-      );
-
     }
   }
 };
