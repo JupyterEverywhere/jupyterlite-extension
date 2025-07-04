@@ -202,7 +202,7 @@ test('Should remove View Only banner when the Create Copy button is clicked', as
   await page.goto(`lab/index.html?notebook=${notebookId}`);
   await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
 
-  const createCopyButton = page.locator('.jp-ToolbarButtonComponent.eCreateCopyButton');
+  const createCopyButton = page.locator('.jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton');
   await createCopyButton.click();
   await expect(page.locator('.je-ViewOnlyHeader')).toBeHidden({
     timeout: 10000

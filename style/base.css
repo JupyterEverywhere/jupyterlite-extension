@@ -150,7 +150,7 @@
   background: transparent;
 }
 
-.jp-ToolbarButtonComponent.jeCreateCopyButton {
+.jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton {
   background: var(--je-slate-blue-gradient);
   color: white;
   border-radius: var(--je-round-corners);
@@ -161,6 +161,6 @@
   box-shadow: 1px 2px 0 #0000006f !important; /* pretty much convinced my browser is haunted */
 }
 
-.jp-ToolbarButtonComponent.jeCreateCopyButton:hover {
+.jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton:hover {
   background: #2c1f5c;
 }
