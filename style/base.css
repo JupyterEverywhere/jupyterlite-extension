@@ -156,7 +156,6 @@
   border-radius: var(--je-round-corners);
   font-family: var(--je-font-family);
   font-weight: 600;
-  text-transform: none;
   padding: 4px 12px;
   border: none;
   box-shadow: 1px 2px 0 #0000006f !important; /* pretty much convinced my browser is haunted */
@@ -164,5 +163,4 @@
 
 .jp-ToolbarButtonComponent.jeCreateCopyButton:hover {
   background: #2c1f5c;
-  color: white;
 }
