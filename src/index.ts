@@ -281,13 +281,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
             content: copyContent
           });
 
-          // Open the notebook in in a the normal notebook factory
+          // Open the notebook in the normal notebook factory, and
+          // close the previously opened notebook (th view-only one).
           await commands.execute('docmanager:open', {
             path: result.path
           });
+          await readonlyPanel.close();
 
-          // Remove notebook URL params from the URL, so that we
-          // no longer point to the view-only notebook.
+          // Remove notebook param from the URL
           const currentUrl = new URL(window.location.href);
           currentUrl.searchParams.delete('notebook');
           window.history.replaceState({}, '', currentUrl.toString());
