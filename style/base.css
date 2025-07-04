@@ -25,8 +25,12 @@
   --je-sidebar-width: var(--jp-private-sidebar-tab-width);
   --je-toolbar-height: var(--jp-private-toolbar-height);
   --je-margin-below-toolbar: 10px;
-  --je-slate-blue-gradient:
-    linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187;
+  --je-slate-blue-gradient: linear-gradient(
+    90deg,
+    rgb(0 0 0 / 0%) 0%,
+    rgb(0 0 0 / 20%) 100%,
+    #4b3187
+  );
 }
 
 .jp-Dialog-content {
@@ -49,7 +53,7 @@
 }
 
 .jp-Dialog-content .jp-Dialog-button {
-  background: var(--je-slate-blue-gradient);
+  background: var(--je-slate-blue-gradient) !important;
   box-shadow: 0 1.5px 3px rgb(0 0 0 / 5%);
   border-radius: var(--je-dialog-round-corners);
   font-family: var(--je-font-family);
