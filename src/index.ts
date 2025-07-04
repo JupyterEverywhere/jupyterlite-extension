@@ -294,7 +294,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
           window.history.replaceState({}, '', currentUrl.toString());
 
           console.log(`Notebook copied as: ${result.path}`);
-
         } catch (error) {
           console.error('Failed to create notebook copy:', error);
           await showDialog({
