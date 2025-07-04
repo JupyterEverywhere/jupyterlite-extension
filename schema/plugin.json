@@ -52,6 +52,7 @@
       },
       {
         "name": "createCopy",
+        "caption": "Create a new editable copy of this notebook",
         "rank": 30
       },
       {
