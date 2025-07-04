@@ -26,7 +26,7 @@
   --je-toolbar-height: var(--jp-private-toolbar-height);
   --je-margin-below-toolbar: 10px;
   --je-slate-blue-gradient:
-    linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187 !important;
+    linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187;
 }
 
 .jp-Dialog-content {
