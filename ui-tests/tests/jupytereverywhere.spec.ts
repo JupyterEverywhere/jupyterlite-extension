@@ -204,8 +204,13 @@ test('Should remove View Only banner when the Create Copy button is clicked', as
 
   const createCopyButton = page.locator('.jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton');
   await createCopyButton.click();
+  await expect(page.locator('.je-ViewOnlyHeader')).toBeHidden({
+    timeout: 10000
+  });
 
-  await page.waitForTimeout(500);
-  await expect(page.locator('.je-ViewOnlyHeader')).toHaveCount(0);
+  // Check toolbar items typical of an editable notebook are present
+  await expect(page.locator('.jp-NotebookPanel-toolbar [data-jp-item-name="save"]')).toBeVisible();
+  await expect(
+    page.locator('.jp-NotebookPanel-toolbar [data-jp-item-name="insert"]')
+  ).toBeVisible();
 });
-
