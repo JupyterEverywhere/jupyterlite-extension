@@ -80,6 +80,7 @@ class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookMo
 
     this.addClass(NOTEBOOK_PANEL_CLASS);
     this.toolbar.addClass(NOTEBOOK_PANEL_TOOLBAR_CLASS);
+    this.toolbar.addClass('je-ViewOnlyNotebookToolbar');
     this.content.addClass(NOTEBOOK_PANEL_NOTEBOOK_CLASS);
 
     this.content.model = this.context.model;
