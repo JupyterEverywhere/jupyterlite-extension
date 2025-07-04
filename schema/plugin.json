@@ -51,6 +51,10 @@
         "disabled": true
       },
       {
+        "name": "createCopy",
+        "rank": 30
+      },
+      {
         "name": "share",
         "rank": 35
       },
