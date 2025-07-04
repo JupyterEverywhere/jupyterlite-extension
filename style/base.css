@@ -136,7 +136,6 @@
 
 .jp-NotebookPanel-toolbar.je-ViewOnlyNotebookToolbar {
   border: 3px solid var(--je-slate-blue) !important;
-  border-radius: var(--je-round-corners) !important;
 }
 
 #jp-main-dock-panel[data-mode='single-document'] {
