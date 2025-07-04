@@ -144,7 +144,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:plugin',
   description: 'A Jupyter extension for k12 education',
   autoStart: true,
-  requires: [INotebookTracker],
+  requires: [INotebookTracker, IViewOnlyNotebookTracker],
   activate: (
     app: JupyterFrontEnd,
     tracker: INotebookTracker,
@@ -242,18 +242,20 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
     /**
      * Add custom Create Copy notebook command
+     * Note: this command is supported and displayed only for View Only notebooks.
      */
     commands.addCommand(Commands.createCopyNotebookCommand, {
       label: 'Create Copy',
       execute: async () => {
         try {
-          const notebookPanel = tracker.currentWidget;
-          if (!notebookPanel) {
-            console.warn('No notebook is currently active.');
+          const readonlyPanel = readonlyTracker.currentWidget;
+
+          if (!readonlyPanel) {
+            console.warn('No view-only notebook is currently active.');
             return;
           }
 
-          const originalContent = notebookPanel.context.model.toJSON() as INotebookContent;
+          const originalContent = readonlyPanel.context.model.toJSON() as INotebookContent;
           // Remove any sharing-specific metadata from the copy,
           // as we create a fresh notebook with new metadata below.
           const purgedMetadata = { ...originalContent.metadata };
