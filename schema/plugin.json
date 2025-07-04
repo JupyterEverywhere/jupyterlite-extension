@@ -7,48 +7,39 @@
   "jupyter.lab.toolbars": {
     "ViewOnlyNotebook": [
       {
-        "name": "save",
-        "disabled": true
+        "name": "save"
       },
       {
         "name": "cut",
-        "command": "notebook:cut-cell",
-        "disabled": true
+        "command": "notebook:cut-cell"
       },
       {
         "name": "copy",
-        "command": "notebook:copy-cell",
-        "disabled": true
+        "command": "notebook:copy-cell"
       },
       {
         "name": "paste",
-        "command": "notebook:paste-cell-below",
-        "disabled": true
+        "command": "notebook:paste-cell-below"
       },
       {
         "name": "run",
-        "caption": "Run cell",
-        "disabled": true
+        "caption": "Run cell"
       },
       {
         "name": "interrupt",
-        "caption": "Interrupt notebook",
-        "disabled": true
+        "caption": "Interrupt notebook"
       },
       {
         "name": "restart",
-        "caption": "Restart notebook",
-        "disabled": true
+        "caption": "Restart notebook"
       },
       {
         "name": "restart-and-run",
-        "caption": "Restart and run all cells",
-        "disabled": true
+        "caption": "Restart and run all cells"
       },
       {
         "name": "cellType",
-        "command": "",
-        "disabled": true
+        "command": ""
       },
       {
         "name": "createCopy",
