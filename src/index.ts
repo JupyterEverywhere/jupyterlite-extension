@@ -236,6 +236,62 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
+    /**
+     * Add custom Create Copy notebook command
+     */
+    commands.addCommand(Commands.createCopyNotebookCommand, {
+      label: 'Create Copy',
+      execute: async () => {
+        try {
+          const notebookPanel = tracker.currentWidget;
+          if (!notebookPanel) {
+            console.warn('No notebook is currently active.');
+            return;
+          }
+
+          const originalContent = notebookPanel.context.model.toJSON() as INotebookContent;
+          // Remove any sharing-specific metadata from the copy,
+          // as we create a fresh notebook with new metadata below.
+          const purgedMetadata = { ...originalContent.metadata };
+          delete purgedMetadata.isSharedNotebook;
+          delete purgedMetadata.sharedId;
+          delete purgedMetadata.readableId;
+          delete purgedMetadata.domainId;
+          delete purgedMetadata.sharedName;
+          delete purgedMetadata.lastShared;
+
+          const copyContent: INotebookContent = {
+            ...originalContent,
+            metadata: purgedMetadata
+          };
+
+          const result = await app.serviceManager.contents.newUntitled({
+            type: 'notebook'
+          });
+
+          await app.serviceManager.contents.save(result.path, {
+            type: 'notebook',
+            format: 'json',
+            content: copyContent
+          });
+
+          // Open the notebook in in a the normal notebook factory
+          await commands.execute('docmanager:open', {
+            path: result.path
+          });
+
+          console.log(`Notebook copied as: ${result.path}`);
+        } catch (error) {
+          console.error('Failed to create notebook copy:', error);
+          await showDialog({
+            title: 'Error while creating a copy of the notebook',
+            body: ReactWidget.create(createErrorDialog(error)),
+            buttons: [Dialog.okButton()]
+          });
+        }
+      }
+    });
+
   }
 };
 
