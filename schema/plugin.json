@@ -55,6 +55,7 @@
         "caption": "Create a new editable copy of this notebook",
         "rank": 30
       },
+      { "name": "spacer", "type": "spacer", "rank": 32 },
       {
         "name": "share",
         "rank": 35
