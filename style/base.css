@@ -153,7 +153,7 @@
   text-transform: none;
   padding: 4px 12px;
   border: none;
-  box-shadow: 0 4px 6px #0000004d;
+  box-shadow: 1px 2px 0px #0000006f !important; /* pretty much convinced my browser is haunted */ 
 }
 
 .jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton:hover {
