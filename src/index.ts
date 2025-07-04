@@ -16,7 +16,7 @@ import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 import { generateDefaultNotebookName } from './notebook-name';
-import { viewOnlyNotebookFactoryPlugin } from './view-only';
+import { IViewOnlyNotebookTracker, viewOnlyNotebookFactoryPlugin } from './view-only';
 
 import '../style/index.css';
 
@@ -145,7 +145,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description: 'A Jupyter extension for k12 education',
   autoStart: true,
   requires: [INotebookTracker],
-  activate: (app: JupyterFrontEnd, tracker: INotebookTracker) => {
+  activate: (
+    app: JupyterFrontEnd,
+    tracker: INotebookTracker,
+    readonlyTracker: IViewOnlyNotebookTracker
+  ) => {
     const { commands, shell } = app;
 
     if ((shell as ILabShell).mode !== 'single-document') {
@@ -291,7 +295,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-
   }
 };
 
