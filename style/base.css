@@ -143,3 +143,19 @@
   border-radius: var(--je-round-corners);
   background: transparent;
 }
+
+.jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton {
+  background: var(--je-slate-blue);
+  color: white;
+  border-radius: var(--je-round-corners);
+  font-family: var(--je-font-family);
+  font-weight: 600;
+  text-transform: none;
+  padding: 4px 12px;
+  border: none;
+}
+
+.jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton:hover {
+  background: #2c1f5c;
+  color: white;
+}
