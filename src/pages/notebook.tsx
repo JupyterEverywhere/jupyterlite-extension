@@ -154,7 +154,6 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         () =>
           new ToolbarButton({
             label: 'Create Copy',
-            icon: EverywhereIcons.add,
             tooltip: 'Create an editable copy of this notebook',
             onClick: () => {
               void commands.execute(Commands.createCopyNotebookCommand);
