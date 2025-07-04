@@ -25,10 +25,9 @@
   --je-sidebar-width: var(--jp-private-sidebar-tab-width);
   --je-toolbar-height: var(--jp-private-toolbar-height);
   --je-margin-below-toolbar: 10px;
-  --je-slate-blue-gradient: linear-gradient(
-    90deg,
-    (rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%) #4b3187
-  );
+  --je-slate-blue-gradient:
+    linear-gradient(0deg, #4b3187, #4b3187),
+    linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%);
 }
 
 .jp-Dialog-content {
