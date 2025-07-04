@@ -182,3 +182,30 @@ test.describe('Files', () => {
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
   });
 });
+
+test('Should remove View Only banner when the Create Copy button is clicked', async ({ page }) => {
+  await mockTokenRoute(page);
+
+  const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+
+  await page.route('**/api/v1/notebooks/*', async route => {
+    const json = {
+      id: notebookId,
+      domain_id: 'domain',
+      readable_id: null,
+      content: TEST_NOTEBOOK
+    };
+    await route.fulfill({ json });
+  });
+
+  // Open view-only notebook
+  await page.goto(`lab/index.html?notebook=${notebookId}`);
+  await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+  const createCopyButton = page.locator('.jp-ToolbarButtonComponent.jp-mod-jeCreateCopyButton');
+  await createCopyButton.click();
+
+  await page.waitForTimeout(500);
+  await expect(page.locator('.je-ViewOnlyHeader')).toHaveCount(0);
+});
+
