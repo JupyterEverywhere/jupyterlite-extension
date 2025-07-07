@@ -22,7 +22,7 @@
   --je-font-family: 'Inter', sans-serif;
   --je-dialog-round-corners: 12px;
   --je-document-padding: 25px;
-  --je-sidebar-width: var(--jp-private-sidebar-tab-width);
+  --je-sidebar-width: 110px;
   --je-toolbar-height: var(--jp-private-toolbar-height);
   --je-margin-below-toolbar: 10px;
   --je-slate-blue-gradient:
@@ -85,6 +85,19 @@
   --jp-layout-color1: #e6e6e6;
   --jp-layout-color2: #fff;
   --jp-border-width: 0px;
+}
+
+.jp-SideBar.lm-TabBar {
+  min-width: var(--je-sidebar-width);
+  max-width: var(--je-sidebar-width);
+}
+
+.jp-SideBar .lm-TabBar-tab:first-of-type {
+  margin-bottom: 40px;
+}
+
+.jp-SideBar .lm-TabBar-tabIcon > svg {
+  width: initial;
 }
 
 .jp-Toolbar {
