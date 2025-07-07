@@ -183,7 +183,7 @@ function LandingPage(): JSX.Element {
         <p>
           Jupyter Everywhere is a collaboration between <a href="#">CourseKata</a> and{' '}
           <a href="#">Skew The Script</a>, made possible through support from the{' '}
-          <a href="#">Gates Foundation</a>. Copyright © 2024. All rights reserved.
+          <a href="#">Gates Foundation</a>. Copyright © 2025. All rights reserved.
         </p>
       </div>
     </div>
