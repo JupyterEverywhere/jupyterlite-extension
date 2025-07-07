@@ -168,17 +168,19 @@ function LandingPage(): JSX.Element {
 
           <div className="je-footer-section">
             <h4>Follow us</h4>
-            <a href="#">GitHub</a>
-            <a href="#">YouTube</a>
+            <a href="https://github.com/Skew-The-Script">GitHub</a>
+            <a href="https://www.youtube.com/@skewthescript">YouTube</a>
           </div>
         </div>
       </footer>
 
       <div className="je-footer-bottom">
         <p>
-          Jupyter Everywhere is a collaboration between <a href="#">CourseKata</a> and{' '}
-          <a href="#">Skew The Script</a>, made possible through support from the{' '}
-          <a href="#">Gates Foundation</a>. Copyright © 2025. All rights reserved.
+          Jupyter Everywhere is a collaboration between{' '}
+          <a href="https://www.coursekata.org/">CourseKata</a> and{' '}
+          <a href="https://skewthescript.org/">Skew The Script</a>, made possible through support
+          from the <a href="https://www.gatesfoundation.org/">Gates Foundation</a>. Copyright ©
+          2025. All rights reserved.
         </p>
       </div>
     </div>
