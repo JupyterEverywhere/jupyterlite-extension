@@ -58,6 +58,28 @@ async function mockTokenRoute(page: Page) {
   });
 }
 
+async function mockGetSharedNotebook(page: Page, notebookId: string) {
+  await page.route('**/api/v1/notebooks/*', async route => {
+    const json = {
+      id: notebookId,
+      domain_id: 'domain',
+      readable_id: null,
+      content: TEST_NOTEBOOK
+    };
+    await route.fulfill({ json });
+  });
+}
+
+async function mockShareNotebookResponse(page: Page, notebookId: string) {
+  await page.route('**/api/v1/notebooks', async route => {
+    const json = {
+      message: 'Shared!',
+      notebook: { id: notebookId, readable_id: null }
+    };
+    await route.fulfill({ json });
+  });
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-LabShell');
@@ -125,19 +147,32 @@ test.describe('General', () => {
 });
 
 test.describe('Sharing', () => {
-  test('Should open share dialog', async ({ page }) => {
+  test('Should open share dialog in interactive notebook', async ({ page }) => {
     await mockTokenRoute(page);
-    await page.route('**/api/v1/notebooks', async route => {
-      const json = {
-        message: 'Shared!',
-        notebook: { id: 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d', readable_id: null }
-      };
-      await route.fulfill({ json });
-    });
+    await mockShareNotebookResponse(page, 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d');
     const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
     await shareButton.click();
     const dialog = page.locator('.jp-Dialog-content');
     expect(await dialog.screenshot()).toMatchSnapshot('share-dialog.png');
+  });
+
+  test('Should open share dialog in view-only mode', async ({ page }) => {
+    await mockTokenRoute(page);
+
+    // Load view-only (shared) notebook
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId);
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+
+    // Re-Share it as a new notebook
+    const newNotebookId = '104931f8-fd96-489e-8520-c1793cbba6ce';
+    await mockShareNotebookResponse(page, newNotebookId);
+
+    const shareButton = page.locator('.jp-ToolbarButton').getByTitle('Share this notebook');
+    const dialog = page.locator('.jp-Dialog-content');
+    await expect(dialog).toHaveCount(0);
+    await shareButton.click();
+    await expect(dialog).toHaveCount(1);
   });
 });
 
@@ -187,16 +222,7 @@ test('Should remove View Only banner when the Create Copy button is clicked', as
   await mockTokenRoute(page);
 
   const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
-
-  await page.route('**/api/v1/notebooks/*', async route => {
-    const json = {
-      id: notebookId,
-      domain_id: 'domain',
-      readable_id: null,
-      content: TEST_NOTEBOOK
-    };
-    await route.fulfill({ json });
-  });
+  await mockGetSharedNotebook(page, notebookId);
 
   // Open view-only notebook
   await page.goto(`lab/index.html?notebook=${notebookId}`);
