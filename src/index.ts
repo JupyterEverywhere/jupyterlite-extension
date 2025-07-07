@@ -16,7 +16,11 @@ import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 import { generateDefaultNotebookName } from './notebook-name';
-import { IViewOnlyNotebookTracker, viewOnlyNotebookFactoryPlugin } from './view-only';
+import {
+  IViewOnlyNotebookTracker,
+  viewOnlyNotebookFactoryPlugin,
+  ViewOnlyNotebookPanel
+} from './view-only';
 
 import '../style/index.css';
 
@@ -49,7 +53,7 @@ function getCurrentNotebook(
   return widget;
 }
 
-const manuallySharing = new WeakSet<NotebookPanel>();
+const manuallySharing = new WeakSet<NotebookPanel | ViewOnlyNotebookPanel>();
 
 /**
  * Show a dialog with a shareable link for the notebook.
@@ -94,7 +98,7 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
  * true when the user clicks "Share Notebook" from the menu.
  */
 async function handleNotebookSharing(
-  notebookPanel: NotebookPanel,
+  notebookPanel: NotebookPanel | ViewOnlyNotebookPanel,
   sharingService: SharingService,
   manual: boolean
 ) {
@@ -222,8 +226,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'Share Notebook',
       execute: async () => {
         try {
-          const notebookPanel = tracker.currentWidget;
+          const notebookPanel = readonlyTracker.currentWidget
+            ? readonlyTracker.currentWidget
+            : tracker.currentWidget;
           if (!notebookPanel) {
+            console.warn('Notebook panel not found, no notebook to share');
             return;
           }
 
