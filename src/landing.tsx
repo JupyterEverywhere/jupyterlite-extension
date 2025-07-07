@@ -107,8 +107,8 @@ function LandingPage(): JSX.Element {
             <img src={codeSymbol} alt="Code symbol" />
             <h3>Code Ready</h3>
             <p>
-              Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes,
-              or even a very very short story.
+              You can choose between the Python and R languages to create classroom friendly
+              interactive notebooks
             </p>
           </div>
 
@@ -116,18 +116,15 @@ function LandingPage(): JSX.Element {
             <img src={shareIcon} alt="Share icon" />
             <h3>Shareable</h3>
             <p>
-              Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes,
-              or even a very very short story.
+              You can easily generate a shareable link that will allow you to share your work with
+              others or come back to it later
             </p>
           </div>
 
           <div className="je-feature">
             <img src={jupyterLogo} alt="Jupyter logo" />
             <h3>Jupyter Compatible</h3>
-            <p>
-              Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes,
-              or even a very very short story.
-            </p>
+            <p>Notebooks are compatible with the Jupyter notebooks ecosystem</p>
           </div>
         </div>
       </section>
