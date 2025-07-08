@@ -51,6 +51,13 @@ function LandingPage(): JSX.Element {
     }
   };
 
+  const handleCardKeyDown = (e: React.KeyboardEvent, kernel: string) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCreateNotebook(kernel);
+    }
+  };
+
   return (
     <div className="je-landing">
       {/* Hero section */}
@@ -67,12 +74,26 @@ function LandingPage(): JSX.Element {
           </h1>
 
           <div className="je-buttons">
-            <div className="je-card" onClick={() => handleCreateNotebook('python')}>
+            <div 
+              className="je-card" 
+              onClick={() => handleCreateNotebook('python')}
+              onKeyDown={(e) => handleCardKeyDown(e, 'python')}
+              tabIndex={0}
+              role="button"
+              aria-label="Create Python Notebook"
+            >
               <p>Create Python Notebook</p>
               <img src={pythonLogo} alt="Python logo" />
             </div>
 
-            <div className="je-card" onClick={() => handleCreateNotebook('xr')}>
+            <div 
+              className="je-card" 
+              onClick={() => handleCreateNotebook('xr')}
+              onKeyDown={(e) => handleCardKeyDown(e, 'xr')}
+              tabIndex={0}
+              role="button"
+              aria-label="Create R Notebook"
+            >
               <p>Create R Notebook</p>
               <img src={rLogo} alt="R logo" />
             </div>
