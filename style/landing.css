@@ -48,13 +48,13 @@ body {
   background: var(--je-slate-blue-gradient);
   color: white;
   border: none;
-  padding: 8px 20px;
+  padding: 8px 32px;
   border-radius: var(--je-round-corners);
   font-family: var(--je-font-family);
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 15%);
+  transition: transform 0.1s ease;
+  box-shadow: 0 4px 2px rgb(0 0 0 / 15%);
 }
 
 .je-tutorial-button:hover {
