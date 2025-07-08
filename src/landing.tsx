@@ -36,17 +36,6 @@ function LandingPage(): JSX.Element {
     alert('Upload functionality not yet implemented.');
   };
 
-  const handleScrollToFeatures = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const featuresSection = document.getElementById('features');
-    if (featuresSection) {
-      featuresSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  };
-
   return (
     <div className="je-landing">
       {/* Hero section */}
@@ -86,7 +75,7 @@ function LandingPage(): JSX.Element {
         </main>
 
         <div className="je-hero-bottom">
-          <a href="#features" className="je-scroll-indicator" onClick={handleScrollToFeatures}>
+          <a href="#features" className="je-scroll-indicator">
             Scroll to learn more
             <br />
             <img src={scrolldownArrow} alt="" aria-hidden="true" />
