@@ -186,16 +186,16 @@ test.describe('Download', () => {
   });
 
   test('Should download a notebook as IPyNB and PDF', async ({ page, context }) => {
-    await page.locator('.je-DownloadButton').click();
+    await mockTokenRoute(page);
+    await mockShareNotebookResponse(page, 'test-download-regular-notebook');
 
-    await page.locator('.je-DownloadDropdownButton-menu >> text=Download as a notebook').click();
     const ipynbDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-notebook');
     const ipynbPath = await (await ipynbDownload).path();
     expect(ipynbPath).not.toBeNull();
 
-    await page.locator('.je-DownloadButton').click();
-    await page.locator('.jp-DownloadDropdownButton-menu >> text=Download as PDF').click();
     const pdfDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-pdf');
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
   });
@@ -205,22 +205,22 @@ test.describe('Download', () => {
 
     const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
     await mockGetSharedNotebook(page, notebookId);
+    await mockShareNotebookResponse(page, 'test-download-viewonly-notebook');
 
     await page.goto(`lab/index.html?notebook=${notebookId}`);
 
-    // Wait until view-only notebook loads, and Assert it is a view-only notebook.
+    // Wait until view-only notebook loads, and assert it is a view-only notebook.
     await page.locator('.jp-NotebookPanel').waitFor();
     await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
 
-    await page.locator('.je-DownloadButton').click();
-    await page.locator('.je-DownloadDropdownButton-menu >> text=Download as a notebook').click();
     const ipynbDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-pdf');
     const ipynbPath = await (await ipynbDownload).path();
     expect(ipynbPath).not.toBeNull();
 
-    await page.locator('.je-DownloadButton').click();
-    await page.locator('.je-DownloadDropdownButton-menu >> text=Download as PDF').click();
     const pdfDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-pdf');
+
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
   });
