@@ -117,10 +117,8 @@ body {
 }
 
 .je-card p {
-  font-weight: 700;
-  color: var(--je-slate-blue);
   margin: 0;
-  font-size: 1.1em;
+  font-size: 1.2em;
   text-align: center;
 }
 
