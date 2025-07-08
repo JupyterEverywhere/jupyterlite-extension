@@ -89,7 +89,7 @@ function LandingPage(): JSX.Element {
           <a href="#features" className="je-scroll-indicator" onClick={handleScrollToFeatures}>
             Scroll to learn more
             <br />
-            <img src={scrolldownArrow} alt="An arrow that scrolls down when clicked" />
+            <img src={scrolldownArrow} alt="" aria-hidden="true" />
           </a>
         </div>
       </section>
