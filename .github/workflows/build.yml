@@ -131,7 +131,7 @@ jobs:
     - name: Build landing page and JupyterLite app (in test mode)
       run: |
         rm -rf dist dist-test
-        bash lite/ui-tests/inject-test-config.sh
+        bash ui-tests/inject-test-config.sh
         jlpm install
         jlpm build:all
         mv dist dist-test
