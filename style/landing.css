@@ -164,6 +164,7 @@ body {
   text-align: center;
   margin: 0;
   margin-top: 20px;
+  transition: transform 0.2s ease;
 }
 
 .je-scroll-indicator img {
@@ -172,7 +173,10 @@ body {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  transition: transform 0.3s ease;
+}
+
+.je-scroll-indicator:hover {
+  transform: scale(1.1);
 }
 
 /* The Features section highlights the three features. */
@@ -220,10 +224,6 @@ body {
 .je-partner-logos img {
   height: 40px;
   margin: 0 20px;
-}
-
-.je-scroll-indicator:hover img {
-  transform: scale(1.2);
 }
 
 .je-feature h3 {
