@@ -188,14 +188,14 @@ test.describe('Download', () => {
   test('Should download a notebook as IPyNB and PDF', async ({ page, context }) => {
     await page.locator('.je-DownloadButton').click();
 
-    const ipynbDownload = page.waitForEvent('download');
     await page.locator('.je-DownloadDropdownButton-menu >> text=Download as a notebook').click();
+    const ipynbDownload = page.waitForEvent('download');
     const ipynbPath = await (await ipynbDownload).path();
     expect(ipynbPath).not.toBeNull();
 
     await page.locator('.je-DownloadButton').click();
-    const pdfDownload = page.waitForEvent('download');
     await page.locator('.jp-DownloadDropdownButton-menu >> text=Download as PDF').click();
+    const pdfDownload = page.waitForEvent('download');
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
   });
@@ -213,14 +213,14 @@ test.describe('Download', () => {
     await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
 
     await page.locator('.je-DownloadButton').click();
-    const ipynbDownload = page.waitForEvent('download');
     await page.locator('.je-DownloadDropdownButton-menu >> text=Download as a notebook').click();
+    const ipynbDownload = page.waitForEvent('download');
     const ipynbPath = await (await ipynbDownload).path();
     expect(ipynbPath).not.toBeNull();
 
     await page.locator('.je-DownloadButton').click();
-    const pdfDownload = page.waitForEvent('download');
     await page.locator('.je-DownloadDropdownButton-menu >> text=Download as PDF').click();
+    const pdfDownload = page.waitForEvent('download');
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
   });
