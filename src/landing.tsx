@@ -74,10 +74,10 @@ function LandingPage(): JSX.Element {
           </h1>
 
           <div className="je-buttons">
-            <div 
-              className="je-card" 
+            <div
+              className="je-card"
               onClick={() => handleCreateNotebook('python')}
-              onKeyDown={(e) => handleCardKeyDown(e, 'python')}
+              onKeyDown={e => handleCardKeyDown(e, 'python')}
               tabIndex={0}
               role="button"
               aria-label="Create Python Notebook"
@@ -86,10 +86,10 @@ function LandingPage(): JSX.Element {
               <img src={pythonLogo} alt="Python logo" />
             </div>
 
-            <div 
-              className="je-card" 
+            <div
+              className="je-card"
               onClick={() => handleCreateNotebook('xr')}
-              onKeyDown={(e) => handleCardKeyDown(e, 'xr')}
+              onKeyDown={e => handleCardKeyDown(e, 'xr')}
               tabIndex={0}
               role="button"
               aria-label="Create R Notebook"
