@@ -146,6 +146,11 @@ body {
   font-weight: 600;
   font-size: 1.3em;
   margin: 0;
+  transition: transform 0.1s ease;
+}
+
+.je-upload:hover {
+  color: #5137a9;
 }
 
 .je-scroll-indicator {
