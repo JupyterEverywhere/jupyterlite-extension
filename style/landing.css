@@ -39,7 +39,7 @@ body {
 .je-header {
   position: absolute;
   top: 20px;
-  left: 30px;
+  left: 40px;
   right: 40px;
   display: flex;
   justify-content: space-between;
@@ -76,7 +76,6 @@ body {
   align-items: center;
   margin: 0 auto;
   max-width: 800px;
-  margin-top: 60px;
 }
 
 .je-main h2 {
@@ -232,14 +231,11 @@ body {
   background: #fff;
   padding: 40px;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
 }
 
 .je-partner-logos img {
   height: 40px;
+  margin: 0 20px;
 }
 
 .je-feature h3 {
@@ -379,8 +375,32 @@ body {
 because the scroll indicator is a bit of work to handle. We also prevent overlaps between the
 welcome text and the logo/button at the top. */
 @media (width <= 768px) {
+  .je-hero {
+    min-height: 100vh;
+    height: auto;
+  }
+
   .je-main {
     margin-top: 100px;
+  }
+
+  .je-main h2 {
+    font-size: 2em;
+  }
+
+  .je-main h1 {
+    font-size: 3em;
+  }
+
+  .je-partner-logos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .je-partner-logos img {
+    margin: 0;
   }
 
   .je-scroll-indicator {
@@ -418,5 +438,15 @@ welcome text and the logo/button at the top. */
   .je-footer-brand {
     justify-content: center;
     margin-bottom: 20px;
+  }
+}
+
+@media (width <= 480px) {
+  .je-main h2 {
+    font-size: 1.8em;
+  }
+
+  .je-main h1 {
+    font-size: 2.5em;
   }
 }
