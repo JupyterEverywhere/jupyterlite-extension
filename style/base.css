@@ -25,8 +25,25 @@
   --je-sidebar-width: var(--jp-private-sidebar-tab-width);
   --je-toolbar-height: var(--jp-private-toolbar-height);
   --je-margin-below-toolbar: 10px;
+  --je-border-color: #e6e6e6;
   --je-slate-blue-gradient:
     linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187;
+}
+
+.je-DownloadDropdownButton-menu {
+  border-radius: 4px;
+  color: var(--je-slate-blue);
+  font-family: var(--je-font-family);
+  border-collapse: collapse;
+  border-color: var(--je-border-color);
+}
+
+.je-DownloadDropdownButton-menu .lm-Menu-item {
+  border-top: 1px solid var(--je-border-color);
+}
+
+.je-DownloadDropdownButton-menu .lm-Menu-item:first-of-type {
+  border: 0;
 }
 
 .jp-Dialog-content {
@@ -88,7 +105,7 @@
 }
 
 .jp-Toolbar {
-  --jp-ui-font-color1: #412c88;
+  --jp-ui-font-color1: var(--je-slate-blue);
   --jp-ui-font-family: var(--je-font-family);
 }
 
