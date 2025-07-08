@@ -214,13 +214,13 @@ test.describe('Download', () => {
 
     await page.locator('.je-DownloadButton').click();
     const ipynbDownload = page.waitForEvent('download');
-    await page.locator('.jp-DownloadDropdownButton-menu >> text=Download as a notebook').click();
+    await page.locator('.je-DownloadDropdownButton-menu >> text=Download as a notebook').click();
     const ipynbPath = await (await ipynbDownload).path();
     expect(ipynbPath).not.toBeNull();
 
     await page.locator('.je-DownloadButton').click();
     const pdfDownload = page.waitForEvent('download');
-    await page.locator('.jp-DownloadDropdownButton-menu >> text=Download as PDF').click();
+    await page.locator('.je-DownloadDropdownButton-menu >> text=Download as PDF').click();
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
   });
