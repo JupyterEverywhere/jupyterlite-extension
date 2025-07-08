@@ -39,7 +39,7 @@
 }
 
 .je-DownloadDropdownButton-menu .lm-Menu-item {
-  border-TOP: 1px solid var(--je-border-color);
+  border-top: 1px solid var(--je-border-color);
 }
 
 .je-DownloadDropdownButton-menu .lm-Menu-item:first-of-type {
