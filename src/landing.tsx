@@ -81,7 +81,7 @@ function LandingPage(): JSX.Element {
               handleUpload();
             }}
           >
-            Upload a notebook
+            Upload a Notebook
           </a>
         </main>
 
