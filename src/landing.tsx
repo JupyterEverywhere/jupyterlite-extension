@@ -31,8 +31,8 @@ import '../style/base.css';
  * @returns Landing page component
  */
 function LandingPage(): JSX.Element {
-  const handleCreateNotebook = (language: string) => {
-    window.location.href = `/?notebook=new-${language}`;
+  const handleCreateNotebook = (kernel: string) => {
+    window.location.href = `/?notebook=Untitled.ipynb&kernel=${kernel}`;
   };
 
   // Placeholder function for upload functionality
@@ -70,14 +70,11 @@ function LandingPage(): JSX.Element {
               <img src={pythonLogo} alt="Python logo" />
             </div>
 
-            <div className="je-card" onClick={() => handleCreateNotebook('r')}>
+            <div className="je-card" onClick={() => handleCreateNotebook('xr')}>
               <p>Create R Notebook</p>
               <img src={rLogo} alt="R logo" />
             </div>
           </div>
-        </main>
-
-        <div className="je-hero-bottom">
           <a
             href="#"
             className="je-upload"
@@ -88,7 +85,9 @@ function LandingPage(): JSX.Element {
           >
             Upload a notebook
           </a>
+        </main>
 
+        <div className="je-hero-bottom">
           <a href="#features" className="je-scroll-indicator" onClick={handleScrollToFeatures}>
             Scroll to learn more
             <br />
