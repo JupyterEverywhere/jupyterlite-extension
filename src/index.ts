@@ -22,8 +22,6 @@ import {
   ViewOnlyNotebookPanel
 } from './view-only';
 
-import '../style/index.css';
-
 /**
  * Generate a shareable URL for the currently active notebook.
  * @param notebookID – The ID of the notebook to share (can be readable_id or sharedId).
