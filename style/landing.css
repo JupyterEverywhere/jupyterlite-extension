@@ -280,7 +280,6 @@ body {
 
 .je-footer {
   background: var(--je-slate-blue);
-  color: #fff;
   padding: 40px 60px;
   display: flex;
   align-items: flex-start;
