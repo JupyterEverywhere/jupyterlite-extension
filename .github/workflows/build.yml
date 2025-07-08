@@ -126,7 +126,7 @@ jobs:
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ./lite/dist
+        path: ./dist
 
     - name: Build landing page and JupyterLite app (in test mode)
       run: |
