@@ -57,18 +57,24 @@ function LandingPage(): JSX.Element {
         </div>
 
         <main className="je-main">
-          <h2 className="je-brand">Welcome to</h2>
           <h1>
+            <span className="je-brand je-welcome">Welcome to</span>
             <span className="je-brand">Jupyter Everywhere</span>
           </h1>
 
           <div className="je-buttons">
-            <a href="/lab/index.html?notebook=Untitled.ipynb&kernel=python" className="je-card">
+            <a 
+              href="/lab/index.html?notebook=Untitled.ipynb&kernel=python"
+              className="je-card"
+            >
               <p>Create Python Notebook</p>
               <img src={pythonLogo} alt="Python logo" />
             </a>
 
-            <a href="/lab/index.html?notebook=Untitled.ipynb&kernel=xr" className="je-card">
+            <a 
+              href="/lab/index.html?notebook=Untitled.ipynb&kernel=xr"
+              className="je-card"
+            >
               <p>Create R Notebook</p>
               <img src={rLogo} alt="R logo" />
             </a>

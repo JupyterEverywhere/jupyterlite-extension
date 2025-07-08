@@ -78,18 +78,21 @@ body {
   max-width: 800px;
 }
 
-.je-main h2 {
-  color: var(--je-slate-blue);
-  font-size: 2.5em;
-  margin: 0;
-  font-weight: 700;
-}
-
 .je-main h1 {
   color: var(--je-slate-blue);
   font-size: 4em;
   margin: 10px 0 40px;
   font-weight: 800;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.je-welcome {
+  font-size: 0.625em;
+  font-weight: 700 !important;
+  margin-bottom: 0.2em;
 }
 
 .je-buttons {
@@ -387,10 +390,6 @@ welcome text and the logo/button at the top. */
     margin-top: 100px;
   }
 
-  .je-main h2 {
-    font-size: 2em;
-  }
-
   .je-main h1 {
     font-size: 3em;
   }
@@ -445,10 +444,6 @@ welcome text and the logo/button at the top. */
 }
 
 @media (width <= 480px) {
-  .je-main h2 {
-    font-size: 1.8em;
-  }
-
   .je-main h1 {
     font-size: 2.5em;
   }
