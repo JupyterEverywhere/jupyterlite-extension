@@ -12,6 +12,7 @@ body {
   overflow-x: hidden;
 }
 
+/* Overall style that's applied to the entire page, and overridden elsewhere. */
 .je-landing {
   font-family: var(--je-font-family);
   color: #333;
@@ -20,6 +21,7 @@ body {
   flex-direction: column;
 }
 
+/* The hero occupies the first part of the screen, in full. */
 .je-hero {
   position: relative;
   background: linear-gradient(to bottom right, #e9d1f3, #fcd1b8);
@@ -173,6 +175,7 @@ body {
   transition: transform 0.3s ease;
 }
 
+/* The Features section highlights the three features. */
 .je-features {
   background: #fff;
   padding: 80px 40px;
@@ -207,6 +210,7 @@ body {
   margin-bottom: 16px;
 }
 
+/* CourseKata and Skew The Script */
 .je-partner-logos {
   background: #fff;
   padding: 40px;
@@ -235,6 +239,7 @@ body {
   line-height: 1.5;
 }
 
+/* The following rules style the testimonial blockquote text. */
 .je-testimonial {
   background: #fff;
   padding: 60px 40px;
@@ -278,6 +283,7 @@ body {
   line-height: 1.6;
 }
 
+/* The footer section contains the branding on the left, and the links on the right. */
 .je-footer {
   background: var(--je-slate-blue);
   padding: 40px 60px;
@@ -352,6 +358,7 @@ body {
   opacity: 0.8;
 }
 
+/* These media queries handle the footer because we want the links to sit atop each other. */
 @media (width <= 768px) {
   .je-footer {
     flex-direction: column;
