@@ -115,12 +115,16 @@ body {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  text-decoration: none;
+  color: inherit;
 }
 
 .je-card:hover,
 .je-card:focus {
   transform: scale(1.05);
   box-shadow: 0 4px 4px 0 rgb(0 0 0 / 25%);
+  text-decoration: none;
+  color: inherit;
 }
 
 .je-card:focus {

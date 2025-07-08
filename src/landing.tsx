@@ -31,10 +31,6 @@ import '../style/base.css';
  * @returns Landing page component
  */
 function LandingPage(): JSX.Element {
-  const handleCreateNotebook = (kernel: string) => {
-    window.location.href = `/?notebook=Untitled.ipynb&kernel=${kernel}`;
-  };
-
   // Placeholder function for upload functionality
   const handleUpload = () => {
     alert('Upload functionality not yet implemented.');
@@ -48,13 +44,6 @@ function LandingPage(): JSX.Element {
         behavior: 'smooth',
         block: 'start'
       });
-    }
-  };
-
-  const handleCardKeyDown = (e: React.KeyboardEvent, kernel: string) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleCreateNotebook(kernel);
     }
   };
 
@@ -74,29 +63,15 @@ function LandingPage(): JSX.Element {
           </h1>
 
           <div className="je-buttons">
-            <div
-              className="je-card"
-              onClick={() => handleCreateNotebook('python')}
-              onKeyDown={e => handleCardKeyDown(e, 'python')}
-              tabIndex={0}
-              role="button"
-              aria-label="Create Python Notebook"
-            >
+            <a href="/lab/index.html?notebook=Untitled.ipynb&kernel=python" className="je-card">
               <p>Create Python Notebook</p>
               <img src={pythonLogo} alt="Python logo" />
-            </div>
+            </a>
 
-            <div
-              className="je-card"
-              onClick={() => handleCreateNotebook('xr')}
-              onKeyDown={e => handleCardKeyDown(e, 'xr')}
-              tabIndex={0}
-              role="button"
-              aria-label="Create R Notebook"
-            >
+            <a href="/lab/index.html?notebook=Untitled.ipynb&kernel=xr" className="je-card">
               <p>Create R Notebook</p>
               <img src={rLogo} alt="R logo" />
-            </div>
+            </a>
           </div>
           <a
             href="#"
