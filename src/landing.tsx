@@ -128,8 +128,8 @@ function LandingPage(): JSX.Element {
       <section className="je-testimonial">
         <img src={testimonialAvatar} alt="User avatar" className="je-avatar" />
         <blockquote>
-          "This application makes it so much easier for us to focus on the lesson and not on
-          technical issues. I have already recommended it to others."
+          “This application makes it so much easier for us to focus on the lesson and not on
+          technical issues. I have already recommended it to others.”
         </blockquote>
       </section>
 
