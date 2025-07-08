@@ -121,7 +121,7 @@ function LandingPage(): JSX.Element {
           <div className="je-feature">
             <img src={jupyterLogo} alt="Jupyter logo" />
             <h3>Jupyter Compatible</h3>
-            <p>Notebooks are compatible with the Jupyter notebooks ecosystem</p>
+            <p>Notebooks are compatible with the JupyterLab and Jupyter notebooks ecosystems</p>
           </div>
         </div>
       </section>
