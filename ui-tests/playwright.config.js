@@ -11,7 +11,6 @@ module.exports = {
   timeout: 60000,
   use: {
     acceptDownloads: true,
-    downloadsPath: './playwright-downloads',
     appPath: '',
     autoGoto: false,
     baseURL: 'http://localhost:3000',
