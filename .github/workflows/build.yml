@@ -55,7 +55,7 @@ jobs:
         key: playwright-browsers-${{ runner.os }}-v1
         restore-keys: |
           playwright-browsers-${{ runner.os }}-
-      
+
     - name: Build the extension
       run: |
         set -eux
@@ -108,8 +108,8 @@ jobs:
 
     - name: Build the JupyterLite app
       run: |
-        cd lite
-        jupyter lite build --output-dir dist
+        jlpm install
+        jlpm build:all
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -123,12 +123,14 @@ jobs:
       with:
         path: ./lite/dist
 
-    - name: Build the JupyterLite app (in test mode)
+    - name: Build landing page and JupyterLite app (in test mode)
       run: |
-        cd lite
-        rm -r dist # jupyter lite will not build in `dist-test/` if `dist/` exists...?
-        bash ../ui-tests/inject-test-config.sh
-        jupyter lite build --output-dir dist-test
+        rm -rf dist dist-test
+        bash lite/ui-tests/inject-test-config.sh
+        jlpm install
+        jlpm build:all
+        mv dist dist-test
+
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
