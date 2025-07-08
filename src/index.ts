@@ -1,6 +1,5 @@
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
 import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
@@ -31,24 +30,6 @@ function generateShareURL(notebookID: string): string {
   const currentUrl = new URL(window.location.href);
   const baseUrl = `${currentUrl.protocol}//${currentUrl.host}${currentUrl.pathname}`;
   return `${baseUrl}?notebook=${notebookID}`;
-}
-
-/**
- * Get the current notebook panel
- */
-function getCurrentNotebook(
-  tracker: INotebookTracker,
-  shell: JupyterFrontEnd.IShell,
-  args: ReadonlyPartialJSONObject = {}
-): NotebookPanel | null {
-  const widget = tracker.currentWidget;
-  const activate = args['activate'] !== false;
-
-  if (activate && widget) {
-    shell.activateById(widget.id);
-  }
-
-  return widget;
 }
 
 const manuallySharing = new WeakSet<NotebookPanel | ViewOnlyNotebookPanel>();
@@ -198,14 +179,15 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(Commands.downloadPDFCommand, {
       label: 'Download as PDF',
       execute: async args => {
-        const current = getCurrentNotebook(tracker, shell, args);
-        if (!current) {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+
+        if (!panel) {
           console.warn('No active notebook to download as PDF');
           return;
         }
 
         try {
-          await exportNotebookAsPDF(current);
+          await exportNotebookAsPDF(panel);
         } catch (error) {
           console.error('Failed to export notebook as PDF:', error);
           await showDialog({

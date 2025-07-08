@@ -34,14 +34,19 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import { NotebookPanel } from '@jupyterlab/notebook';
+import { INotebookModel, Notebook } from '@jupyterlab/notebook';
 import { PathExt } from '@jupyterlab/coreutils';
+import { DocumentWidget } from '@jupyterlab/docregistry';
+
 import jsPDF from 'jspdf';
+import { ViewOnlyNotebook } from './view-only';
 
 /**
  * Export a notebook panel as a PDF by rasterizing the DOM using jsPDF + html2canvas.
  */
-export function exportNotebookAsPDF(notebook: NotebookPanel): Promise<void> {
+export function exportNotebookAsPDF(
+  notebook: DocumentWidget<Notebook | ViewOnlyNotebook, INotebookModel>
+): Promise<void> {
   const name = PathExt.basename(notebook.context.path, PathExt.extname(notebook.context.path));
 
   const doc = new jsPDF({ orientation: 'portrait', format: 'a4' });
