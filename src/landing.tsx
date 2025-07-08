@@ -55,8 +55,10 @@ function LandingPage(): JSX.Element {
     <div className="je-landing">
       {/* Hero section */}
       <section className="je-hero">
-        <img src={jeOctopus} className="je-logo" alt="Logo" />
-        <button className="je-tutorial-button">Tutorial</button>
+        <div className="je-header">
+          <img src={jeOctopus} className="je-logo" alt="Logo" />
+          <button className="je-tutorial-button">Tutorial</button>
+        </div>
 
         <main className="je-main">
           <h2 className="je-brand">Welcome to</h2>

@@ -36,17 +36,21 @@ body {
   box-sizing: border-box;
 }
 
-.je-logo {
+.je-header {
   position: absolute;
   top: 20px;
   left: 30px;
+  right: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.je-logo {
   height: 60px;
 }
 
 .je-tutorial-button {
-  position: absolute;
-  top: 20px;
-  right: 40px;
   background: var(--je-slate-blue-gradient);
   color: white;
   border: none;
