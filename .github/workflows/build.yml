@@ -120,7 +120,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: lite-app
-        path: ./lite/dist
+        path: ./dist
         if-no-files-found: error
 
     - name: Upload GitHub Pages artifact
@@ -141,7 +141,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: lite-app-test
-        path: ./lite/dist-test
+        path: ./dist-test
         if-no-files-found: error
 
     - name: Leave instructions for testing
