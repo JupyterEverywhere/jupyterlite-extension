@@ -185,7 +185,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
      * 1. A "Download as IPyNB" command.
      */
     commands.addCommand(Commands.downloadNotebookCommand, {
-      label: 'Download as IPyNB',
+      label: 'Download as a notebook',
       execute: args => {
         // Execute the built-in download command
         return commands.execute('docmanager:download');

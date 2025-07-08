@@ -180,7 +180,7 @@ test.describe('Download', () => {
   test('Should open download Menu', async ({ page }) => {
     const downloadButton = page.locator('.je-DownloadButton');
     await downloadButton.click();
-    expect(await page.locator('.jp-DownloadDropdownButton-menu').screenshot()).toMatchSnapshot(
+    expect(await page.locator('.je-DownloadDropdownButton-menu').screenshot()).toMatchSnapshot(
       'download-menu.png'
     );
   });
