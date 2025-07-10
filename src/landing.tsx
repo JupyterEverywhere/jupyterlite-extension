@@ -147,8 +147,8 @@ function LandingPage(): JSX.Element {
         <div className="je-footer-links-container">
           <div className="je-footer-section">
             <h4>Stay Connected</h4>
-            <a href="#">Join Community Forum</a>
-            <a href="#">Submit a question</a>
+            <a href="https://jupytereverywhere.freeflarum.com">Join Community Forum</a>
+            <a href="https://forms.gle/DG42BpS8EKpmNCFD9">Submit a question</a>
           </div>
 
           <div className="je-footer-section">
