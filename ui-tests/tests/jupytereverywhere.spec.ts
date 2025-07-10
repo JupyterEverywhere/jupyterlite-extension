@@ -280,3 +280,31 @@ test('Should remove View Only banner when the Create Copy button is clicked', as
     page.locator('.jp-NotebookPanel-toolbar [data-jp-item-name="insert"]')
   ).toBeVisible();
 });
+
+test.describe('Landing page', () => {
+  test('Should render the landing page as expected', async ({ page }) => {
+    await page.goto('index.html');
+
+    // Find the scroll height because the landing page is long and we want to
+    // capture the full page screenshot without the rest of it being empty; as
+    // we use a viewport to handle the hero section.
+    const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
+
+    // Override the hero section's height so that we don't get blank sections
+    // after the viewport.
+    await page.addStyleTag({
+      content: '.je-hero { min-height: auto !important; height: auto !important; }'
+    });
+
+    await page.setViewportSize({
+      width: 1440,
+      height: scrollHeight
+    });
+
+    const screenshot = await page.screenshot({
+      fullPage: true
+    });
+
+    expect(screenshot).toMatchSnapshot('landing-page.png');
+  });
+});
