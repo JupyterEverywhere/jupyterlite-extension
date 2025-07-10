@@ -113,7 +113,7 @@ jobs:
 
     - name: Build the JupyterLite app
       run: |
-        bash ../.github/inject-gh-pages-config.sh
+        bash .github/inject-gh-pages-config.sh
         jlpm install
         jlpm build:all
 
