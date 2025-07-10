@@ -4,6 +4,7 @@ import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { EverywhereIcons } from '../icons';
 import { ToolbarButton, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils';
 import { DownloadDropdownButton } from '../ui-components/DownloadDropdownButton';
 import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
