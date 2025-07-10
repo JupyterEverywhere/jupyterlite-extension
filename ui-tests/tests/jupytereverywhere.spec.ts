@@ -184,6 +184,46 @@ test.describe('Download', () => {
       'download-menu.png'
     );
   });
+
+  test('Should download a notebook as IPyNB and PDF', async ({ page, context }) => {
+    await mockTokenRoute(page);
+    await mockShareNotebookResponse(page, 'test-download-regular-notebook');
+
+    const ipynbDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-notebook');
+    const ipynbPath = await (await ipynbDownload).path();
+    expect(ipynbPath).not.toBeNull();
+
+    const pdfDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-pdf');
+    const pdfPath = await (await pdfDownload).path();
+    expect(pdfPath).not.toBeNull();
+  });
+
+  test('Should download view-only notebook as IPyNB and PDF', async ({ page }) => {
+    await mockTokenRoute(page);
+
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId);
+    await mockShareNotebookResponse(page, 'test-download-viewonly-notebook');
+
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+
+    // Wait until view-only notebook loads, and assert it is a view-only notebook.
+    await page.locator('.jp-NotebookPanel').waitFor();
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+    const ipynbDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-pdf');
+    const ipynbPath = await (await ipynbDownload).path();
+    expect(ipynbPath).not.toBeNull();
+
+    const pdfDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-pdf');
+
+    const pdfPath = await (await pdfDownload).path();
+    expect(pdfPath).not.toBeNull();
+  });
 });
 
 test.describe('Files', () => {
