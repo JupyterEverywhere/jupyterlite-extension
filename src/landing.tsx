@@ -17,8 +17,8 @@ import jupyterLogo from '../style/icons/landing/jupyter.svg';
 import testimonialAvatar from '../style/icons/landing/testimonial.svg';
 
 // TODO: get SVGs for these logos
-// import courseKataLogo from '../style/icons/landing/coursekata.svg';
-// import skewTheScriptLogo from '../style/icons/landing/skewthescript.svg';
+import courseKataLogo from '../static/coursekata.png';
+import skewTheScriptLogo from '../static/skewthescript.jpeg';
 
 // TODO: find a better way to handle these imports
 import '../style/landing.css';
@@ -134,9 +134,8 @@ function LandingPage(): JSX.Element {
       </section>
 
       <section className="je-partner-logos">
-        {/* Logos aren't working... only SVGs work right now */}
-        <img src="../style/icons/landing/coursekata.png" alt="CourseKata logo" />
-        <img src="../style/icons/landing/skewthescript.jpeg" alt="Skew The Script logo" />
+        <img src={courseKataLogo} alt="CourseKata logo" />
+        <img src={skewTheScriptLogo} alt="Skew The Script logo" />
       </section>
 
       <footer className="je-footer">

@@ -37,7 +37,7 @@
         "build:landing:css": "esbuild style/landing.css --bundle --minify --outfile=dist/landing.css",
         "build:base:css": "esbuild style/base.css --bundle --minify --outfile=dist/base.css",
         "build:css": "jlpm build:landing:css && jlpm build:base:css",
-        "build:landing": "esbuild src/landing.tsx --bundle --outfile=dist/landing.js --minify --loader:.svg=dataurl && jlpm copy:landing:template && jlpm build:css",
+        "build:landing": "esbuild src/landing.tsx --bundle --outfile=dist/landing.js --minify --loader:.svg=dataurl --loader:.png=dataurl --loader:.jpeg=dataurl && jlpm copy:landing:template && jlpm build:css",
         "build:jupyterlite": "jlpm build:landing && cd lite && jupyter lite build --output-dir=../dist && cd ..",
         "build:all": "jlpm build && jlpm build:jupyterlite",
         "build:labextension:dev": "jupyter labextension build --development True .",
