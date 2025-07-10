@@ -36,7 +36,8 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       try {
         console.log(`Loading shared notebook with ID: ${id}`);
 
-        const apiUrl = 'http://localhost:8080/api/v1';
+        const apiUrl =
+          PageConfig.getOption('sharing_service_api_url') || 'http://localhost:8080/api/v1';
         const sharingService = new SharingService(apiUrl);
 
         console.log(`API URL: ${apiUrl}`);

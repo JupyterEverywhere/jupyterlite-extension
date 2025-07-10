@@ -55,7 +55,7 @@ jobs:
         key: playwright-browsers-${{ runner.os }}-v1
         restore-keys: |
           playwright-browsers-${{ runner.os }}-
-      
+
     - name: Build the extension
       run: |
         set -eux
@@ -109,6 +109,7 @@ jobs:
     - name: Build the JupyterLite app
       run: |
         cd lite
+        bash ../.github/inject-gh-pages-config.sh
         jupyter lite build --output-dir dist
 
     - name: Upload artifact
