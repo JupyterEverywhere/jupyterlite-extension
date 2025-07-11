@@ -228,6 +228,36 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
     /**
+     * Add a custom Save and Share notebook command. This command
+     * is activated only on key bindings (Accel S) and is used to
+     * display the shareable link dialog after the notebook is
+     * saved manually by the user.
+     */
+    commands.addCommand('jupytereverywhere:save-and-share', {
+      label: 'Save and Share Notebook',
+      execute: async () => {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to save');
+          return;
+        }
+        if (panel.context.model.readOnly) {
+          console.info('Notebook is read-only, skipping save-and-share.');
+          return;
+        }
+        manuallySharing.add(panel);
+        await panel.context.save();
+        await handleNotebookSharing(panel, sharingService, true);
+      }
+    });
+
+    app.commands.addKeyBinding({
+      command: 'jupytereverywhere:save-and-share',
+      keys: ['Accel S'],
+      selector: '.jp-Notebook'
+    });
+
+    /**
      * Add custom Create Copy notebook command
      * Note: this command is supported and displayed only for View Only notebooks.
      */
