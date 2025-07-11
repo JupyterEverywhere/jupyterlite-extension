@@ -212,6 +212,8 @@ jobs:
     name: Integration tests
     needs: lite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     env:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
@@ -219,9 +221,28 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Base Setup
       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+    - name: Set up Docker Compose
+      uses: docker/setup-compose-action@v1
+      with:
+        cache-binary: true
+
+    - name: Checkout CKHub sharing service
+      uses: actions/checkout@v4
+      with:
+        repository: jupytereverywhere/sharing-service
+        path: ckhub-sharing-service
+        token: ${{ secrets.GH_PAT }}
+        persist-credentials: false
+
+    - name: Start CKHub sharing service
+      working-directory: ckhub-sharing-service
+      run: docker compose up --build --detach
 
     - name: Download lite app (test mode)
       uses: actions/download-artifact@v4
