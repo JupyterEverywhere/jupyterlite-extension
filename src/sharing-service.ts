@@ -19,7 +19,7 @@ export interface IShareResponse {
   message: string;
   notebook: {
     id: UUID;
-    readable_id: string | null;
+    readable_id: string;
   };
 }
 
@@ -29,7 +29,7 @@ export interface IShareResponse {
 export interface INotebookResponse {
   id: UUID;
   domain_id: string;
-  readable_id: string | null;
+  readable_id: string;
   content: INotebookContent;
 }
 
@@ -108,11 +108,6 @@ function validateShareResponse(data: unknown): data is IShareResponse {
     return false;
   }
 
-  // readable_id can be null or string
-  if (response.notebook.readable_id !== null && typeof response.notebook.readable_id !== 'string') {
-    return false;
-  }
-
   return true;
 }
 
@@ -141,11 +136,6 @@ function validateNotebookResponse(data: unknown): data is INotebookResponse {
   }
 
   if (typeof response.domain_id !== 'string') {
-    return false;
-  }
-
-  // readable_id can be null or string
-  if (response.readable_id !== null && typeof response.readable_id !== 'string') {
     return false;
   }
 
