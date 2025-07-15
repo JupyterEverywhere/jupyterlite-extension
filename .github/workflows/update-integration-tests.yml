@@ -82,11 +82,15 @@ jobs:
           jlpm
           python -m pip install .
 
-      - name: Build the JupyterLite app
+      - name: Build landing page and JupyterLite app
         run: |
+          rm -rf dist dist-test
           cd lite
           bash ../ui-tests/inject-test-config.sh
-          jupyter lite build --output-dir ../dist
+          cd ..
+          jlpm install
+          jlpm build:all
+          mv dist dist-test
 
       - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@v1
         with:

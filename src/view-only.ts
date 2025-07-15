@@ -62,11 +62,11 @@ class FilteredToolbar extends ReactiveToolbar {
   private _itemsToFilterOut: Set<string> | undefined;
 }
 
-class ViewOnlyNotebook extends StaticNotebook {
+export class ViewOnlyNotebook extends StaticNotebook {
   // Add any customization for view-only notebook here if needed
 }
 
-class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookModel> {
+export class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookModel> {
   /**
    * Construct a new view-only notebook panel.
    */

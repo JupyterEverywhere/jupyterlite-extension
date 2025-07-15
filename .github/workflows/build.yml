@@ -55,7 +55,7 @@ jobs:
         key: playwright-browsers-${{ runner.os }}-v1
         restore-keys: |
           playwright-browsers-${{ runner.os }}-
-      
+
     - name: Build the extension
       run: |
         set -eux
@@ -106,35 +106,47 @@ jobs:
       run: |
         pip install jupytereverywhere*.whl
 
+    - name: Install jlpm
+      run: |
+        set -eux
+        python -m pip install "jupyterlab>=4.0.0,<5"
+
     - name: Build the JupyterLite app
       run: |
         cd lite
-        jupyter lite build --output-dir dist
+        bash ../.github/inject-gh-pages-config.sh
+        cd ..
+        jlpm install
+        jlpm build:all
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: lite-app
-        path: ./lite/dist
+        path: ./dist
         if-no-files-found: error
 
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ./lite/dist
+        path: ./dist
 
-    - name: Build the JupyterLite app (in test mode)
+    - name: Build landing page and JupyterLite app (in test mode)
       run: |
+        rm -rf dist dist-test
         cd lite
-        rm -r dist # jupyter lite will not build in `dist-test/` if `dist/` exists...?
         bash ../ui-tests/inject-test-config.sh
-        jupyter lite build --output-dir dist-test
+        cd ..
+        jlpm install
+        jlpm build:all
+        mv dist dist-test
+
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: lite-app-test
-        path: ./lite/dist-test
+        path: ./dist-test
         if-no-files-found: error
 
     - name: Leave instructions for testing

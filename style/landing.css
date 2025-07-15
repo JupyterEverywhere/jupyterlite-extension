@@ -1,0 +1,455 @@
+@import url('./base.css');
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Overall style that's applied to the entire page, and overridden elsewhere. */
+.je-landing {
+  font-family: var(--je-font-family);
+  color: #333;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The hero occupies the first part of the screen, in full. */
+.je-hero {
+  position: relative;
+  background: linear-gradient(to bottom right, #e9d1f3, #fcd1b8);
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 100px 20px 0;
+  box-sizing: border-box;
+}
+
+.je-header {
+  position: absolute;
+  top: 20px;
+  left: 40px;
+  right: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.je-logo {
+  height: 60px;
+}
+
+.je-tutorial-button {
+  background: var(--je-slate-blue-gradient);
+  color: white;
+  border: none;
+  padding: 8px 32px;
+  border-radius: var(--je-round-corners);
+  font-family: var(--je-font-family);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  box-shadow: 0 4px 4px 0 rgb(0 0 0 / 25%);
+}
+
+.je-tutorial-button:hover {
+  transform: scale(1.05);
+}
+
+.je-main {
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.je-main h1 {
+  color: var(--je-slate-blue);
+  font-size: 4em;
+  margin: 10px 0 40px;
+  font-weight: 800;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.je-welcome {
+  font-size: 0.625em;
+  font-weight: 700 !important;
+  margin-bottom: 0.2em;
+}
+
+.je-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+
+.je-card {
+  background: #fff;
+  border-radius: var(--je-round-corners);
+  padding: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 4px 0 rgb(0 0 0 / 25%);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.je-card:hover,
+.je-card:focus {
+  transform: scale(1.05);
+  box-shadow: 0 4px 4px 0 rgb(0 0 0 / 25%);
+  text-decoration: none;
+  color: inherit;
+}
+
+.je-card:focus {
+  outline: 2px solid var(--je-slate-blue);
+  outline-offset: 2px;
+}
+
+.je-card p {
+  margin: 0;
+  font-size: 1.2em;
+  text-align: center;
+}
+
+.je-card img {
+  max-width: 120px;
+  max-height: 120px;
+  object-fit: contain;
+  display: block;
+  margin: auto;
+}
+
+.je-hero-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  margin-top: 20px;
+  padding-bottom: 40px;
+}
+
+.je-upload {
+  display: block;
+  text-decoration: underline;
+  color: var(--je-slate-blue);
+  font-weight: 600;
+  font-size: 1.3em;
+  margin: 0;
+  transition: transform 0.1s ease;
+}
+
+.je-upload:hover {
+  color: #5137a9;
+}
+
+.je-scroll-indicator {
+  display: block;
+  font-size: 1em;
+  color: var(--je-slate-blue);
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  margin: 0;
+  margin-top: 20px;
+  transition: transform 0.2s ease;
+}
+
+.je-scroll-indicator img {
+  width: 24px;
+  margin-top: 10px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.je-scroll-indicator:hover {
+  transform: scale(1.1);
+}
+
+/* The Features section highlights the three features. */
+.je-features {
+  background: #fff;
+  padding: 80px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.je-features h2 {
+  text-align: left;
+  color: rgb(69 69 69 / 100%);
+  font-family: var(--je-font-family);
+  font-weight: 600;
+  margin-bottom: 40px;
+  font-size: 2.2em;
+}
+
+.je-features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.je-feature {
+  flex: 1 1 250px;
+  max-width: 300px;
+  text-align: left;
+}
+
+.je-feature img {
+  height: 40px;
+  margin-bottom: 16px;
+}
+
+/* CourseKata and Skew The Script */
+.je-partner-logos {
+  background: #fff;
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+}
+
+.je-partner-logos img {
+  height: 120px;
+  flex: 1;
+  object-fit: contain;
+}
+
+.je-feature h3 {
+  color: rgb(69 69 69 / 100%);
+  font-weight: 600;
+  margin: 0 0 10px;
+  font-size: 1.2em;
+}
+
+.je-feature p {
+  color: rgb(130 130 130 / 100%);
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+/* The following rules style the testimonial blockquote text. */
+.je-testimonial {
+  background: #fff;
+  padding: 60px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.je-avatar {
+  border-radius: 50%;
+  margin-right: 30px;
+  margin-bottom: 20px;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.je-testimonial blockquote {
+  font-style: italic;
+  font-size: 2.8em;
+  color: var(--je-slate-blue);
+  margin: 0;
+  flex: 1;
+  line-height: 1.2;
+}
+
+.je-about {
+  background: #fff;
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.je-about p {
+  color: rgb(130 130 130 / 100%);
+  font-size: 1.25em;
+  text-align: left;
+  line-height: 1.6;
+}
+
+/* The footer section contains the branding on the left, and the links on the right. */
+.je-footer {
+  background: var(--je-slate-blue);
+  padding: 40px 60px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.je-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.je-footer-logo {
+  height: 60px;
+  width: auto;
+}
+
+.je-footer-text {
+  height: 40px;
+  width: auto;
+}
+
+.je-footer-links-container {
+  display: flex;
+  gap: 80px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.je-footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.je-footer-section h4 {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1em;
+  margin: 0;
+  font-family: var(--je-font-family);
+}
+
+.je-footer-section a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 400;
+  font-size: 1em;
+  font-family: var(--je-font-family);
+  transition: opacity 0.3s ease;
+}
+
+.je-footer-bottom {
+  background: var(--je-slate-blue);
+  color: #fff;
+  padding: 20px 60px;
+  font-size: 0.9em;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+.je-footer-bottom a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.je-footer-section a:hover {
+  opacity: 0.8;
+}
+
+/* These media queries handle the footer because we want the links to sit atop each other, and
+because the scroll indicator is a bit of work to handle. We also prevent overlaps between the
+welcome text and the logo/button at the top. */
+@media (width <= 768px) {
+  .je-hero {
+    min-height: 100vh;
+    height: auto;
+  }
+
+  .je-main {
+    margin-top: 100px;
+  }
+
+  .je-main h1 {
+    font-size: 3em;
+  }
+
+  .je-partner-logos {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .je-partner-logos img {
+    width: 100%;
+    height: 100px;
+  }
+
+  .je-scroll-indicator {
+    display: block !important;
+    font-size: 1em;
+    color: var(--je-slate-blue);
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    margin: 0;
+    margin-top: 20px;
+    transition: transform 0.2s ease;
+  }
+
+  .je-scroll-indicator img {
+    width: 24px;
+    margin-top: 10px;
+    display: block !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .je-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .je-footer-links-container {
+    flex-direction: column;
+    gap: 30px;
+    justify-content: center;
+  }
+
+  .je-footer-brand {
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+}
+
+@media (width <= 480px) {
+  .je-main h1 {
+    font-size: 2.5em;
+  }
+
+  .je-partner-logos img {
+    height: 80px;
+  }
+}

@@ -1,6 +1,5 @@
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
 import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
@@ -16,9 +15,11 @@ import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 import { generateDefaultNotebookName } from './notebook-name';
-import { IViewOnlyNotebookTracker, viewOnlyNotebookFactoryPlugin } from './view-only';
-
-import '../style/index.css';
+import {
+  IViewOnlyNotebookTracker,
+  viewOnlyNotebookFactoryPlugin,
+  ViewOnlyNotebookPanel
+} from './view-only';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -31,25 +32,7 @@ function generateShareURL(notebookID: string): string {
   return `${baseUrl}?notebook=${notebookID}`;
 }
 
-/**
- * Get the current notebook panel
- */
-function getCurrentNotebook(
-  tracker: INotebookTracker,
-  shell: JupyterFrontEnd.IShell,
-  args: ReadonlyPartialJSONObject = {}
-): NotebookPanel | null {
-  const widget = tracker.currentWidget;
-  const activate = args['activate'] !== false;
-
-  if (activate && widget) {
-    shell.activateById(widget.id);
-  }
-
-  return widget;
-}
-
-const manuallySharing = new WeakSet<NotebookPanel>();
+const manuallySharing = new WeakSet<NotebookPanel | ViewOnlyNotebookPanel>();
 
 /**
  * Show a dialog with a shareable link for the notebook.
@@ -94,7 +77,7 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
  * true when the user clicks "Share Notebook" from the menu.
  */
 async function handleNotebookSharing(
-  notebookPanel: NotebookPanel,
+  notebookPanel: NotebookPanel | ViewOnlyNotebookPanel,
   sharingService: SharingService,
   manual: boolean
 ) {
@@ -183,7 +166,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
      * 1. A "Download as IPyNB" command.
      */
     commands.addCommand(Commands.downloadNotebookCommand, {
-      label: 'Download as IPyNB',
+      label: 'Download as a notebook',
       execute: args => {
         // Execute the built-in download command
         return commands.execute('docmanager:download');
@@ -196,14 +179,15 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(Commands.downloadPDFCommand, {
       label: 'Download as PDF',
       execute: async args => {
-        const current = getCurrentNotebook(tracker, shell, args);
-        if (!current) {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+
+        if (!panel) {
           console.warn('No active notebook to download as PDF');
           return;
         }
 
         try {
-          await exportNotebookAsPDF(current);
+          await exportNotebookAsPDF(panel);
         } catch (error) {
           console.error('Failed to export notebook as PDF:', error);
           await showDialog({
@@ -222,8 +206,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
       label: 'Share Notebook',
       execute: async () => {
         try {
-          const notebookPanel = tracker.currentWidget;
+          const notebookPanel = readonlyTracker.currentWidget
+            ? readonlyTracker.currentWidget
+            : tracker.currentWidget;
           if (!notebookPanel) {
+            console.warn('Notebook panel not found, no notebook to share');
             return;
           }
 
@@ -240,6 +227,36 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
+    /**
+     * Add a custom Save and Share notebook command. This command
+     * is activated only on key bindings (Accel S) and is used to
+     * display the shareable link dialog after the notebook is
+     * saved manually by the user.
+     */
+    commands.addCommand('jupytereverywhere:save-and-share', {
+      label: 'Save and Share Notebook',
+      execute: async () => {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to save');
+          return;
+        }
+        if (panel.context.model.readOnly) {
+          console.info('Notebook is read-only, skipping save-and-share.');
+          return;
+        }
+        manuallySharing.add(panel);
+        await panel.context.save();
+        await handleNotebookSharing(panel, sharingService, true);
+      }
+    });
+
+    app.commands.addKeyBinding({
+      command: 'jupytereverywhere:save-and-share',
+      keys: ['Accel S'],
+      selector: '.jp-Notebook'
+    });
+
     /**
      * Add custom Create Copy notebook command
      * Note: this command is supported and displayed only for View Only notebooks.
