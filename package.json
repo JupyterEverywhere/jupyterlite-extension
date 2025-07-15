@@ -38,7 +38,7 @@
         "build:base:css": "esbuild style/base.css --bundle --minify --outfile=dist/base.css",
         "build:css": "jlpm build:landing:css && jlpm build:base:css",
         "build:landing": "esbuild src/landing.tsx --bundle --outfile=dist/landing.js --minify --loader:.svg=dataurl --loader:.png=dataurl --loader:.jpeg=dataurl && jlpm copy:landing:template && jlpm build:css",
-        "build:jupyterlite": "cd lite && jupyter lite build --output-dir=../dist && cd .. && jlpm build:landing",
+        "build:jupyterlite": "cd lite && jupyter lite build --XeusAddon.environment_file=xeus-environment.yml --output-dir=../dist && cd .. && jlpm build:landing",
         "build:all": "jlpm build && jlpm build:jupyterlite",
         "build:labextension:dev": "jupyter labextension build --development True .",
         "build:lib": "tsc --sourceMap",
