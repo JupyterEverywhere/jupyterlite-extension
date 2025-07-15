@@ -90,7 +90,6 @@ jobs:
           cd ..
           jlpm install
           jlpm build:all
-          mv dist dist-test
 
       - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@v1
         with:
