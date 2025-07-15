@@ -17,14 +17,15 @@
 }
 
 :root {
+  --je-scale: 0.85;
   --je-slate-blue: #412c88;
   --je-round-corners: 12px;
   --je-font-family: 'Inter', sans-serif;
   --je-dialog-round-corners: 12px;
-  --je-document-padding: 25px;
-  --je-sidebar-width: 110px;
-  --je-toolbar-height: var(--jp-private-toolbar-height);
-  --je-margin-below-toolbar: 10px;
+  --je-document-padding: calc(var(--je-scale) * 51px);
+  --je-sidebar-width: calc(var(--je-scale) * 110px);
+  --je-toolbar-height: calc(var(--je-scale) * 67px);
+  --je-margin-below-toolbar: calc(var(--je-scale) * 15px);
   --je-border-color: #e6e6e6;
   --je-slate-blue-gradient:
     linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187;
@@ -95,6 +96,13 @@
 .je-PageTitle {
   font-weight: 600;
   font-family: var(--je-font-family);
+  font-size: calc(var(--je-scale) * 48px);
+}
+
+.je-PageTitle-icon > svg {
+  height: calc(var(--je-scale) * 41px);
+  margin-left: calc(var(--je-scale) * 30px);
+  margin-right: calc(var(--je-scale) * 20px);
 }
 
 .jp-SideBar {
@@ -110,11 +118,12 @@
 }
 
 .jp-SideBar .lm-TabBar-tab:first-of-type {
-  margin-bottom: 40px;
+  margin-bottom: calc(var(--je-scale) * 20px);
 }
 
 .jp-SideBar .lm-TabBar-tabIcon > svg {
   width: initial;
+  scale: var(--je-scale);
 }
 
 .jp-Toolbar {
@@ -126,15 +135,47 @@
   font-weight: 600;
 }
 
+.jp-cell-toolbar .jp-ToolbarButtonComponent {
+  padding: calc(var(--je-scale) * 4px);
+}
+
+.jp-cell-toolbar .jp-ToolbarButtonComponent > svg {
+  min-height: 25px;
+  min-width: 21px;
+}
+
 /* Main area widget base styles */
 .jp-MainAreaWidget > .jp-Toolbar {
   border-radius: var(--je-round-corners);
+  min-height: var(--je-toolbar-height) !important;
+}
+
+.jp-MainAreaWidget > .jp-Toolbar .jp-ToolbarButtonComponent-label {
+  font-size: calc(var(--je-scale) * 24px);
+}
+
+.jp-MainAreaWidget > .jp-Toolbar .jp-ToolbarButtonComponent > svg {
+  height: initial;
+  width: initial;
+  scale: var(--je-scale);
 }
 
 .jp-MainAreaWidget > :not(.jp-Toolbar) {
   border-radius: var(--je-round-corners);
   margin-top: var(--je-margin-below-toolbar);
   background: white;
+}
+
+.jp-Notebook {
+  --jp-code-font-size: calc(var(--je-scale) * 16px);
+  --jp-cell-editor-background: #f7f7f7;
+  --jp-cell-editor-border-color: #a7a9ac;
+  --jp-border-width: calc(var(--je-scale) * 1px);
+}
+
+.jp-InputArea-editor {
+  border-radius: var(--je-round-corners);
+  padding: calc(var(--je-scale) * 5px);
 }
 
 /* View Only header */

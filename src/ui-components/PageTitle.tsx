@@ -10,7 +10,7 @@ export class PageTitle extends ReactWidget {
   protected render() {
     return (
       <>
-        <this.props.icon.react height="24px" />
+        <this.props.icon.react className="je-PageTitle-icon" />
         {this.props.label}
       </>
     );
