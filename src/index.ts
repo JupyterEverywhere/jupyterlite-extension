@@ -257,6 +257,38 @@ const plugin: JupyterFrontEndPlugin<void> = {
       selector: '.jp-Notebook'
     });
 
+    commands.addCommand('jupytereverywhere:switch-to-python', {
+      label: 'Switch to Python (Pyodide)',
+      execute: async () => {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+        if (panel) {
+          if (panel instanceof NotebookPanel) {
+            await panel.sessionContext.changeKernel({ name: 'python' });
+          } else {
+            console.warn('Kernel switching not supported for view-only notebooks.');
+          }
+        } else {
+          console.warn('No active notebook for kernel switch.');
+        }
+      }
+    });
+
+    commands.addCommand('jupytereverywhere:switch-to-r', {
+      label: 'Switch to R (xeus-R)',
+      execute: async () => {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+        if (panel) {
+          if (panel instanceof NotebookPanel) {
+            await panel.sessionContext.changeKernel({ name: 'xr' });
+          } else {
+            console.warn('Kernel switching not supported for view-only notebooks.');
+          }
+        } else {
+          console.warn('No active notebook for kernel switch.');
+        }
+      }
+    });
+
     /**
      * Add custom Create Copy notebook command
      * Note: this command is supported and displayed only for View Only notebooks.
