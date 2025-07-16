@@ -91,7 +91,7 @@ test.describe('General', () => {
     expect(
       await page.locator('.jp-LabShell').screenshot({
         mask: [page.locator('.jp-KernelStatus-widget')],
-        maskColor: '#888888'
+        maskColor: '#fff'
       })
     ).toMatchSnapshot('application-shell.png');
   });
