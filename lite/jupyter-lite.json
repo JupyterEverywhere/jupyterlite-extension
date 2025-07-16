@@ -47,6 +47,9 @@
       "@jupyterlab/notebook-extension:tracker": {
         "autoStartDefaultKernel": true,
         "windowingMode": "none"
+      },
+      "@jupyterlab/application-extension:context-menu": {
+        "disabled": true
       }
     },
     "disabledExtensions": [
