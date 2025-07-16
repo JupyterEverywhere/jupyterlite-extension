@@ -293,6 +293,8 @@ test.describe('Landing page', () => {
     await page.goto('index.html');
     await page.waitForSelector('.je-hero');
 
+    await page.waitForTimeout(10000);
+
     // Find the scroll height because the landing page is long and we want to
     // capture the full page screenshot without the rest of it being empty; as
     // we use a viewport to handle the hero section.
