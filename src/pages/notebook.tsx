@@ -1,5 +1,5 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { INotebookTracker } from '@jupyterlab/notebook';
+import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { EverywhereIcons } from '../icons';
@@ -64,6 +64,17 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           });
         }
 
+        // Detect kernel from kernelspec,
+        const kernelspec = (content.metadata?.kernelspec || {}) as any;
+        let kernelName: string | undefined;
+
+        if (typeof kernelspec?.name === 'string') {
+          kernelName = kernelspec.name;
+          console.log(`Detected kernel from kernelspec: ${kernelName}`);
+        } else {
+          console.log('No kernelspec found in shared notebook.');
+        }
+
         const { id: responseId, readable_id, domain_id } = notebookResponse;
         content.metadata = {
           ...content.metadata,
@@ -91,6 +102,11 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           factory: VIEW_ONLY_NOTEBOOK_FACTORY
         });
 
+        // Remove kernel param from URL, as we no longer need it.
+        const url = new URL(window.location.href);
+        url.searchParams.delete('kernel');
+        window.history.replaceState({}, '', url.toString());
+
         console.log(`Successfully loaded shared notebook: ${filename}`);
       } catch (error) {
         console.error('Failed to load shared notebook:', error);
@@ -116,14 +132,87 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
      */
     const createNewNotebook = async (): Promise<void> => {
       try {
-        const result = await commands.execute('docmanager:new-untitled', { type: 'notebook' });
+        const params = new URLSearchParams(window.location.search);
+        const desiredKernel = params.get('kernel') || 'python';
+
+        const result = await commands.execute('docmanager:new-untitled', {
+          type: 'notebook'
+        });
+
         if (result) {
-          await commands.execute('docmanager:open', { path: 'Untitled.ipynb' });
+          await commands.execute('docmanager:open', {
+            path: result.path
+          });
+
+          const panel = tracker.currentWidget;
+
+          // Store the kernel preference in the notebook's metadata, as
+          // we will use it to set the kernel when the notebook is opened
+          // and grab the kernel from the URL if available. This serves
+          // as a hint to get the correct kernel, as we can't distinguish
+          // based on the file extension alone.
+          if (panel?.context.model) {
+            panel.context.model.setMetadata('kernelspec', {
+              name: desiredKernel,
+              display_name: desiredKernel
+            });
+
+            panel.context.sessionContext.kernelPreference = {
+              name: desiredKernel
+            };
+
+            await panel.context.sessionContext.initialize();
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('kernel', desiredKernel);
+            window.history.replaceState({}, '', url.toString());
+          } else {
+            console.warn('New notebook panel not available or model is missing.');
+          }
         }
       } catch (error) {
         console.error('Failed to create new notebook:', error);
       }
     };
+
+    app.commands.commandExecuted.connect(async (sender, args) => {
+      if (args.id === 'docmanager:open') {
+        const panel = tracker.currentWidget;
+
+        if (panel instanceof NotebookPanel && panel?.context.model) {
+          let desiredKernel: string | undefined;
+
+          const params = new URLSearchParams(window.location.search);
+          desiredKernel = params.get('kernel') || undefined;
+
+          if (!desiredKernel) {
+            const kernelspec = panel.context.model.getMetadata('kernelspec') as
+              | { name?: string }
+              | undefined;
+            desiredKernel = kernelspec?.name;
+          }
+
+          if (desiredKernel) {
+            console.log(`Setting kernel preference: ${desiredKernel}`);
+            panel.context.sessionContext.kernelPreference = {
+              name: desiredKernel
+            };
+
+            await panel.context.sessionContext.initialize();
+
+            const url = new URL(window.location.href);
+            url.searchParams.delete('kernel');
+            url.searchParams.set('kernel', desiredKernel);
+            window.history.replaceState({}, '', url.toString());
+          } else {
+            // Maybe better error handling here...
+            console.log(
+              'No kernel info found, kernel selection dialog will appear. This is a bug.'
+            );
+          }
+        }
+      }
+    });
 
     // If a notebook ID is provided in the URL, load it; otherwise,
     // create a new notebook

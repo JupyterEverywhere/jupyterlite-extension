@@ -285,6 +285,22 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
 
         await switchKernel(panel, kernel);
+
+        if (panel?.context.model) {
+          const currentKernelspec = panel.context.model.getMetadata('kernelspec') as
+            | { name?: string; display_name?: string }
+            | undefined;
+
+          panel.context.model.setMetadata('kernelspec', {
+            ...(currentKernelspec || {}),
+            name: kernel,
+            display_name: KERNEL_DISPLAY_NAMES[kernel] || kernel
+          });
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('kernel', kernel);
+        window.history.replaceState({}, '', url.toString());
       }
     });
 
@@ -314,6 +330,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
           delete purgedMetadata.sharedName;
           delete purgedMetadata.lastShared;
 
+          // Ensure that we preserve kernelspec metadata
+          const kernelSpec = originalContent.metadata?.kernelspec;
+
+          if (kernelSpec) {
+            purgedMetadata.kernelspec = kernelSpec;
+          }
+
           const copyContent: INotebookContent = {
             ...originalContent,
             metadata: purgedMetadata
@@ -329,19 +352,24 @@ const plugin: JupyterFrontEndPlugin<void> = {
             content: copyContent
           });
 
-          // Open the notebook in the normal notebook factory, and
-          // close the previously opened notebook (th view-only one).
           await commands.execute('docmanager:open', {
             path: result.path
           });
+
           await readonlyPanel.close();
 
-          // Remove notebook param from the URL
-          const currentUrl = new URL(window.location.href);
-          currentUrl.searchParams.delete('notebook');
-          window.history.replaceState({}, '', currentUrl.toString());
+          const url = new URL(window.location.href);
+          url.searchParams.delete('notebook');
 
-          console.log(`Notebook copied as: ${result.path}`);
+          if (kernelSpec?.name) {
+            url.searchParams.set('kernel', kernelSpec.name);
+          } else {
+            url.searchParams.delete('kernel');
+          }
+
+          window.history.replaceState({}, '', url.toString());
+
+          console.log(`[JE] Notebook copied as: ${result.path}`);
         } catch (error) {
           console.error('Failed to create notebook copy:', error);
           await showDialog({
