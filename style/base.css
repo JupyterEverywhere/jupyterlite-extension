@@ -46,6 +46,26 @@
   border: 0;
 }
 
+.je-KernelSwitcherDropdownButton-menu {
+  border-radius: 4px;
+  color: var(--je-slate-blue);
+  font-family: var(--je-font-family);
+  border-collapse: collapse;
+  border: 1px solid var(--je-border-color);
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.je-KernelSwitcherDropdownButton-menu .lm-Menu-item {
+  border-top: 1px solid var(--je-border-color);
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.je-KernelSwitcherDropdownButton-menu .lm-Menu-item:first-of-type {
+  border: 0;
+}
+
 .jp-Dialog-content {
   border: 3px solid var(--je-slate-blue);
   border-radius: var(--je-dialog-round-corners);
