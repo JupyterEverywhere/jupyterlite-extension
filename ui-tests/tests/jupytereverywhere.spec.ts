@@ -90,8 +90,8 @@ test.describe('General', () => {
     await page.waitForTimeout(1000);
     expect(
       await page.locator('.jp-LabShell').screenshot({
-        mask: [page.locator('.jp-KernelStatus')],
-        maskColor: '#888888'
+        mask: [page.locator('.jp-KernelStatus-widget')],
+        maskColor: '#fff'
       })
     ).toMatchSnapshot('application-shell.png');
   });
@@ -106,7 +106,7 @@ test.describe('General', () => {
 
     expect(
       await dialog.screenshot({
-        mask: [dialog.locator('.jp-Dialog-content'), page.locator('.jp-KernelStatus')],
+        mask: [dialog.locator('.jp-Dialog-content'), page.locator('.jp-KernelStatus-widget')],
         maskColor: '#fff'
       })
     ).toMatchSnapshot('empty-dialog-over-notebook.png');
@@ -132,12 +132,9 @@ test.describe('General', () => {
 
     await page.goto(`lab/index.html?notebook=${notebookId}`);
 
-    expect(
-      await page.locator('.jp-NotebookPanel').screenshot({
-        mask: [page.locator('.jp-KernelStatus')],
-        maskColor: '#888888'
-      })
-    ).toMatchSnapshot('read-only-notebook.png');
+    expect(await page.locator('.jp-NotebookPanel').screenshot()).toMatchSnapshot(
+      'read-only-notebook.png'
+    );
   });
 
   test('Should open files page', async ({ page }) => {
