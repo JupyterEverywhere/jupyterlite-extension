@@ -45,7 +45,7 @@
         "startMode": "single"
       },
       "@jupyterlab/notebook-extension:tracker": {
-        "autoStartDefaultKernel": true,
+        "autoStartDefaultKernel": false,
         "windowingMode": "none"
       }
     },
