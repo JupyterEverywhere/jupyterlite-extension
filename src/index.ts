@@ -21,7 +21,7 @@ import {
   ViewOnlyNotebookPanel
 } from './view-only';
 
-import { switchKernel } from './kernels';
+import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -259,35 +259,25 @@ const plugin: JupyterFrontEndPlugin<void> = {
       selector: '.jp-Notebook'
     });
 
-    commands.addCommand('jupytereverywhere:switch-to-python', {
-      label: 'Switch to Python (Pyodide)',
-      execute: async () => {
-        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
-        if (panel) {
-          if (panel instanceof NotebookPanel) {
-            await switchKernel(panel, 'python');
-          } else {
-            console.warn('Kernel switching not supported for view-only notebooks.');
-          }
-        } else {
-          console.warn('No active notebook for kernel switch.');
-        }
-      }
-    });
+    commands.addCommand('jupytereverywhere:switch-kernel', {
+      label: args => {
+        const kernel = (args['kernel'] as string) || '';
+        return KERNEL_DISPLAY_NAMES[kernel] || `Switch to ${kernel}`;
+      },
+      execute: async args => {
+        const kernel = args['kernel'] as string | undefined;
+        const panel = tracker.currentWidget;
 
-    commands.addCommand('jupytereverywhere:switch-to-r', {
-      label: 'Switch to R (xeus-R)',
-      execute: async () => {
-        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
-        if (panel) {
-          if (panel instanceof NotebookPanel) {
-            await switchKernel(panel, 'xr');
-          } else {
-            console.warn('Kernel switching not supported for view-only notebooks.');
-          }
-        } else {
-          console.warn('No active notebook for kernel switch.');
+        if (!kernel) {
+          console.warn('No kernel specified for switching.');
+          return;
         }
+        if (!panel) {
+          console.warn('No active notebook panel.');
+          return;
+        }
+
+        await switchKernel(panel, kernel);
       }
     });
 

@@ -47,13 +47,9 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
     this._menu.clearItems();
 
     for (const kernel of orderedKernels) {
-      const commandName =
-        kernel === 'python'
-          ? 'jupytereverywhere:switch-to-python'
-          : 'jupytereverywhere:switch-to-r';
-
       this._menu.addItem({
-        command: commandName
+        command: 'jupytereverywhere:switch-kernel',
+        args: { kernel }
       });
     }
 
