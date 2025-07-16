@@ -1,5 +1,10 @@
 import { NotebookPanel } from '@jupyterlab/notebook';
 
+export const KERNEL_DISPLAY_NAMES: Record<string, string> = {
+  python: 'Python',
+  xr: 'R'
+};
+
 /**
  * Switch the notebook's kernel if it differs from the desired one.
  * @param panel The NotebookPanel to operate on

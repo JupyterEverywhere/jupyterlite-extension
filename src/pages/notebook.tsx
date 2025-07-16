@@ -186,7 +186,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       toolbarRegistry.addFactory(
         'Notebook',
         'jeKernelSwitcher',
-        () => new KernelSwitcherDropdownButton(commands)
+        () => new KernelSwitcherDropdownButton(commands, tracker)
       );
     }
   }
