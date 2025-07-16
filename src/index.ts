@@ -21,6 +21,8 @@ import {
   ViewOnlyNotebookPanel
 } from './view-only';
 
+import { switchKernel } from './kernels';
+
 /**
  * Generate a shareable URL for the currently active notebook.
  * @param notebookID – The ID of the notebook to share (can be readable_id or sharedId).
@@ -263,7 +265,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
         if (panel) {
           if (panel instanceof NotebookPanel) {
-            await panel.sessionContext.changeKernel({ name: 'python' });
+            await switchKernel(panel, 'python');
           } else {
             console.warn('Kernel switching not supported for view-only notebooks.');
           }
@@ -279,7 +281,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
         if (panel) {
           if (panel instanceof NotebookPanel) {
-            await panel.sessionContext.changeKernel({ name: 'xr' });
+            await switchKernel(panel, 'xr');
           } else {
             console.warn('Kernel switching not supported for view-only notebooks.');
           }
