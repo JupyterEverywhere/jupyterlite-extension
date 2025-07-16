@@ -42,3 +42,9 @@ repos:
         entry: 'npm run stylelint'
         language: node
         types: [css]
+  - repo: https://github.com/sco1/pre-commit-pep639
+    rev: v0.2.0
+    hooks:
+    - id: check-classifiers
+    - id: check-glob-resolve
+    - id: check-glob-syntax
