@@ -28,7 +28,7 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
         icon={EverywhereIcons.kernelCaret}
         label={label}
         tooltip="Switch between Python and R memories"
-        onClick={() => this._showMenu.bind(this)}
+        onClick={() => this._showMenu.bind(this)()}
       />
     );
   }
