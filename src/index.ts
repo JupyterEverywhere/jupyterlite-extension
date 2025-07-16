@@ -14,6 +14,7 @@ import { files } from './pages/files';
 import { Commands } from './commands';
 import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
+import { helpPlugin } from './pages/help';
 import { generateDefaultNotebookName } from './notebook-name';
 import {
   IViewOnlyNotebookTracker,
@@ -360,5 +361,6 @@ export default [
   notebookPlugin,
   files,
   competitions,
-  customSidebar
+  customSidebar,
+  helpPlugin
 ];

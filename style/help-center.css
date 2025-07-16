@@ -1,0 +1,25 @@
+.lm-TabBar-tab[title='Help Centre'] {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.je-Help {
+  padding: calc(var(--je-scale) * 5px) calc(var(--je-scale) * 50px);
+  font-family: var(--je-font-family);
+  color: var(--je-slate-blue);
+  font-size: calc(var(--je-scale) * 24px);
+  text-shadow: 0 0 1px #00000040;
+  line-height: 150%;
+  overflow: scroll;
+}
+
+.je-Help h3 {
+  margin-top: calc(var(--je-scale) * 25px);
+  margin-bottom: calc(var(--je-scale) * 5px);
+  font-size: calc(var(--je-scale) * 32px);
+}
+
+.je-Help a {
+  text-decoration: underline;
+}
