@@ -9,6 +9,7 @@ import { DownloadDropdownButton } from '../ui-components/DownloadDropdownButton'
 import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
+import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
 
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:notebook',
@@ -181,6 +182,11 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
               void commands.execute(Commands.shareNotebookCommand);
             }
           })
+      );
+      toolbarRegistry.addFactory(
+        'Notebook',
+        'jeKernelSwitcher',
+        () => new KernelSwitcherDropdownButton(commands)
       );
     }
   }

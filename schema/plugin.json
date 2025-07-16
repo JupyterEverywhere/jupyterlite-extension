@@ -72,6 +72,11 @@
         "name": "downloadDropdown",
         "rank": 36
       },
+      { "name": "spacer", "type": "spacer", "rank": 37 },
+      {
+        "name": "jeKernelSwitcher",
+        "rank": 38
+      },
       {
         "name": "cellType",
         "command": "",
