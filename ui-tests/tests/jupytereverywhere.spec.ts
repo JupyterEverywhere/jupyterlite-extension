@@ -339,4 +339,3 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   // Add a snapshot of the output area
   expect(await output.screenshot()).toMatchSnapshot('r-output.png');
 });
-
