@@ -5,8 +5,8 @@ build-backend = "hatchling.build"
 [project]
 name = "jupytereverywhere"
 readme = "README.md"
-license-expression = "BSD-3-Clause"
-license-file = ["LICENSE"]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 requires-python = ">=3.8"
 classifiers = [
     "Framework :: Jupyter",
