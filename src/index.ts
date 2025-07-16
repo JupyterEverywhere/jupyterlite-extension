@@ -262,7 +262,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand('jupytereverywhere:switch-kernel', {
       label: args => {
         const kernel = (args['kernel'] as string) || '';
-        return KERNEL_DISPLAY_NAMES[kernel] || `Switch to ${kernel}`;
+        const isActive = args['isActive'] as boolean;
+        const display = KERNEL_DISPLAY_NAMES[kernel] || kernel;
+
+        if (isActive) {
+          return display;
+        }
+        return `Switch to ${display}`;
       },
       execute: async args => {
         const kernel = args['kernel'] as string | undefined;

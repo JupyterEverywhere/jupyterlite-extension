@@ -84,9 +84,10 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
     this._menu.clearItems();
 
     for (const kernel of orderedKernels) {
+      const isActive = kernel === currentKernel;
       this._menu.addItem({
         command: 'jupytereverywhere:switch-kernel',
-        args: { kernel }
+        args: { kernel, isActive }
       });
     }
 
