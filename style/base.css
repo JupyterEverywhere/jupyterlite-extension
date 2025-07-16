@@ -30,7 +30,8 @@
     linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187;
 }
 
-.je-DownloadDropdownButton-menu {
+.je-DownloadDropdownButton-menu,
+.je-KernelSwitcherDropdownButton-menu {
   border-radius: 4px;
   color: var(--je-slate-blue);
   font-family: var(--je-font-family);
@@ -38,30 +39,13 @@
   border-color: var(--je-border-color);
 }
 
-.je-DownloadDropdownButton-menu .lm-Menu-item {
-  border-top: 1px solid var(--je-border-color);
-}
-
-.je-DownloadDropdownButton-menu .lm-Menu-item:first-of-type {
-  border: 0;
-}
-
-.je-KernelSwitcherDropdownButton-menu {
-  border-radius: 4px;
-  color: var(--je-slate-blue);
-  font-family: var(--je-font-family);
-  border-collapse: collapse;
-  border: 1px solid var(--je-border-color);
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
+.je-DownloadDropdownButton-menu .lm-Menu-item,
 .je-KernelSwitcherDropdownButton-menu .lm-Menu-item {
   border-top: 1px solid var(--je-border-color);
-  padding: 4px 12px;
   cursor: pointer;
 }
 
+.je-DownloadDropdownButton-menu .lm-Menu-item:first-of-type,
 .je-KernelSwitcherDropdownButton-menu .lm-Menu-item:first-of-type {
   border: 0;
 }
