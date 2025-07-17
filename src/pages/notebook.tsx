@@ -146,22 +146,17 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
           const panel = tracker.currentWidget;
 
-          // Store the kernel preference in the notebook's metadata, as
-          // we will use it to set the kernel when the notebook is opened
-          // and grab the kernel from the URL if available. This serves
-          // as a hint to get the correct kernel, as we can't distinguish
-          // based on the file extension alone.
-          if (panel?.context.model) {
-            panel.context.model.setMetadata('kernelspec', {
-              name: desiredKernel,
-              display_name: desiredKernel
-            });
-
+          if (panel?.context) {
             panel.context.sessionContext.kernelPreference = {
               name: desiredKernel
             };
 
             await panel.context.sessionContext.initialize();
+
+            panel.context.model.setMetadata('kernelspec', {
+              name: desiredKernel,
+              display_name: desiredKernel
+            });
 
             const url = new URL(window.location.href);
             url.searchParams.set('kernel', desiredKernel);
