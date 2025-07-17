@@ -135,7 +135,8 @@ jobs:
         path: ./dist
 
     - name: Publish preview to Netlify
-      uses: netlify/actions/cli@master
+      uses: netlify/actions/cli@3185065f4ab2f6df6f2ef41ee013626e1c02a426
+      id: deploy_preview
       with:
         args: deploy --dir=./dist
       env:
@@ -164,7 +165,7 @@ jobs:
       run: |
         echo "### JupyterLite App is ready" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "To test on netlify: $NETLIFY_URL" >> $GITHUB_STEP_SUMMARY
+        echo "To test on netlify: ${{ steps.deploy_preview.outputs.NETLIFY_URL }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo 'To test it locally, download the `lite-app` artifact and run' >> $GITHUB_STEP_SUMMARY
         echo '```bash' >> $GITHUB_STEP_SUMMARY
@@ -195,7 +196,7 @@ jobs:
         uses: actions/deploy-pages@v4
         
       - name: Publish to Netlify
-        uses: netlify/actions/cli@master
+        uses: netlify/actions/cli@3185065f4ab2f6df6f2ef41ee013626e1c02a426
         with:
           args: deploy --dir=dist --prod
         env:
