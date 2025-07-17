@@ -286,18 +286,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         await switchKernel(panel, kernel);
 
-        if (panel?.context.model) {
-          const currentKernelspec = panel.context.model.getMetadata('kernelspec') as
-            | { name?: string; display_name?: string }
-            | undefined;
-
-          panel.context.model.setMetadata('kernelspec', {
-            ...(currentKernelspec || {}),
-            name: kernel,
-            display_name: KERNEL_DISPLAY_NAMES[kernel] || kernel
-          });
-        }
-
         const url = new URL(window.location.href);
         url.searchParams.set('kernel', kernel);
         window.history.replaceState({}, '', url.toString());
