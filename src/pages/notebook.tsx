@@ -177,14 +177,13 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         if (panel instanceof NotebookPanel && panel?.context.model) {
           let desiredKernel: string | undefined;
 
-          const params = new URLSearchParams(window.location.search);
-          desiredKernel = params.get('kernel') || undefined;
+          const kernelspec = panel.context.model.getMetadata('kernelspec') as
+            | { name?: string }
+            | undefined;
 
-          if (!desiredKernel) {
-            const kernelspec = panel.context.model.getMetadata('kernelspec') as
-              | { name?: string }
-              | undefined;
-            desiredKernel = kernelspec?.name;
+          if (kernelspec?.name) {
+            desiredKernel = kernelspec.name;
+            console.log(`Using kernelspec from notebook metadata: ${desiredKernel}`);
           }
 
           if (desiredKernel) {
