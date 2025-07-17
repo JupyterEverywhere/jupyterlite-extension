@@ -146,43 +146,60 @@ jobs:
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
-    - uses: actions/github-script@v7
+    - name: Update PR description with Netlify URL
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const issue_number = context.issue.number;
-          const owner = context.repo.owner;
-          const repo = context.repo.repo;
-  
-          const marker = '<!-- netlify-url-comment -->';
-  
-          const body = `${marker}\nNetlify URL: ${{ steps.deploy_preview.outputs.NETLIFY_URL }} !`;
-  
-          const { data: comments } = await github.rest.issues.listComments({
-            issue_number,
-            owner,
-            repo,
+          const PR_NUMBER = context.issue.number;
+          const NETLIFY_URL = "${{ steps.netlify.outputs.deploy-url }}";
+
+          const MESSAGE_SEPARATOR_START = `\r\n\r\n<!-- netlify-preview start -->\r\n`;
+          const MESSAGE_SEPARATOR_END = `\r\n<!-- netlify-preview end -->`;
+          const MESSAGE_TEMPLATE = `
+          ----
+          🚀 **Deploy Preview** 🚀
+
+          Your changes have been deployed to: ${NETLIFY_URL}
+
+          Built with commit: \`${{ github.sha }}\`
+          `;
+
+          // Get the current pull request
+          const { data: pull } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER,
           });
-  
-          const existing = comments.find(comment =>
-            comment.user.type === 'Bot' && comment.body.includes(marker)
-          );
-  
-          if (!existing) {
-            await github.rest.issues.createComment({
-              issue_number,
-              owner,
-              repo,
-              body,
-            });
+
+          // Create the body message
+          const body_message = MESSAGE_TEMPLATE;
+
+          let body = "";
+          if (pull.body) {
+              if (pull.body.indexOf(MESSAGE_SEPARATOR_START) === -1) {
+                  // First time updating this description
+                  body = pull.body + MESSAGE_SEPARATOR_START + body_message + MESSAGE_SEPARATOR_END;
+              } else {
+                  // We already updated this description before - replace the existing section
+                  body = pull.body.slice(0, pull.body.indexOf(MESSAGE_SEPARATOR_START));
+                  body = body + MESSAGE_SEPARATOR_START + body_message + MESSAGE_SEPARATOR_END;
+                  body = body + pull.body.slice(pull.body.indexOf(MESSAGE_SEPARATOR_END) + MESSAGE_SEPARATOR_END.length);
+              }
           } else {
-            await github.rest.issues.updateComment({
-              owner,
-              repo,
-              comment_id: existing.id,
-              body,
-            });
+              // Pull Request description is empty
+              body = MESSAGE_SEPARATOR_START + body_message + MESSAGE_SEPARATOR_END;
           }
+
+          // Update the pull request description
+          await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER,
+              body: body,
+          });
+
+          console.log(`Updated PR #${PR_NUMBER} description with Netlify deploy URL: ${NETLIFY_URL}`);
 
     - name: Build landing page and JupyterLite app (in test mode)
       run: |
