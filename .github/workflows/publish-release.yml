@@ -12,11 +12,15 @@ on:
         description: "Comma separated list of steps to skip"
         required: false
 
+permissions: {}
+
 jobs:
   publish_release:
+    name: "Publish Release"
     runs-on: ubuntu-latest
     environment: release
     permissions:
+      contents: write
       id-token: write
     steps:
       - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@affc83be6020d529b9368cd4d63e467877606600 # v1

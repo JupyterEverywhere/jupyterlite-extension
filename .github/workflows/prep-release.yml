@@ -23,8 +23,12 @@ on:
         description: "Use PRs with activity since the last stable git tag"
         required: false
         type: boolean
+
+permissions: {}
+
 jobs:
   prep_release:
+    name: "Prep Release"
     runs-on: ubuntu-latest
     permissions:
       contents: write

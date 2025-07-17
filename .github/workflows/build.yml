@@ -6,16 +6,18 @@ on:
   pull_request:
     branches: '*'
 
-permissions:
-  pull-requests: write
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    name: "Lint and Test"
 
     steps:
     - name: Checkout
@@ -41,6 +43,7 @@ jobs:
         jlpm run test
 
   build:
+    name: Build JupyterLite extension
     runs-on: ubuntu-latest
 
     steps:
@@ -88,8 +91,12 @@ jobs:
         if-no-files-found: error
 
   lite:
+    name: Build JupyterLite app
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
     - name: Checkout
@@ -153,6 +160,8 @@ jobs:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
     - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+      env:
+        NETLIFY_URL: ${{ steps.deploy_preview.outputs.netlify_url }}
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -162,7 +171,7 @@ jobs:
 
           const marker = '<!-- netlify-url-comment -->';
 
-          const body = `${marker}\nNetlify URL: ${{ steps.deploy_preview.outputs.NETLIFY_URL }} !`;
+          const body = `${marker}\nNetlify URL: $NETLIFY_URL !`;
 
           const { data: comments } = await github.rest.issues.listComments({
             issue_number,
@@ -228,6 +237,7 @@ jobs:
         STEPS_DEPLOY_PREVIEW_OUTPUTS_NETLIFY_URL: ${{ steps.deploy_preview.outputs.NETLIFY_URL }}
 
   deploy:
+    name: Deploy to GitHub Pages and Netlify
     needs: lite
     if: github.ref == 'refs/heads/main'
     permissions:
@@ -253,6 +263,7 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
   test_isolated:
+    name: Isolated extension test
     needs: build
     runs-on: ubuntu-latest
 

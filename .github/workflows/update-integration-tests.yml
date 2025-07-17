@@ -4,12 +4,14 @@ on:
   issue_comment:
     types: [created, edited]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   update-snapshots:
+    name: Update Playwright Snapshots
+    permissions:
+      contents: write
+      pull-requests: write
     if: >
       (
         github.event.issue.author_association == 'OWNER' ||
@@ -21,9 +23,11 @@ jobs:
     steps:
       - name: React to the triggering comment
         run: |
-          gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions --raw-field 'content=+1'
+          gh api repos/$GITHUB_REPOSITORY/issues/comments/$GITHUB_EVENT_COMMENT_ID/reactions --raw-field 'content=+1'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -53,7 +57,8 @@ jobs:
       - name: Checkout the branch from the PR that triggered the job
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr checkout ${{ github.event.issue.number }}
+          GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh pr checkout $GITHUB_EVENT_ISSUE_NUMBER
 
       - name: Validate the fetched branch HEAD revision
         env:
