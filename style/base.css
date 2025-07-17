@@ -246,3 +246,6 @@
   text-align: center;
 }
 
+.je-LeaveDialog.jp-Dialog-body {
+  order: 2;
+}
