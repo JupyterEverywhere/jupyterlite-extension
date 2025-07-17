@@ -64,11 +64,16 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           });
         }
 
+        interface IKernelSpecMetadata {
+          name: string;
+          display_name?: string;
+        }
+
         // Detect kernel from kernelspec,
-        const kernelspec = (content.metadata?.kernelspec || {}) as any;
+        const kernelspec = content.metadata?.kernelspec as IKernelSpecMetadata | undefined;
         let kernelName: string | undefined;
 
-        if (typeof kernelspec?.name === 'string') {
+        if (kernelspec?.name) {
           kernelName = kernelspec.name;
           console.log(`Detected kernel from kernelspec: ${kernelName}`);
         } else {
@@ -102,7 +107,8 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           factory: VIEW_ONLY_NOTEBOOK_FACTORY
         });
 
-        // Remove kernel param from URL, as we no longer need it.
+        // Remove kernel param from URL, as we no longer need it on
+        // a view-only notebook.
         const url = new URL(window.location.href);
         url.searchParams.delete('kernel');
         window.history.replaceState({}, '', url.toString());
