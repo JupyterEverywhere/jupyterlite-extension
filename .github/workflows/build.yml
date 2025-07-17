@@ -165,6 +165,13 @@ jobs:
           );
   
           if (!existing) {
+            await github.rest.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body,
+            });
+          } else {
             await github.rest.issues.updateComment({
               owner,
               repo,
