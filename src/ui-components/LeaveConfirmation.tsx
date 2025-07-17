@@ -9,13 +9,19 @@ export const LEAVE_CONFIRMATION_TITLE =
  * before navigating away from the current page.
  */
 export class LeaveConfirmation extends ReactWidget {
+  constructor() {
+    super();
+    this.addClass('je-LeaveDialog');
+  }
   render(): JSX.Element {
     return (
       <>
-        <p>
-          Note: To edit your work later, you'll have to save the link to your notebook and make a
-          copy.
-        </p>
+        <div className="je-LeaveDialog-body">
+          <p className="je-LeaveDialog-note">
+            Note: To edit your work later, you'll have to save the link to your notebook and make a
+            copy.
+          </p>
+        </div>
       </>
     );
   }
