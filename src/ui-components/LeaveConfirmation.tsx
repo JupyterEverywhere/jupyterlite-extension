@@ -13,7 +13,7 @@ export class LeaveConfirmation extends ReactWidget {
           Would you like to save the link to your notebook before navigating away?
         </p>
         <p className="je-LeaveDialog-note">
-          <strong>Note:</strong> To edit your work later, you’ll have to save the link to your
+          <strong>Note:</strong> To edit your work later, you'll have to save the link to your
           notebook and make a copy.
         </p>
       </div>
