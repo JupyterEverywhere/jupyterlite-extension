@@ -4,7 +4,7 @@ import { Dialog, showDialog } from '@jupyterlab/apputils';
 
 import { SidebarIcon } from './ui-components/SidebarIcon';
 import { EverywhereIcons } from './icons';
-import { LeaveConfirmation } from './ui-components/LeaveConfirmation';
+import { LEAVE_CONFIRMATION_TITLE, LeaveConfirmation } from './ui-components/LeaveConfirmation';
 import { Commands } from './commands';
 
 export const customSidebar: JupyterFrontEndPlugin<void> = {
@@ -55,7 +55,7 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
         execute: () => {
           void (async () => {
             const result = await showDialog({
-              title: '',
+              title: LEAVE_CONFIRMATION_TITLE,
               body: new LeaveConfirmation(),
               buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Yes' })]
             });
