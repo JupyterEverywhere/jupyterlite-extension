@@ -351,22 +351,26 @@ const plugin: JupyterFrontEndPlugin<void> = {
             content: copyContent
           });
 
+          // Open the notebook in the normal notebook factory, and
+          // close the previously opened notebook (the view-only one).
           await commands.execute('docmanager:open', {
             path: result.path
           });
 
           await readonlyPanel.close();
 
-          const url = new URL(window.location.href);
-          url.searchParams.delete('notebook');
+          // Remove notebook param from the URL, and add the kernel param
+          // if it exists in the original notebook metadata.
+          const currentUrl = new URL(window.location.href);
+          currentUrl.searchParams.delete('notebook');
 
           if (kernelSpec?.name) {
-            url.searchParams.set('kernel', kernelSpec.name);
+            currentUrl.searchParams.set('kernel', kernelSpec.name);
           } else {
-            url.searchParams.delete('kernel');
+            currentUrl.searchParams.delete('kernel');
           }
 
-          window.history.replaceState({}, '', url.toString());
+          window.history.replaceState({}, '', currentUrl.toString());
 
           console.log(`Notebook copied as: ${result.path}`);
         } catch (error) {
