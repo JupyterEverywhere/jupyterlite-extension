@@ -321,12 +321,23 @@ const plugin: JupyterFrontEndPlugin<void> = {
           // Ensure that we preserve kernelspec metadata
           const kernelSpec = originalContent.metadata?.kernelspec;
 
+          // Remove cell-level editable=false; as the notebook has
+          // now been copied and should be possible to write to.
+          const cleanedCells =
+            originalContent.cells?.map(cell => {
+              const cellCopy = { ...cell };
+              cellCopy.metadata = { ...cellCopy.metadata };
+              delete cellCopy.metadata.editable;
+              return cellCopy;
+            }) ?? [];
+
           if (kernelSpec) {
             purgedMetadata.kernelspec = kernelSpec;
           }
 
           const copyContent: INotebookContent = {
             ...originalContent,
+            cells: cleanedCells,
             metadata: purgedMetadata
           };
 
@@ -357,7 +368,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           window.history.replaceState({}, '', url.toString());
 
-          console.log(`[JE] Notebook copied as: ${result.path}`);
+          console.log(`Notebook copied as: ${result.path}`);
         } catch (error) {
           console.error('Failed to create notebook copy:', error);
           await showDialog({
