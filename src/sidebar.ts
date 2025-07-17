@@ -4,7 +4,7 @@ import { Dialog, showDialog } from '@jupyterlab/apputils';
 
 import { SidebarIcon } from './ui-components/SidebarIcon';
 import { EverywhereIcons } from './icons';
-import { LeaveConfirmation, LEAVE_DIALOG_TITLE } from './ui-components/LeaveConfirmation';
+import { LeaveConfirmation } from './ui-components/LeaveConfirmation';
 import { Commands } from './commands';
 
 export const customSidebar: JupyterFrontEndPlugin<void> = {
