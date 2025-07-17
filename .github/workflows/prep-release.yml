@@ -45,4 +45,6 @@ jobs:
 
       - name: "** Next Step **"
         run: |
-          echo "Optional): Review Draft Release: ${{ steps.prep-release.outputs.release_url }}"
+          echo "Optional): Review Draft Release: ${STEPS_PREP_RELEASE_OUTPUTS_RELEASE_URL}"
+        env:
+          STEPS_PREP_RELEASE_OUTPUTS_RELEASE_URL: ${{ steps.prep-release.outputs.release_url }}
