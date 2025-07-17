@@ -114,7 +114,7 @@ jobs:
     - name: Build the JupyterLite app
       run: |
         cd lite
-        bash ../.github/inject-gh-pages-config.sh
+        bash ../scripts/inject_api_url.sh
         cd ..
         jlpm install
         jlpm build:all
