@@ -475,4 +475,14 @@ test.describe('Kernel URL param behaviour', () => {
     expect(url.searchParams.has('kernel')).toBe(false);
     expect(url.searchParams.get('notebook')).toBe(notebookId);
   });
+
+  test('Should remove kernel param after kernel initializes', async ({ page }) => {
+    await page.goto('lab/index.html?kernel=xr');
+    await page.waitForSelector('.jp-NotebookPanel');
+    await page.waitForFunction(() => !new URL(window.location.href).searchParams.has('kernel'));
+
+    const url = new URL(page.url());
+    expect(url.searchParams.has('kernel')).toBe(false);
+  });
+
 });
