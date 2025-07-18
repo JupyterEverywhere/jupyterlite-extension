@@ -456,3 +456,23 @@ test.describe('Sharing and copying R and Python notebooks', () => {
     expect(kernelLabel.toLowerCase()).toContain('python');
   });
 });
+
+test.describe('Kernel param URL behaviour', () => {
+  test('Should remove kernel param when opening view-only notebook', async ({ page }) => {
+    await mockTokenRoute(page);
+
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
+
+    // Open view-only notebook
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+    // Wait for kernel param to be stripped
+    await page.waitForFunction(() => !new URL(window.location.href).searchParams.has('kernel'));
+
+    const url = new URL(page.url());
+    expect(url.searchParams.has('kernel')).toBe(false);
+    expect(url.searchParams.get('notebook')).toBe(notebookId);
+  });
+});
