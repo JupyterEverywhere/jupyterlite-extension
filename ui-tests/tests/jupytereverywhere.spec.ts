@@ -484,5 +484,4 @@ test.describe('Kernel URL param behaviour', () => {
     const url = new URL(page.url());
     expect(url.searchParams.has('kernel')).toBe(false);
   });
-
 });
