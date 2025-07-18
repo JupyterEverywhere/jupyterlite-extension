@@ -356,6 +356,19 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
 });
 
 test.describe('Leave confirmation', () => {
+  test('Leave confirmation snapshot', async ({ page }) => {
+    await mockTokenRoute(page);
+    await page.goto('lab/index.html');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
+    await jeButton.click();
+
+    const dialog = page.locator('.jp-Dialog');
+    await expect(dialog).toBeVisible();
+    expect(await dialog.screenshot()).toMatchSnapshot('leave-confirmation-dialog.png');
+  });
+
   test('When cancelled, should remain on the notebook view', async ({ page }) => {
     await mockTokenRoute(page);
     await page.goto('lab/index.html');
