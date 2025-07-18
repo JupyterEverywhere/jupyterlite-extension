@@ -1,5 +1,5 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
+import { INotebookTracker } from '@jupyterlab/notebook';
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { EverywhereIcons } from '../icons';
@@ -64,22 +64,6 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           });
         }
 
-        interface IKernelSpecMetadata {
-          name: string;
-          display_name?: string;
-        }
-
-        // Detect kernel from kernelspec,
-        const kernelspec = content.metadata?.kernelspec as IKernelSpecMetadata | undefined;
-        let kernelName: string | undefined;
-
-        if (kernelspec?.name) {
-          kernelName = kernelspec.name;
-          console.log(`Detected kernel from kernelspec: ${kernelName}`);
-        } else {
-          console.log('No kernelspec found in shared notebook.');
-        }
-
         const { id: responseId, readable_id, domain_id } = notebookResponse;
         content.metadata = {
           ...content.metadata,
@@ -141,78 +125,15 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         const params = new URLSearchParams(window.location.search);
         const desiredKernel = params.get('kernel') || 'python';
 
-        const result = await commands.execute('docmanager:new-untitled', {
-          type: 'notebook'
+        await commands.execute('notebook:create-new', {
+          kernelName: desiredKernel
         });
 
-        if (result) {
-          await commands.execute('docmanager:open', {
-            path: result.path
-          });
-
-          const panel = tracker.currentWidget;
-
-          if (panel?.context) {
-            panel.context.sessionContext.kernelPreference = {
-              name: desiredKernel
-            };
-
-            await panel.context.sessionContext.initialize();
-
-            panel.context.model.setMetadata('kernelspec', {
-              name: desiredKernel,
-              display_name: desiredKernel
-            });
-
-            const url = new URL(window.location.href);
-            url.searchParams.set('kernel', desiredKernel);
-            window.history.replaceState({}, '', url.toString());
-          } else {
-            console.warn('New notebook panel not available or model is missing.');
-          }
-        }
+        console.log(`Created new notebook with kernel: ${desiredKernel}`);
       } catch (error) {
         console.error('Failed to create new notebook:', error);
       }
     };
-
-    app.commands.commandExecuted.connect(async (sender, args) => {
-      if (args.id === 'docmanager:open') {
-        const panel = tracker.currentWidget;
-
-        if (panel instanceof NotebookPanel && panel?.context.model) {
-          let desiredKernel: string | undefined;
-
-          const kernelspec = panel.context.model.getMetadata('kernelspec') as
-            | { name?: string }
-            | undefined;
-
-          if (kernelspec?.name) {
-            desiredKernel = kernelspec.name;
-            console.log(`Using kernelspec from notebook metadata: ${desiredKernel}`);
-          }
-
-          if (desiredKernel) {
-            console.log(`Setting kernel preference: ${desiredKernel}`);
-            panel.context.sessionContext.kernelPreference = {
-              name: desiredKernel
-            };
-
-            await panel.context.sessionContext.initialize();
-
-            const url = new URL(window.location.href);
-            url.searchParams.delete('kernel');
-            url.searchParams.set('kernel', desiredKernel);
-            window.history.replaceState({}, '', url.toString());
-          } else {
-            // Maybe better error handling here...
-            console.log(
-              'No kernel info found, kernel selection dialog will appear. This is a bug.'
-            );
-          }
-        }
-      }
-    });
 
     // If a notebook ID is provided in the URL, load it; otherwise,
     // create a new notebook
