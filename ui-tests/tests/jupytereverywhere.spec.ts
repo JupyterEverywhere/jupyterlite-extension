@@ -404,3 +404,55 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   // Add a snapshot of the output area
   expect(await output.screenshot()).toMatchSnapshot('r-output.png');
 });
+
+test.describe('Sharing and copying R and Python notebooks', () => {
+  test('Should create copy from view-only R notebook and keep R kernel', async ({ page }) => {
+    await mockTokenRoute(page);
+
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId, R_TEST_NOTEBOOK);
+
+    // Open view-only notebook
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+    const createCopyButton = page.locator('.jp-ToolbarButtonComponent.je-CreateCopyButton');
+    await createCopyButton.click();
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeHidden({
+      timeout: 10000
+    });
+
+    // Wait for the notebook to switch to editable mode
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Verify kernel is R
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('r');
+  });
+
+  test('Should create copy from view-only Python notebook and keep Python kernel', async ({
+    page
+  }) => {
+    await mockTokenRoute(page);
+
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
+
+    // Open view-only notebook
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+    const createCopyButton = page.locator('.jp-ToolbarButtonComponent.je-CreateCopyButton');
+    await createCopyButton.click();
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeHidden({
+      timeout: 10000
+    });
+
+    // Wait for the notebook to switch to editable mode
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Verify kernel is Python
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('python');
+  });
+});
