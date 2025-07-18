@@ -285,10 +285,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
 
         await switchKernel(panel, kernel);
-
-        const url = new URL(window.location.href);
-        url.searchParams.set('kernel', kernel);
-        window.history.replaceState({}, '', url.toString());
       }
     });
 
@@ -359,17 +355,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           await readonlyPanel.close();
 
-          // Remove notebook param from the URL, and add the kernel param
-          // if it exists in the original notebook metadata.
+          // Remove notebook param from the URL
           const currentUrl = new URL(window.location.href);
           currentUrl.searchParams.delete('notebook');
-
-          if (kernelSpec?.name) {
-            currentUrl.searchParams.set('kernel', kernelSpec.name);
-          } else {
-            currentUrl.searchParams.delete('kernel');
-          }
-
           window.history.replaceState({}, '', currentUrl.toString());
 
           console.log(`Notebook copied as: ${result.path}`);
