@@ -172,8 +172,6 @@ jobs:
       run: |
         echo "### JupyterLite App is ready" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "To test on netlify: ${STEPS_DEPLOY_PREVIEW_OUTPUTS_NETLIFY_URL}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
         echo 'To test it locally, download the `lite-app` artifact and run' >> $GITHUB_STEP_SUMMARY
         echo '```bash' >> $GITHUB_STEP_SUMMARY
         echo "rm -r lite-app" >> $GITHUB_STEP_SUMMARY
@@ -184,8 +182,6 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo 'And navigate to http://127.0.0.1:8000/' >> $GITHUB_STEP_SUMMARY
         echo 'Press ctrl + c to stop the server.' >> $GITHUB_STEP_SUMMARY
-      env:
-        STEPS_DEPLOY_PREVIEW_OUTPUTS_NETLIFY_URL: ${{ steps.deploy_preview.outputs.NETLIFY_URL }}
 
   deploy:
     name: Deploy to GitHub Pages and Netlify
@@ -205,6 +201,18 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
+  deploy-netlify:
+    needs: lite
+    if: github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download lite app
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: lite-app
+          path: dist
+    
       - name: Publish to Netlify
         uses: netlify/actions/cli@3185065f4ab2f6df6f2ef41ee013626e1c02a426 # 3185065f4ab2f6df6f2ef41ee013626e1c02a426
         with:
@@ -212,6 +220,7 @@ jobs:
         env:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
 
   test_isolated:
     name: Isolated extension test
