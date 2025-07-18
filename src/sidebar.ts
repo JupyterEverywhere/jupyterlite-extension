@@ -57,7 +57,11 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
             const result = await showDialog({
               title: LEAVE_CONFIRMATION_TITLE,
               body: new LeaveConfirmation(),
-              buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Yes' })]
+              buttons: [
+                Dialog.cancelButton({ label: 'Cancel' }),
+                Dialog.okButton({ label: 'Yes' })
+              ],
+              defaultButton: 0
             });
 
             if (result.button.label === 'Yes') {
