@@ -349,6 +349,26 @@ test.describe('Landing page', () => {
 
     expect(screenshot).toMatchSnapshot('landing-page.png');
   });
+
+  test('Clicking "Create Python Notebook" on the landing page opens a Python kernel', async ({
+    page
+  }) => {
+    await page.goto('index.html');
+    await page.click('a[href*="kernel=python"]');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('python');
+  });
+
+  test('Clicking "Create R Notebook" on the landing page opens an R kernel', async ({ page }) => {
+    await page.goto('index.html');
+    await page.click('a[href*="kernel=xr"]');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('r');
+  });
 });
 
 test.describe('Kernel Switching', () => {
