@@ -366,6 +366,7 @@ test.describe('Leave confirmation', () => {
 
     const dialog = page.locator('.jp-Dialog');
     await expect(dialog).toBeVisible();
+    await page.waitForSelector('.jp-KernelStatus-success');
     expect(await dialog.screenshot()).toMatchSnapshot('leave-confirmation-dialog.png');
   });
 
