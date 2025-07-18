@@ -143,6 +143,19 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       void createNewNotebook();
     }
 
+    // Remove kernel URL param after notebook kernel is ready, as
+    // we don't want it to linger and confuse users.
+    tracker.widgetAdded.connect((_, panel) => {
+      panel.sessionContext.ready.then(() => {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('kernel')) {
+          url.searchParams.delete('kernel');
+          window.history.replaceState({}, '', url.toString());
+          console.log('Removed kernel param from URL after kernel init.');
+        }
+      });
+    });
+
     const sidebarItem = new SidebarIcon({
       label: 'Notebook',
       icon: EverywhereIcons.notebook,
