@@ -86,13 +86,13 @@ async function mockTokenRoute(page: Page) {
   });
 }
 
-async function mockGetSharedNotebook(page: Page, notebookId: string) {
+async function mockGetSharedNotebook(page: Page, notebookId: string, notebookContent: JSONObject) {
   await page.route('**/api/v1/notebooks/*', async route => {
     const json = {
       id: notebookId,
       domain_id: 'domain',
       readable_id: null,
-      content: TEST_NOTEBOOK
+      content: notebookContent
     };
     await route.fulfill({ json });
   });
@@ -153,7 +153,7 @@ test.describe('General', () => {
         id: notebookId,
         domain_id: 'domain',
         readable_id: null,
-        content: TEST_NOTEBOOK
+        content: PYTHON_TEST_NOTEBOOK
       };
       await route.fulfill({ json });
     });
@@ -191,7 +191,7 @@ test.describe('Sharing', () => {
 
     // Load view-only (shared) notebook
     const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
-    await mockGetSharedNotebook(page, notebookId);
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
     await page.goto(`lab/index.html?notebook=${notebookId}`);
 
     // Re-Share it as a new notebook
@@ -243,7 +243,7 @@ test.describe('Download', () => {
     await mockTokenRoute(page);
 
     const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
-    await mockGetSharedNotebook(page, notebookId);
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
     await mockShareNotebookResponse(page, 'test-download-viewonly-notebook');
 
     await page.goto(`lab/index.html?notebook=${notebookId}`);
@@ -298,7 +298,7 @@ test('Should remove View Only banner when the Create Copy button is clicked', as
   await mockTokenRoute(page);
 
   const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
-  await mockGetSharedNotebook(page, notebookId);
+  await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
 
   // Open view-only notebook
   await page.goto(`lab/index.html?notebook=${notebookId}`);
