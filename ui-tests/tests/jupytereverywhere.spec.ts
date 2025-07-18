@@ -354,7 +354,7 @@ test.describe('Landing page', () => {
     page
   }) => {
     await page.goto('index.html');
-    await page.click('a[href*="kernel=python"]');
+    await page.click('a[href*="kernel=xpython"]');
     await page.waitForSelector('.jp-NotebookPanel');
 
     const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
