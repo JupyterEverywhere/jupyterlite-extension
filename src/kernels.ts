@@ -1,7 +1,7 @@
 import { NotebookPanel } from '@jupyterlab/notebook';
 
 export const KERNEL_DISPLAY_NAMES: Record<string, string> = {
-  python: 'Python',
+  xpython: 'Python',
   xr: 'R'
 };
 
