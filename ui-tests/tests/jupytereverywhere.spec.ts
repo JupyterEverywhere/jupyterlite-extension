@@ -457,7 +457,7 @@ test.describe('Sharing and copying R and Python notebooks', () => {
   });
 });
 
-test.describe('Kernel param URL behaviour', () => {
+test.describe('Kernel URL param behaviour', () => {
   test('Should remove kernel param when opening view-only notebook', async ({ page }) => {
     await mockTokenRoute(page);
 
