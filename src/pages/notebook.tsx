@@ -91,6 +91,12 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           factory: VIEW_ONLY_NOTEBOOK_FACTORY
         });
 
+        // Remove kernel param from URL, as we no longer need it on
+        // a view-only notebook.
+        const url = new URL(window.location.href);
+        url.searchParams.delete('kernel');
+        window.history.replaceState({}, '', url.toString());
+
         console.log(`Successfully loaded shared notebook: ${filename}`);
       } catch (error) {
         console.error('Failed to load shared notebook:', error);
@@ -116,10 +122,14 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
      */
     const createNewNotebook = async (): Promise<void> => {
       try {
-        const result = await commands.execute('docmanager:new-untitled', { type: 'notebook' });
-        if (result) {
-          await commands.execute('docmanager:open', { path: 'Untitled.ipynb' });
-        }
+        const params = new URLSearchParams(window.location.search);
+        const desiredKernel = params.get('kernel') || 'python';
+
+        await commands.execute('notebook:create-new', {
+          kernelName: desiredKernel
+        });
+
+        console.log(`Created new notebook with kernel: ${desiredKernel}`);
       } catch (error) {
         console.error('Failed to create new notebook:', error);
       }
@@ -132,6 +142,19 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     } else {
       void createNewNotebook();
     }
+
+    // Remove kernel URL param after notebook kernel is ready, as
+    // we don't want it to linger and confuse users.
+    tracker.widgetAdded.connect((_, panel) => {
+      panel.sessionContext.ready.then(() => {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('kernel')) {
+          url.searchParams.delete('kernel');
+          window.history.replaceState({}, '', url.toString());
+          console.log('Removed kernel param from URL after kernel init.');
+        }
+      });
+    });
 
     const sidebarItem = new SidebarIcon({
       label: 'Notebook',

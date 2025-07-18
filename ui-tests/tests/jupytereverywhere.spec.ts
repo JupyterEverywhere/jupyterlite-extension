@@ -18,7 +18,7 @@ async function runCommand(page: Page, command: string, args: JSONObject = {}) {
   );
 }
 
-const TEST_NOTEBOOK = {
+const PYTHON_TEST_NOTEBOOK: JSONObject = {
   cells: [
     {
       cell_type: 'code',
@@ -51,6 +51,34 @@ const TEST_NOTEBOOK = {
   nbformat_minor: 5
 };
 
+const R_TEST_NOTEBOOK: JSONObject = {
+  cells: [
+    {
+      cell_type: 'code',
+      execution_count: null,
+      id: 'r-test-cell',
+      outputs: [],
+      metadata: {},
+      source: [`# This is an R test notebook`]
+    }
+  ],
+  metadata: {
+    kernelspec: {
+      display_name: 'R (xr)',
+      language: 'R',
+      name: 'xr'
+    },
+    language_info: {
+      codemirror_mode: 'r',
+      file_extension: '.r',
+      mimetype: 'text/x-r-source',
+      name: 'R'
+    }
+  },
+  nbformat: 4,
+  nbformat_minor: 5
+};
+
 async function mockTokenRoute(page: Page) {
   await page.route('**/api/v1/auth/issue', async route => {
     const json = { token: 'test-token' };
@@ -58,13 +86,13 @@ async function mockTokenRoute(page: Page) {
   });
 }
 
-async function mockGetSharedNotebook(page: Page, notebookId: string) {
+async function mockGetSharedNotebook(page: Page, notebookId: string, notebookContent: JSONObject) {
   await page.route('**/api/v1/notebooks/*', async route => {
     const json = {
       id: notebookId,
       domain_id: 'domain',
       readable_id: null,
-      content: TEST_NOTEBOOK
+      content: notebookContent
     };
     await route.fulfill({ json });
   });
@@ -125,12 +153,14 @@ test.describe('General', () => {
         id: notebookId,
         domain_id: 'domain',
         readable_id: null,
-        content: TEST_NOTEBOOK
+        content: PYTHON_TEST_NOTEBOOK
       };
       await route.fulfill({ json });
     });
 
     await page.goto(`lab/index.html?notebook=${notebookId}`);
+
+    await page.waitForSelector('.jp-LabShell');
 
     expect(await page.locator('.jp-NotebookPanel').screenshot()).toMatchSnapshot(
       'read-only-notebook.png'
@@ -163,7 +193,7 @@ test.describe('Sharing', () => {
 
     // Load view-only (shared) notebook
     const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
-    await mockGetSharedNotebook(page, notebookId);
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
     await page.goto(`lab/index.html?notebook=${notebookId}`);
 
     // Re-Share it as a new notebook
@@ -215,7 +245,7 @@ test.describe('Download', () => {
     await mockTokenRoute(page);
 
     const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
-    await mockGetSharedNotebook(page, notebookId);
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
     await mockShareNotebookResponse(page, 'test-download-viewonly-notebook');
 
     await page.goto(`lab/index.html?notebook=${notebookId}`);
@@ -270,7 +300,7 @@ test('Should remove View Only banner when the Create Copy button is clicked', as
   await mockTokenRoute(page);
 
   const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
-  await mockGetSharedNotebook(page, notebookId);
+  await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
 
   // Open view-only notebook
   await page.goto(`lab/index.html?notebook=${notebookId}`);
@@ -318,6 +348,26 @@ test.describe('Landing page', () => {
     });
 
     expect(screenshot).toMatchSnapshot('landing-page.png');
+  });
+
+  test('Clicking "Create Python Notebook" on the landing page opens a Python kernel', async ({
+    page
+  }) => {
+    await page.goto('index.html');
+    await page.click('a[href*="kernel=python"]');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('python');
+  });
+
+  test('Clicking "Create R Notebook" on the landing page opens an R kernel', async ({ page }) => {
+    await page.goto('index.html');
+    await page.click('a[href*="kernel=xr"]');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('r');
   });
 });
 
@@ -412,5 +462,86 @@ test.describe('Leave confirmation', () => {
     await page.waitForSelector('.je-hero', { timeout: 5000 });
 
     await expect(page.locator('.jp-NotebookPanel')).toHaveCount(0);
+  });
+});
+
+test.describe('Sharing and copying R and Python notebooks', () => {
+  test('Should create copy from view-only R notebook and keep R kernel', async ({ page }) => {
+    await mockTokenRoute(page);
+
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId, R_TEST_NOTEBOOK);
+
+    // Open view-only notebook
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+    const createCopyButton = page.locator('.jp-ToolbarButtonComponent.je-CreateCopyButton');
+    await createCopyButton.click();
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeHidden({
+      timeout: 10000
+    });
+
+    // Wait for the notebook to switch to editable mode
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Verify kernel is R
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('r');
+  });
+
+  test('Should create copy from view-only Python notebook and keep Python kernel', async ({
+    page
+  }) => {
+    await mockTokenRoute(page);
+
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
+
+    // Open view-only notebook
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+    const createCopyButton = page.locator('.jp-ToolbarButtonComponent.je-CreateCopyButton');
+    await createCopyButton.click();
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeHidden({
+      timeout: 10000
+    });
+
+    // Wait for the notebook to switch to editable mode
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Verify kernel is Python
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
+    expect(kernelLabel.toLowerCase()).toContain('python');
+  });
+});
+
+test.describe('Kernel URL param behaviour', () => {
+  test('Should remove kernel param when opening view-only notebook', async ({ page }) => {
+    await mockTokenRoute(page);
+
+    const notebookId = 'e3b0c442-98fc-1fc2-9c9f-8b6d6ed08a1d';
+    await mockGetSharedNotebook(page, notebookId, PYTHON_TEST_NOTEBOOK);
+
+    // Open view-only notebook
+    await page.goto(`lab/index.html?notebook=${notebookId}`);
+    await expect(page.locator('.je-ViewOnlyHeader')).toBeVisible();
+
+    // Wait for kernel param to be stripped
+    await page.waitForFunction(() => !new URL(window.location.href).searchParams.has('kernel'));
+
+    const url = new URL(page.url());
+    expect(url.searchParams.has('kernel')).toBe(false);
+    expect(url.searchParams.get('notebook')).toBe(notebookId);
+  });
+
+  test('Should remove kernel param after kernel initializes', async ({ page }) => {
+    await page.goto('lab/index.html?kernel=xr');
+    await page.waitForSelector('.jp-NotebookPanel');
+    await page.waitForFunction(() => !new URL(window.location.href).searchParams.has('kernel'));
+
+    const url = new URL(page.url());
+    expect(url.searchParams.has('kernel')).toBe(false);
   });
 });
