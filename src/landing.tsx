@@ -52,7 +52,7 @@ function LandingPage(): JSX.Element {
           </h1>
 
           <div className="je-buttons">
-            <a href="lab/index.html?kernel=python" className="je-card">
+            <a href="lab/index.html?kernel=xpython" className="je-card">
               <p>Create Python Notebook</p>
               <img src={pythonLogo} alt="Python logo" />
             </a>
