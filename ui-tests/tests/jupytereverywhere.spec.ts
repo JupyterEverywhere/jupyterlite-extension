@@ -18,7 +18,7 @@ async function runCommand(page: Page, command: string, args: JSONObject = {}) {
   );
 }
 
-const TEST_NOTEBOOK = {
+const PYTHON_TEST_NOTEBOOK: JSONObject = {
   cells: [
     {
       cell_type: 'code',
@@ -45,6 +45,34 @@ const TEST_NOTEBOOK = {
       name: 'python',
       nbconvert_exporter: 'python',
       pygments_lexer: 'ipython3'
+    }
+  },
+  nbformat: 4,
+  nbformat_minor: 5
+};
+
+const R_TEST_NOTEBOOK: JSONObject = {
+  cells: [
+    {
+      cell_type: 'code',
+      execution_count: null,
+      id: 'r-test-cell',
+      outputs: [],
+      metadata: {},
+      source: [`# This is an R test notebook`]
+    }
+  ],
+  metadata: {
+    kernelspec: {
+      display_name: 'R (xr)',
+      language: 'R',
+      name: 'xr'
+    },
+    language_info: {
+      codemirror_mode: 'r',
+      file_extension: '.r',
+      mimetype: 'text/x-r-source',
+      name: 'R'
     }
   },
   nbformat: 4,
