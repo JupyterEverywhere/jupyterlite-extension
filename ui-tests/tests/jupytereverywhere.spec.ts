@@ -160,6 +160,8 @@ test.describe('General', () => {
 
     await page.goto(`lab/index.html?notebook=${notebookId}`);
 
+    await page.waitForTimeout(5000); // JupyterLab rotating icon is taking a while to disappear, so just to be safe
+
     expect(await page.locator('.jp-NotebookPanel').screenshot()).toMatchSnapshot(
       'read-only-notebook.png'
     );
