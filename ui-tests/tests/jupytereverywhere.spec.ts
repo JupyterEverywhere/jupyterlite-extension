@@ -545,3 +545,17 @@ test.describe('Kernel URL param behaviour', () => {
     expect(url.searchParams.has('kernel')).toBe(false);
   });
 });
+
+test.describe('Title of the pages should be "Jupyter Everywhere"', () => {
+  test('Landing page title', async ({ page }) => {
+    await page.goto('index.html');
+    const title = await page.title();
+    expect(title).toBe('Jupyter Everywhere');
+  });
+
+  test('Notebook page title', async ({ page }) => {
+    await page.goto('lab/index.html');
+    const title = await page.title();
+    expect(title).toBe('Jupyter Everywhere');
+  });
+});
