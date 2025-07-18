@@ -88,6 +88,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    - name: Debug GitHub context
+      uses: actions/github-script@v7
+      with:
+        script: |
+          console.log('Event name:', context.eventName);
+          console.log('Issue number:', context.issue.number);
+          console.log('Is fork:', context.payload.pull_request?.head?.repo?.full_name !== context.payload.repository?.full_name);
+          console.log('Head repo:', context.payload.pull_request?.head?.repo?.full_name);
+          console.log('Base repo:', context.payload.repository?.full_name);
+          console.log('Token permissions:', JSON.stringify(context.payload?.permissions || {}));
+
+    - name: Test basic PR access
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          try {
+            const { data: pull } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            console.log('✅ Successfully read PR data');
+            console.log('PR title:', pull.title);
+          } catch (error) {
+            console.log('❌ Failed to read PR:', error.message);
+          }
+
     - name: Checkout
       uses: actions/checkout@v4
 
