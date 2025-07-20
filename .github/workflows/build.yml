@@ -236,6 +236,8 @@ jobs:
     name: Integration tests
     needs: lite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     env:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
@@ -243,9 +245,23 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Base Setup
       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+    - name: Set up Docker Compose
+      uses: docker/setup-compose-action@v1
+      with:
+        cache-binary: true
+
+    - name: Checkout CKHub sharing service
+      uses: actions/checkout@v4
+      with:
+        repository: jupytereverywhere/sharing-service
+        path: ckhub-sharing-service
+        persist-credentials: false
 
     - name: Download lite app (test mode)
       uses: actions/download-artifact@v4
@@ -276,9 +292,15 @@ jobs:
       run: jlpm playwright install chromium
       working-directory: ui-tests
 
-    - name: Execute integration tests
-      working-directory: ui-tests
+    - name: Start CKHub sharing service and execute integration tests
       run: |
+        echo "::group::Starting CKHub sharing service"
+        cd ckhub-sharing-service
+        docker compose up --build --detach
+        cd ..
+        echo "::endgroup::"
+
+        cd ui-tests
         jlpm playwright test --browser chromium
 
     - name: Upload Playwright Test report
