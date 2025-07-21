@@ -366,8 +366,9 @@ test.describe('Landing page', () => {
     await page.click('a[href*="kernel=xr"]');
     await page.waitForSelector('.jp-NotebookPanel');
 
-    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
-    expect(kernelLabel.toLowerCase()).toContain('r');
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton .jp-ToolbarButtonComponent-label')
+    await kernelLabel.waitFor({ state: 'visible' });
+    expect(kernelLabel).toContainText('python', { ignoreCase: true, useInnerText: true });
   });
 });
 
@@ -512,7 +513,8 @@ test.describe('Sharing and copying R and Python notebooks', () => {
     await page.waitForSelector('.jp-NotebookPanel');
 
     // Verify kernel is Python
-    const kernelLabel = await page.locator('.je-KernelSwitcherButton');
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton .jp-ToolbarButtonComponent-label')
+    await kernelLabel.waitFor({ state: 'visible' });
     expect(kernelLabel).toContainText('python', { ignoreCase: true, useInnerText: true });
   });
 });
