@@ -2,6 +2,8 @@
   "jupyter-lite-schema-version": 0,
   "jupyter-config-data": {
     "appName": "Jupyter Everywhere",
+    "contentsStorageName": "JupyterEverywhere Storage",
+    "settingsStorageName": "JupyterEverywhere Storage",
     "exposeAppInBrowser": true,
     "showLoadingIndicator": true,
     "settingsOverrides": {
