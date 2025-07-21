@@ -72,19 +72,45 @@
         display: block;
       }
 
-      .jupyterlite-loading-indicator-spinner {
-        width: 60px;
-        height: 60px;
+      .jupyterlite-loading-indicator-container {
+        position: relative;
+        width: 70px;
+        height: 70px;
         margin: 0 auto 20px;
+      }
+
+      .jupyterlite-loading-indicator-spinner {
+        width: 100%;
+        height: 100%;
         border: 6px solid rgba(0, 0, 0, 0.1);
-        border-top: 6px solid #FFDC00; /* Bright yellow color */
+        border-top: 6px solid var(--je-lilac); /* Custom lilac color */
         border-radius: 50%;
         animation: jupyter-spin 1s linear infinite;
+        box-sizing: border-box;
       }
 
       body.jp-mod-dark .jupyterlite-loading-indicator-spinner {
         border: 6px solid rgba(255, 255, 255, 0.1);
-        border-top: 6px solid #FFDC00;
+        border-top: 6px solid var(--je-lilac);
+        box-sizing: border-box;
+      }
+
+      .jupyterlite-loading-indicator-logo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        background-image: url('logo.svg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        z-index: 1001;
+      }
+
+      body.jp-mod-dark .jupyterlite-loading-indicator-logo {
+        background-color: #6d28d9;
       }
 
       .jupyterlite-loading-indicator-text {
@@ -114,7 +140,10 @@
   </head>
   <body class="jp-ThemedContainer" data-notebook="lab">
     <div id="jupyterlite-loading-indicator" class="hidden">
-      <div class="jupyterlite-loading-indicator-spinner"></div>
+      <div class="jupyterlite-loading-indicator-container">
+        <div class="jupyterlite-loading-indicator-spinner"></div>
+        <div class="jupyterlite-loading-indicator-logo"></div>
+      </div>
       <div class="jupyterlite-loading-indicator-text">Loading Jupyter Everywhere...</div>
     </div>
     <noscript>
