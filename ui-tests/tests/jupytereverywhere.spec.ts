@@ -486,8 +486,8 @@ test.describe('Sharing and copying R and Python notebooks', () => {
     await page.waitForSelector('.jp-NotebookPanel');
 
     // Verify kernel is R
-    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
-    expect(kernelLabel.toLowerCase()).toContain('r');
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton');
+    expect(kernelLabel).toContainText('r', { ignoreCase: true, useInnerText: true });
   });
 
   test('Should create copy from view-only Python notebook and keep Python kernel', async ({
@@ -512,8 +512,8 @@ test.describe('Sharing and copying R and Python notebooks', () => {
     await page.waitForSelector('.jp-NotebookPanel');
 
     // Verify kernel is Python
-    const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
-    expect(kernelLabel.toLowerCase()).toContain('python');
+    const kernelLabel = await page.locator('.je-KernelSwitcherButton');
+    expect(kernelLabel).toContainText('python', { ignoreCase: true, useInnerText: true });
   });
 });
 
