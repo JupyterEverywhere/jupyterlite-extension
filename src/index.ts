@@ -86,10 +86,19 @@ async function handleNotebookSharing(
 ) {
   const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
+  const isViewOnly = notebookContent.metadata?.isSharedNotebook === true;
   const sharedId = notebookContent.metadata?.sharedId as string | undefined;
   const defaultName = generateDefaultNotebookName();
 
   try {
+    if (isViewOnly) {
+      // Skip CKHub sync for view-only notebooks
+      console.log('View-only notebook: skipping CKHub sync and showing share URL.');
+      if (manual) {
+        await showShareDialog(sharingService, notebookContent);
+      }
+      return;
+    }
     if (sharedId) {
       console.log('Updating notebook:', sharedId);
       await sharingService.update(sharedId, notebookContent);
