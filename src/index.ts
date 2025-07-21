@@ -314,8 +314,26 @@ const plugin: JupyterFrontEndPlugin<void> = {
           delete purgedMetadata.sharedName;
           delete purgedMetadata.lastShared;
 
+          // Ensure that we preserve kernelspec metadata
+          const kernelSpec = originalContent.metadata?.kernelspec;
+
+          // Remove cell-level editable=false; as the notebook has
+          // now been copied and should be possible to write to.
+          const cleanedCells =
+            originalContent.cells?.map(cell => {
+              const cellCopy = { ...cell };
+              cellCopy.metadata = { ...cellCopy.metadata };
+              delete cellCopy.metadata.editable;
+              return cellCopy;
+            }) ?? [];
+
+          if (kernelSpec) {
+            purgedMetadata.kernelspec = kernelSpec;
+          }
+
           const copyContent: INotebookContent = {
             ...originalContent,
+            cells: cleanedCells,
             metadata: purgedMetadata
           };
 
@@ -330,10 +348,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
           });
 
           // Open the notebook in the normal notebook factory, and
-          // close the previously opened notebook (th view-only one).
+          // close the previously opened notebook (the view-only one).
           await commands.execute('docmanager:open', {
             path: result.path
           });
+
           await readonlyPanel.close();
 
           // Remove notebook param from the URL

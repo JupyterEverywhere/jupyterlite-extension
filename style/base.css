@@ -238,3 +238,14 @@
 .jp-ToolbarButtonComponent.je-CreateCopyButton:hover {
   background: #2c1f5c;
 }
+
+.je-LeaveDialog-note {
+  font-family: var(--je-font-family);
+  font-size: calc(var(--je-scale) * 16px);
+  color: var(--je-slate-blue);
+  text-align: center;
+}
+
+.je-LeaveDialog.jp-Dialog-body {
+  order: 2;
+}

@@ -1,7 +1,11 @@
 import { TabBar, Widget } from '@lumino/widgets';
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { Dialog, showDialog } from '@jupyterlab/apputils';
+
 import { SidebarIcon } from './ui-components/SidebarIcon';
 import { EverywhereIcons } from './icons';
+import { LEAVE_CONFIRMATION_TITLE, LeaveConfirmation } from './ui-components/LeaveConfirmation';
+import { Commands } from './commands';
 
 export const customSidebar: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:sidebar',
@@ -49,7 +53,30 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
         label: 'Jupyter Everywhere',
         icon: EverywhereIcons.logo,
         execute: () => {
-          console.log('TODO');
+          void (async () => {
+            const result = await showDialog({
+              title: LEAVE_CONFIRMATION_TITLE,
+              body: new LeaveConfirmation(),
+              buttons: [
+                Dialog.cancelButton({ label: 'Cancel' }),
+                Dialog.okButton({ label: 'Yes' })
+              ],
+              defaultButton: 0
+            });
+
+            if (result.button.label === 'Yes') {
+              try {
+                await app.commands.execute(Commands.shareNotebookCommand);
+              } catch (error) {
+                console.error(
+                  'Failed to share notebook before leaving to the Landing page:',
+                  error
+                );
+              }
+              window.location.href = '/index.html';
+            }
+          })();
+
           return true;
         }
       }),
