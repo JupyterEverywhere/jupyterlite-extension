@@ -354,7 +354,7 @@ test.describe('Landing page', () => {
     page
   }) => {
     await page.goto('index.html');
-    await page.click('a[href*="kernel=xpython"]');
+    await page.click('a[href*="kernel=python"]');
     await page.waitForSelector('.jp-NotebookPanel');
 
     const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
@@ -363,7 +363,7 @@ test.describe('Landing page', () => {
 
   test('Clicking "Create R Notebook" on the landing page opens an R kernel', async ({ page }) => {
     await page.goto('index.html');
-    await page.click('a[href*="kernel=xr"]');
+    await page.click('a[href*="kernel=r"]');
     await page.waitForSelector('.jp-NotebookPanel');
 
     const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
@@ -537,7 +537,7 @@ test.describe('Kernel URL param behaviour', () => {
   });
 
   test('Should remove kernel param after kernel initializes', async ({ page }) => {
-    await page.goto('lab/index.html?kernel=xr');
+    await page.goto('lab/index.html?kernel=r');
     await page.waitForSelector('.jp-NotebookPanel');
     await page.waitForFunction(() => !new URL(window.location.href).searchParams.has('kernel'));
 

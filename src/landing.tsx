@@ -52,12 +52,12 @@ function LandingPage(): JSX.Element {
           </h1>
 
           <div className="je-buttons">
-            <a href="lab/index.html?kernel=xpython" className="je-card">
+            <a href="lab/index.html?kernel=python" className="je-card">
               <p>Create Python Notebook</p>
               <img src={pythonLogo} alt="Python logo" />
             </a>
 
-            <a href="lab/index.html?kernel=xr" className="je-card">
+            <a href="lab/index.html?kernel=r" className="je-card">
               <p>Create R Notebook</p>
               <img src={rLogo} alt="R logo" />
             </a>
