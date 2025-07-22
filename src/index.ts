@@ -11,7 +11,7 @@ import { createSuccessDialog, createErrorDialog } from './ui-components/share-di
 
 import { LabIcon } from '@jupyterlab/ui-components';
 import refreshIcon from '../style/icons/refresh.svg';
-import fastForwardSvg from './style/icons/fast-forward.svg';
+import fastForwardSvg from '../style/icons/fast-forward.svg';
 
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
