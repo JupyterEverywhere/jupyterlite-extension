@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+
+import { initUploadHandler } from './upload';
 
 import jeOctopus from '../style/icons/landing/je-octopus.svg';
 import octopusOutline from '../style/icons/landing/je-octopus-outline.svg';
@@ -31,10 +33,9 @@ import '../style/base.css';
  * @returns Landing page component
  */
 function LandingPage(): JSX.Element {
-  // Placeholder function for upload functionality
-  const handleUpload = () => {
-    alert('Upload functionality not yet implemented.');
-  };
+  useEffect(() => {
+    initUploadHandler('#je-upload-button');
+  }, []);
 
   return (
     <div className="je-landing">
@@ -62,14 +63,7 @@ function LandingPage(): JSX.Element {
               <img src={rLogo} alt="R logo" />
             </a>
           </div>
-          <a
-            href="#"
-            className="je-upload"
-            onClick={e => {
-              e.preventDefault();
-              handleUpload();
-            }}
-          >
+          <a href="#" className="je-upload" id="je-upload-button">
             Upload a Notebook
           </a>
         </main>
