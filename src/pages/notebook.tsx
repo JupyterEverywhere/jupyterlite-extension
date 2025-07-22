@@ -26,6 +26,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
     const params = new URLSearchParams(window.location.search);
     let notebookId = params.get('notebook');
+    const uploadedNotebookId = params.get('uploaded-notebook');
 
     if (notebookId?.endsWith('.ipynb')) {
       notebookId = notebookId.slice(0, -6);
@@ -135,12 +136,55 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       }
     };
 
-    // If a notebook ID is provided in the URL, load it; otherwise,
-    // create a new notebook
+    // If a notebook ID is provided in the URL (whether shared or uploaded),
+    // load it; otherwise, create a new notebook
     if (notebookId) {
       void loadSharedNotebook(notebookId);
+    } else if (uploadedNotebookId) {
+      void openUploadedNotebook(uploadedNotebookId);
     } else {
       void createNewNotebook();
+    }
+
+    async function openUploadedNotebook(id: string): Promise<void> {
+      try {
+        const raw = localStorage.getItem(`uploaded-notebook:${id}`);
+        // Should not happen
+        if (!raw) {
+          console.warn(`No uploaded notebook found for ID: ${id}`);
+          await createNewNotebook();
+          return;
+        }
+
+        const content = JSON.parse(raw) as INotebookContent;
+
+        if (!content.metadata.kernelspec || !content.metadata.kernelspec.name) {
+          content.metadata.kernelspec = {
+            name: 'xpython',
+            display_name: 'Python 3'
+          };
+        }
+        const filename = `${(content.metadata?.name as string) || `Uploaded_${id}`}.ipynb`;
+
+        await contents.save(filename, {
+          type: 'notebook',
+          format: 'json',
+          content
+        });
+        await commands.execute('docmanager:open', { path: filename });
+
+        // Once we have the notebook in the editor, it is now safe to drop
+        // the uploaded notebook ID from the URL and the temporary storage.
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('uploaded-notebook');
+        window.history.replaceState({}, '', currentUrl.toString());
+
+        localStorage.removeItem(`uploaded-notebook:${id}`);
+        console.log(`Opened uploaded notebook: ${filename}`);
+      } catch (error) {
+        console.error('Failed to open uploaded notebook:', error);
+        await createNewNotebook();
+      }
     }
 
     // Remove kernel URL param after notebook kernel is ready, as
