@@ -380,12 +380,19 @@ const plugin: JupyterFrontEndPlugin<void> = {
         window.clearInterval(saveReminderInterval);
       }
 
-      saveReminderInterval = window.setInterval(() => {
-        Notification.info(
-          "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
-          { autoClose: 8000 }
-        );
-      }, 300 * 1000); // every 5 minutes
+      panel.context.ready.then(() => {
+        if (panel.context.model.readOnly) {
+          console.log('View-only notebook detected: skipping save reminder.');
+          return;
+        }
+
+        saveReminderInterval = window.setInterval(() => {
+          Notification.info(
+            "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
+            { autoClose: 8000 }
+          );
+        }, 300 * 1000); // every 5 minutes
+      });
     });
   }
 };
