@@ -404,6 +404,40 @@ test.describe('Landing page', () => {
     const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
     expect(kernelLabel.toLowerCase()).toContain('r');
   });
+
+  test('Uploading a Python notebook redirects to JupyterLite', async ({ page }) => {
+    await page.goto('index.html');
+
+    const notebookPath = await createTempNotebookFile(PYTHON_TEST_NOTEBOOK, 'python-test.ipynb');
+
+    await page.setInputFiles('input[type="file"]', notebookPath);
+
+    await page.waitForURL(/lab\/index\.html\?uploaded-notebook=.*/);
+    await page.waitForSelector('.jp-NotebookPanel');
+  });
+
+  test('Uploading an R notebook redirects to JupyterLite', async ({ page }) => {
+    await page.goto('index.html');
+
+    const notebookPath = await createTempNotebookFile(R_TEST_NOTEBOOK, 'r-test.ipynb');
+
+    await page.setInputFiles('input[type="file"]', notebookPath);
+
+    await page.waitForURL(/lab\/index\.html\?uploaded-notebook=.*/);
+    await page.waitForSelector('.jp-NotebookPanel');
+  });
+
+  test('Uploading an unsupported notebook shows an error alert', async ({ page }) => {
+    await page.goto('index.html');
+
+    const notebookPath = await createTempNotebookFile(CLOJURE_TEST_NOTEBOOK, 'clojure-test.ipynb');
+
+    page.on('dialog', async dialog => {
+      expect(dialog.message()).toContain('Only Python and R notebooks are supported');
+    });
+
+    await page.setInputFiles('input[type="file"]', notebookPath);
+  });
 });
 
 test.describe('Kernel Switching', () => {
