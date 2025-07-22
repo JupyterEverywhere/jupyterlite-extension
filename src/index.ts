@@ -289,7 +289,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const targetKernelDisplay = KERNEL_DISPLAY_NAMES[kernel] || kernel;
 
         if (currentKernel !== kernel) {
-          Notification.info(
+          Notification.warning(
             `You are about to switch your notebook coding language from ${currentKernelDisplay} to ${targetKernelDisplay}. Your previously created code will not run as intended.`,
             { autoClose: 5000 }
           );
