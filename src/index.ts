@@ -11,6 +11,7 @@ import { createSuccessDialog, createErrorDialog } from './ui-components/share-di
 
 import { LabIcon } from '@jupyterlab/ui-components';
 import refreshIcon from '../style/icons/refresh.svg';
+import fastForwardSvg from './style/icons/fast-forward.svg';
 
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
@@ -230,6 +231,38 @@ const plugin: JupyterFrontEndPlugin<void> = {
             await panel.sessionContext.restartKernel();
           } catch (err) {
             console.error('Kernel restart failed', err);
+          }
+        }
+      }
+    });
+
+    const customFastForwardIcon = new LabIcon({
+      name: 'jupytereverywhere:restart-run',
+      svgstr: fastForwardSvg
+    });
+
+    commands.addCommand(Commands.restartMemoryAndRunAllCommand, {
+      label: 'Restart Notebook Memory and Run All Cells',
+      icon: customFastForwardIcon,
+      isEnabled: () => !!tracker.currentWidget,
+      execute: async () => {
+        const panel = tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to restart and run.');
+          return;
+        }
+
+        const result = await showDialog({
+          title: 'Would you like to restart the notebook’s memory and rerun all cells?',
+          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Restart' })]
+        });
+
+        if (result.button.accept) {
+          try {
+            await panel.sessionContext.restartKernel();
+            await commands.execute('notebook:run-all-cells');
+          } catch (err) {
+            console.error('Restarting and running all cells failed', err);
           }
         }
       }
