@@ -79,6 +79,33 @@ const R_TEST_NOTEBOOK: JSONObject = {
   nbformat_minor: 5
 };
 
+const CLOJURE_TEST_NOTEBOOK: JSONObject = {
+  cells: [
+    {
+      cell_type: 'code',
+      execution_count: null,
+      id: 'clojure-test-cell',
+      outputs: [],
+      metadata: {},
+      source: [`; This is a Clojure test notebook`]
+    }
+  ],
+  metadata: {
+    kernelspec: {
+      display_name: 'Clojure (irony)',
+      language: 'Clojure',
+      name: 'iclojure'
+    },
+    language_info: {
+      file_extension: '.clj',
+      mimetype: 'text/x-clojure',
+      name: 'Clojure'
+    }
+  },
+  nbformat: 4,
+  nbformat_minor: 5
+};
+
 async function mockTokenRoute(page: Page) {
   await page.route('**/api/v1/auth/issue', async route => {
     const json = { token: 'test-token' };
