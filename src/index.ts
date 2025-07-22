@@ -1,6 +1,6 @@
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
+import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
 
@@ -370,6 +370,22 @@ const plugin: JupyterFrontEndPlugin<void> = {
           });
         }
       }
+    });
+    // Track user time, and show a reminder to save the notebook every
+    // five minutes using a toast notification.
+    let saveReminderInterval: number | null = null;
+
+    tracker.widgetAdded.connect((_, panel) => {
+      if (saveReminderInterval) {
+        window.clearInterval(saveReminderInterval);
+      }
+
+      saveReminderInterval = window.setInterval(() => {
+        Notification.info(
+          "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
+          { autoClose: 8000 }
+        );
+      }, 300 * 1000); // every 5 minutes
     });
   }
 };
