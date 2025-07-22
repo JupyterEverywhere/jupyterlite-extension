@@ -1,5 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import path from 'path';
+import fs from 'fs';
+import os from 'os';
 import type { JupyterLab } from '@jupyterlab/application';
 import type { JSONObject } from '@lumino/coreutils';
 
@@ -16,6 +18,12 @@ async function runCommand(page: Page, command: string, args: JSONObject = {}) {
     },
     { command, args }
   );
+}
+
+async function createTempNotebookFile(notebook: JSONObject, filename: string): Promise<string> {
+  const tempPath = path.join(os.tmpdir(), filename);
+  await fs.promises.writeFile(tempPath, JSON.stringify(notebook, null, 2));
+  return tempPath;
 }
 
 const PYTHON_TEST_NOTEBOOK: JSONObject = {
