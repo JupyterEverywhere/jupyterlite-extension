@@ -4,12 +4,14 @@ on:
   issue_comment:
     types: [created, edited]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   update-snapshots:
+    name: Update Playwright Snapshots
+    permissions:
+      contents: write
+      pull-requests: write
     if: >
       (
         github.event.issue.author_association == 'OWNER' ||
@@ -21,14 +23,17 @@ jobs:
     steps:
       - name: React to the triggering comment
         run: |
-          gh api repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions --raw-field 'content=+1'
+          gh api repos/$GITHUB_REPOSITORY/issues/comments/$GITHUB_EVENT_COMMENT_ID/reactions --raw-field 'content=+1'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Get PR Info
         id: pr
@@ -52,7 +57,8 @@ jobs:
       - name: Checkout the branch from the PR that triggered the job
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr checkout ${{ github.event.issue.number }}
+          GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh pr checkout $GITHUB_EVENT_ISSUE_NUMBER
 
       - name: Validate the fetched branch HEAD revision
         env:
@@ -66,7 +72,7 @@ jobs:
           fi
 
       - name: Base Setup
-        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@affc83be6020d529b9368cd4d63e467877606600 # v1
 
       - name: Install micromamba
         uses: mamba-org/setup-micromamba@b09ef9b599704322748535812ca03efb2625677b # v2.0.5
@@ -94,7 +100,7 @@ jobs:
           jlpm install
           jlpm build:all
 
-      - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@v1
+      - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@affc83be6020d529b9368cd4d63e467877606600 # v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # Playwright knows how to start JupyterLab server

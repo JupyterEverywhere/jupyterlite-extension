@@ -1,13 +1,16 @@
 name: Enforce PR label
 
+permissions: {}
+
 on:
   pull_request:
     types: [labeled, unlabeled, opened, edited, synchronize]
 jobs:
   enforce-label:
+    name: Enforce labels on PRs
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
       - name: enforce-triage-label
-        uses: jupyterlab/maintainer-tools/.github/actions/enforce-label@v1
+        uses: jupyterlab/maintainer-tools/.github/actions/enforce-label@affc83be6020d529b9368cd4d63e467877606600 # v1
