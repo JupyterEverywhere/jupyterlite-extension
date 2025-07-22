@@ -206,6 +206,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
 
+    /**
+     * Add a command to restart the notebook kernel, terming it as "memory"
+     */
     const RefreshLabIcon = new LabIcon({
       name: 'jupytereverywhere:refresh',
       svgstr: refreshIcon
@@ -236,6 +239,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
 
+    /**
+     * Add a command to restart the notebook kernel, terming it as "memory",
+     * and run all cells after the restart.
+     */
     const customFastForwardIcon = new LabIcon({
       name: 'jupytereverywhere:restart-run',
       svgstr: fastForwardSvg
