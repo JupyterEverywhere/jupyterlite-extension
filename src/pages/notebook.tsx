@@ -11,6 +11,18 @@ import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
 
+function mapLanguageToKernel(content: INotebookContent): string {
+  const rawLang =
+    (content?.metadata?.kernelspec?.language as unknown as string | undefined)?.toLowerCase() ||
+    (content?.metadata?.language_info?.name as unknown as string | undefined)?.toLowerCase() ||
+    'python';
+
+  if (rawLang === 'r') {
+    return 'xr';
+  }
+  return 'xpython';
+}
+
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:notebook',
   autoStart: true,
@@ -158,12 +170,12 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
         const content = JSON.parse(raw) as INotebookContent;
 
-        if (!content.metadata.kernelspec || !content.metadata.kernelspec.name) {
-          content.metadata.kernelspec = {
-            name: 'xpython',
-            display_name: 'Python 3'
-          };
-        }
+        const kernelName = mapLanguageToKernel(content);
+        content.metadata.kernelspec = {
+          name: kernelName,
+          display_name: kernelName === 'xpython' ? 'Python 3' : 'R'
+        };
+
         const filename = `${(content.metadata?.name as string) || `Uploaded_${id}`}.ipynb`;
 
         await contents.save(filename, {
