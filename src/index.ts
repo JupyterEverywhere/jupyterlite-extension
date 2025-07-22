@@ -9,6 +9,9 @@ import { SharingService } from './sharing-service';
 
 import { createSuccessDialog, createErrorDialog } from './ui-components/share-dialog';
 
+import { LabIcon } from '@jupyterlab/ui-components';
+import refreshIcon from '../style/icons/refresh.svg';
+
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
 import { Commands } from './commands';
@@ -198,6 +201,36 @@ const plugin: JupyterFrontEndPlugin<void> = {
             body: ReactWidget.create(createErrorDialog(error)),
             buttons: [Dialog.okButton()]
           });
+        }
+      }
+    });
+
+    const RefreshLabIcon = new LabIcon({
+      name: 'jupytereverywhere:refresh',
+      svgstr: refreshIcon
+    });
+
+    commands.addCommand(Commands.restartMemoryCommand, {
+      label: 'Restart Notebook Memory',
+      icon: RefreshLabIcon,
+      execute: async () => {
+        const panel = tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to restart.');
+          return;
+        }
+
+        const result = await showDialog({
+          title: 'Would you like to restart the notebook’s memory?',
+          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Restart' })]
+        });
+
+        if (result.button.accept) {
+          try {
+            await panel.sessionContext.restartKernel();
+          } catch (err) {
+            console.error('Kernel restart failed', err);
+          }
         }
       }
     });

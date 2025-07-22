@@ -58,7 +58,9 @@
       },
       {
         "name": "restart",
-        "caption": "Restart notebook"
+        "command": "jupytereverywhere:restart-memory",
+        "caption": "Restart notebook",
+        "label": ""
       },
       {
         "name": "restart-and-run",
