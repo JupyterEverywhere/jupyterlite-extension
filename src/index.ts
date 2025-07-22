@@ -284,8 +284,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
+        const currentKernel = panel.sessionContext.session?.kernel?.name || '';
+        const currentKernelDisplay = KERNEL_DISPLAY_NAMES[currentKernel] || currentKernel;
+        const targetKernelDisplay = KERNEL_DISPLAY_NAMES[kernel] || kernel;
+
         Notification.info(
-          'You are about to switch your notebook coding language. Your previously created code will not run as intended.',
+          `You are about to switch your notebook coding language from ${currentKernelDisplay} to ${targetKernelDisplay}. Your previously created code will not run as intended.`,
           { autoClose: 5000 }
         );
 
