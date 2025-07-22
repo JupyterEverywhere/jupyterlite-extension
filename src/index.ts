@@ -233,7 +233,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           try {
             await panel.sessionContext.restartKernel();
           } catch (err) {
-            console.error('Kernel restart failed', err);
+            console.error('Memory restart failed', err);
           }
         }
       }
