@@ -1,6 +1,6 @@
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
+import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
 
@@ -283,6 +283,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
           console.warn('No active notebook panel.');
           return;
         }
+
+        Notification.info(
+          'You are about to switch your notebook coding language. Your previously created code will not run as intended.',
+          { autoClose: 5000 }
+        );
 
         await switchKernel(panel, kernel);
       }
