@@ -373,11 +373,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
     // Track user time, and show a reminder to save the notebook every
     // five minutes using a toast notification.
-    let saveReminderInterval: number | null = null;
+    let saveReminderTimeout: number | null = null;
 
     tracker.widgetAdded.connect((_, panel) => {
-      if (saveReminderInterval) {
-        window.clearInterval(saveReminderInterval);
+      if (saveReminderTimeout) {
+        window.clearInterval(saveReminderTimeout);
       }
 
       panel.context.ready.then(() => {
@@ -386,12 +386,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
-        saveReminderInterval = window.setInterval(() => {
+        saveReminderTimeout = window.setTimeout(() => {
           Notification.info(
             "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
             { autoClose: 8000 }
           );
-        }, 300 * 1000); // every 5 minutes
+        }, 300 * 1000); // once after 5 minutes
       });
     });
   }
