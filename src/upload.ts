@@ -17,8 +17,12 @@ export function detectNotebookLanguage(notebook: Partial<INotebookContent>): 'py
     .toString()
     .toLowerCase();
 
-  if (language === 'python') return 'python';
-  if (language === 'r') return 'r';
+  if (language === 'python') {
+    return 'python';
+  }
+  if (language === 'r') {
+    return 'r';
+  }
   return null;
 }
 
