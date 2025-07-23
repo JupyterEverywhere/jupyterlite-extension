@@ -73,7 +73,7 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
   private _showMenu(): void {
     const currentKernel = this._tracker.currentWidget?.sessionContext.session?.kernel?.name;
 
-    const allKernels = ['xpython', 'xr'];
+    const allKernels = Object.keys(KERNEL_DISPLAY_NAMES);
 
     // We order the kernels, so that the current kernel appears first
     // in the dropdown.

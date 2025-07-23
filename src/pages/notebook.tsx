@@ -10,6 +10,7 @@ import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
+import { KERNEL_URL_TO_NAME } from '../kernels';
 
 /**
  * Maps the notebook content language to a kernel name. We currently
@@ -144,7 +145,8 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     const createNewNotebook = async (): Promise<void> => {
       try {
         const params = new URLSearchParams(window.location.search);
-        const desiredKernel = params.get('kernel') || 'xpython';
+        const desiredKernelParam = params.get('kernel') || 'python';
+        const desiredKernel = KERNEL_URL_TO_NAME[desiredKernelParam] || 'xpython';
 
         await commands.execute('notebook:create-new', {
           kernelName: desiredKernel
