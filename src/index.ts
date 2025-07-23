@@ -382,6 +382,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
+        const currentKernel = panel.sessionContext.session?.kernel?.name || '';
+
+        if (currentKernel !== kernel) {
+          const currentKernelDisplay = KERNEL_DISPLAY_NAMES[currentKernel] || currentKernel;
+          const targetKernelDisplay = KERNEL_DISPLAY_NAMES[kernel] || kernel;
+          Notification.warning(
+            `You are about to switch your notebook coding language from ${currentKernelDisplay} to ${targetKernelDisplay}. Your previously created code will not run as intended.`,
+            { autoClose: 5000 }
+          );
+        }
+
         await switchKernel(panel, kernel);
       }
     });
