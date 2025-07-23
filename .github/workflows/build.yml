@@ -91,9 +91,13 @@ jobs:
         if-no-files-found: error
 
   lite:
-    name: Build JupyterLite app
+    name: Build JupyterLite app (${{ matrix.mode }})
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [test, prod]
     permissions:
       contents: read
       pull-requests: write
@@ -130,52 +134,44 @@ jobs:
         set -eux
         python -m pip install "jupyterlab>=4.0.0,<5"
 
-    - name: Build the JupyterLite app
+    - name: Build the JupyterLite app in ${{ matrix.mode }} mode
+      env:
+        MATRIX_MODE: ${{ matrix.mode }}
       run: |
         cd lite
-        bash ../.github/inject-gh-pages-config.sh
+        if [[ "${MATRIX_MODE}" == "prod" ]]; then
+          echo "Building JupyterLite app in production mode"
+          bash ../.github/inject-gh-pages-config.sh
+        else
+          echo "Building JupyterLite app in test mode"
+          bash ../ui-tests/inject-test-config.sh
+        fi
         cd ..
         jlpm install
         jlpm build:all
 
-    - name: Upload artifact
+    - name: Upload artifact (${{ matrix.mode }})
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
-        name: lite-app
+        name: lite-app-${{ matrix.mode }}
         path: ./dist
         if-no-files-found: error
 
-    - name: Upload GitHub Pages artifact
+    - name: Upload GitHub Pages artifact for production mode
+      if: matrix.mode == 'prod'
       uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
       with:
         path: ./dist
 
-    - name: Build landing page and JupyterLite app (in test mode)
-      run: |
-        rm -rf dist dist-test
-        cd lite
-        bash ../ui-tests/inject-test-config.sh
-        cd ..
-        jlpm install
-        jlpm build:all
-        mv dist dist-test
-
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-      with:
-        name: lite-app-test
-        path: ./dist-test
-        if-no-files-found: error
-
     - name: Leave instructions for testing
+      if: matrix.mode == 'prod'
       run: |
         echo "### JupyterLite App is ready" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo 'To test it locally, download the `lite-app` artifact and run' >> $GITHUB_STEP_SUMMARY
+        echo 'To test it locally, download the `lite-app-prod` artifact and run' >> $GITHUB_STEP_SUMMARY
         echo '```bash' >> $GITHUB_STEP_SUMMARY
-        echo "rm -r lite-app" >> $GITHUB_STEP_SUMMARY
-        echo "unzip lite-app.zip -d lite-app" >> $GITHUB_STEP_SUMMARY
+        echo "rm -r lite-app-prod" >> $GITHUB_STEP_SUMMARY
+        echo "unzip lite-app-prod.zip -d lite-app" >> $GITHUB_STEP_SUMMARY
         echo "cd lite-app" >> $GITHUB_STEP_SUMMARY
         echo "python -m http.server -b 127.0.0.1" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
