@@ -11,6 +11,14 @@ import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
 
+/**
+ * Maps the notebook content language to a kernel name. We currently
+ * only support Python and R notebooks, so this function maps them
+ * to 'xpython' and 'xr' respectively. If the language is not recognized,
+ * it defaults to 'xpython'.
+ * @param content - The notebook content to map the language to a kernel name.
+ * @returns - The kernel name as a string, either 'xpython' for Python or 'xr' for R.
+ */
 function mapLanguageToKernel(content: INotebookContent): string {
   const rawLang =
     (content?.metadata?.kernelspec?.language as unknown as string | undefined)?.toLowerCase() ||
