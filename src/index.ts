@@ -124,6 +124,22 @@ async function handleNotebookSharing(
 }
 
 /**
+ * Helper to start the save reminder timer. Clears any existing timer
+ * and sets a new one to show the notification after 5 minutes.
+ */
+function startSaveReminder(currentTimeout: number | null): number {
+  if (currentTimeout) {
+    window.clearTimeout(currentTimeout);
+  }
+  return window.setTimeout(() => {
+    Notification.info(
+      "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
+      { autoClose: 8000 }
+    );
+  }, 300 * 1000); // once after 5 minutes
+}
+
+/**
  * JUPYTEREVERYWHERE EXTENSION
  */
 const plugin: JupyterFrontEndPlugin<void> = {
@@ -378,16 +394,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     tracker.widgetAdded.connect((_, panel) => {
       if (saveReminderTimeout) {
-        window.clearInterval(saveReminderTimeout);
+        window.clearTimeout(saveReminderTimeout);
       }
 
       panel.context.ready.then(() => {
-        saveReminderTimeout = window.setTimeout(() => {
-          Notification.info(
-            "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
-            { autoClose: 8000 }
-          );
-        }, 300 * 1000); // once after 5 minutes
+        saveReminderTimeout = startSaveReminder(saveReminderTimeout);
+
+        panel.context.saveState.connect((_, state) => {
+          if (state === 'completed') {
+            saveReminderTimeout = startSaveReminder(saveReminderTimeout);
+          }
+        });
       });
     });
   }
