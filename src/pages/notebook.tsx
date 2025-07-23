@@ -22,8 +22,8 @@ import { KERNEL_URL_TO_NAME } from '../kernels';
  */
 function mapLanguageToKernel(content: INotebookContent): string {
   const rawLang =
-    (content?.metadata?.kernelspec?.language as unknown as string | undefined)?.toLowerCase() ||
-    (content?.metadata?.language_info?.name as unknown as string | undefined)?.toLowerCase() ||
+    (content?.metadata?.kernelspec?.language as string | undefined)?.toLowerCase() ||
+    (content?.metadata?.language_info?.name as string | undefined)?.toLowerCase() ||
     'python';
 
   if (rawLang === 'r') {
@@ -158,17 +158,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       }
     };
 
-    // If a notebook ID is provided in the URL (whether shared or uploaded),
-    // load it; otherwise, create a new notebook
-    if (notebookId) {
-      void loadSharedNotebook(notebookId);
-    } else if (uploadedNotebookId) {
-      void openUploadedNotebook(uploadedNotebookId);
-    } else {
-      void createNewNotebook();
-    }
-
-    async function openUploadedNotebook(id: string): Promise<void> {
+    const openUploadedNotebook = async (id: string): Promise<void> => {
       try {
         const raw = localStorage.getItem(`uploaded-notebook:${id}`);
         // Should not happen
@@ -207,6 +197,16 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         console.error('Failed to open uploaded notebook:', error);
         await createNewNotebook();
       }
+    };
+
+    // If a notebook ID is provided in the URL (whether shared or uploaded),
+    // load it; otherwise, create a new notebook
+    if (notebookId) {
+      void loadSharedNotebook(notebookId);
+    } else if (uploadedNotebookId) {
+      void openUploadedNotebook(uploadedNotebookId);
+    } else {
+      void createNewNotebook();
     }
 
     // Remove kernel URL param after notebook kernel is ready, as
