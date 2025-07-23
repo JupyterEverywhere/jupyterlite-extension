@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { initUploadHandler } from './upload';
+import { handleNotebookUpload } from './upload';
 
 import jeOctopus from '../style/icons/landing/je-octopus.svg';
 import octopusOutline from '../style/icons/landing/je-octopus-outline.svg';
@@ -33,9 +33,18 @@ import '../style/base.css';
  * @returns Landing page component
  */
 function LandingPage(): JSX.Element {
-  useEffect(() => {
-    initUploadHandler('#je-upload-button');
-  }, []);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleUploadClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    inputRef.current?.click();
+  };
+
+  const handleFileChanged = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await handleNotebookUpload(file);
+  };
 
   return (
     <div className="je-landing">
@@ -63,9 +72,16 @@ function LandingPage(): JSX.Element {
               <img src={rLogo} alt="R logo" />
             </a>
           </div>
-          <a href="#" className="je-upload" id="je-upload-button">
+          <a href="#" className="je-upload" onClick={handleUploadClick}>
             Upload a Notebook
           </a>
+          <input
+            type="file"
+            accept=".ipynb,application/json"
+            style={{ display: 'none' }}
+            ref={inputRef}
+            onChange={handleFileChanged}
+          />
         </main>
 
         <div className="je-hero-bottom">
