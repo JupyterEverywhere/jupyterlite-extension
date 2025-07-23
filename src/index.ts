@@ -371,8 +371,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-    // Track user time, and show a reminder to save the notebook every
+    // Track user time, and show a reminder to save the notebook after
     // five minutes using a toast notification.
+    // Then reset the timer when the notebook is saved manually.
     let saveReminderTimeout: number | null = null;
 
     tracker.widgetAdded.connect((_, panel) => {
@@ -381,11 +382,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
 
       panel.context.ready.then(() => {
-        if (panel.context.model.readOnly) {
-          console.log('View-only notebook detected: skipping save reminder.');
-          return;
-        }
-
         saveReminderTimeout = window.setTimeout(() => {
           Notification.info(
             "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
