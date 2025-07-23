@@ -6,4 +6,6 @@ export namespace Commands {
   export const downloadPDFCommand = 'jupytereverywhere:download-pdf';
   export const shareNotebookCommand = 'jupytereverywhere:share-notebook';
   export const createCopyNotebookCommand = 'jupytereverywhere:create-copy-notebook';
+  export const restartMemoryCommand = 'jupytereverywhere:restart-memory';
+  export const restartMemoryAndRunAllCommand = 'jupytereverywhere:restart-and-run-all';
 }
