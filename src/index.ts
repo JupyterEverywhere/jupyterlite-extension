@@ -1,6 +1,6 @@
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
+import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
 
@@ -8,6 +8,10 @@ import { customSidebar } from './sidebar';
 import { SharingService } from './sharing-service';
 
 import { createSuccessDialog, createErrorDialog } from './ui-components/share-dialog';
+
+import { LabIcon } from '@jupyterlab/ui-components';
+import refreshIcon from '../style/icons/refresh.svg';
+import fastForwardSvg from '../style/icons/fast-forward.svg';
 
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
@@ -86,10 +90,19 @@ async function handleNotebookSharing(
 ) {
   const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
+  const isViewOnly = notebookContent.metadata?.isSharedNotebook === true;
   const sharedId = notebookContent.metadata?.sharedId as string | undefined;
   const defaultName = generateDefaultNotebookName();
 
   try {
+    if (isViewOnly) {
+      // Skip CKHub sync for view-only notebooks
+      console.log('View-only notebook: skipping CKHub sync and showing share URL.');
+      if (manual) {
+        await showShareDialog(sharingService, notebookContent);
+      }
+      return;
+    }
     if (sharedId) {
       console.log('Updating notebook:', sharedId);
       await sharingService.update(sharedId, notebookContent);
@@ -203,6 +216,75 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
 
     /**
+     * Add a command to restart the notebook kernel, terming it as "memory"
+     */
+    const RefreshLabIcon = new LabIcon({
+      name: 'jupytereverywhere:refresh',
+      svgstr: refreshIcon
+    });
+
+    commands.addCommand(Commands.restartMemoryCommand, {
+      label: 'Restart Notebook Memory',
+      icon: RefreshLabIcon,
+      execute: async () => {
+        const panel = tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to restart.');
+          return;
+        }
+
+        const result = await showDialog({
+          title: 'Would you like to restart the notebook’s memory?',
+          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Restart' })]
+        });
+
+        if (result.button.accept) {
+          try {
+            await panel.sessionContext.restartKernel();
+          } catch (err) {
+            console.error('Memory restart failed', err);
+          }
+        }
+      }
+    });
+
+    /**
+     * Add a command to restart the notebook kernel, terming it as "memory",
+     * and run all cells after the restart.
+     */
+    const customFastForwardIcon = new LabIcon({
+      name: 'jupytereverywhere:restart-run',
+      svgstr: fastForwardSvg
+    });
+
+    commands.addCommand(Commands.restartMemoryAndRunAllCommand, {
+      label: 'Restart Notebook Memory and Run All Cells',
+      icon: customFastForwardIcon,
+      isEnabled: () => !!tracker.currentWidget,
+      execute: async () => {
+        const panel = tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to restart and run.');
+          return;
+        }
+
+        const result = await showDialog({
+          title: 'Would you like to restart the notebook’s memory and rerun all cells?',
+          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Restart' })]
+        });
+
+        if (result.button.accept) {
+          try {
+            await panel.sessionContext.restartKernel();
+            await commands.execute('notebook:run-all-cells');
+          } catch (err) {
+            console.error('Restarting and running all cells failed', err);
+          }
+        }
+      }
+    });
+
+    /**
      * Add custom Share notebook command
      */
     commands.addCommand(Commands.shareNotebookCommand, {
@@ -282,6 +364,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (!panel) {
           console.warn('No active notebook panel.');
           return;
+        }
+
+        const currentKernel = panel.sessionContext.session?.kernel?.name || '';
+
+        if (currentKernel !== kernel) {
+          const currentKernelDisplay = KERNEL_DISPLAY_NAMES[currentKernel] || currentKernel;
+          const targetKernelDisplay = KERNEL_DISPLAY_NAMES[kernel] || kernel;
+          Notification.warning(
+            `You are about to switch your notebook coding language from ${currentKernelDisplay} to ${targetKernelDisplay}. Your previously created code will not run as intended.`,
+            { autoClose: 5000 }
+          );
         }
 
         await switchKernel(panel, kernel);

@@ -559,3 +559,27 @@ test.describe('Title of the pages should be "Jupyter Everywhere"', () => {
     expect(title).toBe('Jupyter Everywhere');
   });
 });
+
+test.describe('Kernel commands should use memory terminology', () => {
+  test('Restart memory command', async ({ page }) => {
+    const promise = runCommand(page, 'jupytereverywhere:restart-memory');
+    const dialog = page.locator('.jp-Dialog-content');
+
+    await expect(dialog).toBeVisible();
+    expect(await dialog.screenshot()).toMatchSnapshot('restart-memory-dialog.png');
+
+    await dialog.press('Escape');
+    await promise;
+  });
+
+  test('Restart memory and run all cells command', async ({ page }) => {
+    const promise = runCommand(page, 'jupytereverywhere:restart-and-run-all');
+    const dialog = page.locator('.jp-Dialog-content');
+
+    await expect(dialog).toBeVisible();
+    expect(await dialog.screenshot()).toMatchSnapshot('restart-memory-run-all-dialog.png');
+
+    await dialog.press('Escape');
+    await promise;
+  });
+});
