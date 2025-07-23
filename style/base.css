@@ -26,6 +26,7 @@
   --je-sidebar-width: calc(var(--je-scale) * 110px);
   --je-toolbar-height: calc(var(--je-scale) * 67px);
   --je-margin-below-toolbar: calc(var(--je-scale) * 15px);
+  --je-lilac: #d8b8dc;
   --je-border-color: #e6e6e6;
   --je-slate-blue-gradient:
     linear-gradient(90deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 20%) 100%), #4b3187;
@@ -216,7 +217,7 @@
 
 #jp-main-dock-panel[data-mode='single-document'] {
   padding: var(--je-document-padding) !important;
-  background: #d8b8dc;
+  background: var(--je-lilac);
 }
 
 #jp-main-dock-panel[data-mode='single-document'] .jp-MainAreaWidget {

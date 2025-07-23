@@ -58,11 +58,14 @@
       },
       {
         "name": "restart",
-        "caption": "Restart notebook"
+        "command": "jupytereverywhere:restart-memory",
+        "caption": "Restart notebook",
+        "label": ""
       },
       {
         "name": "restart-and-run",
-        "caption": "Restart and run all cells"
+        "caption": "Restart and run all cells",
+        "command": "jupytereverywhere:restart-and-run-all"
       },
       {
         "name": "share",

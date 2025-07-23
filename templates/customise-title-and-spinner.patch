@@ -1,0 +1,101 @@
+From 331b85e6b233371a7903355fe915b7dca151a4fb Mon Sep 17 00:00:00 2001
+From: Agriya Khetarpal <74401230+agriyakhetarpal@users.noreply.github.com>
+Date: Tue, 22 Jul 2025 22:16:08 +0530
+Subject: [PATCH] Customise loading indicator and title for Jupyter Everywhere
+
+---
+ newindex.html | 49 +++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 41 insertions(+), 8 deletions(-)
+
+diff --git a/dist/lab/index.html b/dist/lab/index.html
+index 962feb4..9731e89 100644
+--- a/dist/lab/index.html
++++ b/dist/lab/index.html
+@@ -1,7 +1,7 @@
+ <!DOCTYPE html>
+ <html>
+   <head>
+-    <title>JupyterLite</title>
++    <title>Jupyter Everywhere</title>
+     <meta charset="utf-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+     <meta name="Description" content="WASM powered Jupyter running in the browser." />
+@@ -33,6 +33,10 @@
+       }.call(this));
+     </script>
+     <style>
++      :root {
++        --je-lilac: #d8b8dc;
++      }
++
+       body {
+         margin: 0;
+         padding: 0;
+@@ -72,19 +76,45 @@
+         display: block;
+       }
+ 
+-      .jupyterlite-loading-indicator-spinner {
+-        width: 60px;
+-        height: 60px;
++      .jupyterlite-loading-indicator-container {
++        position: relative;
++        width: 70px;
++        height: 70px;
+         margin: 0 auto 20px;
++      }
++
++      .jupyterlite-loading-indicator-spinner {
++        width: 100%;
++        height: 100%;
+         border: 6px solid rgba(0, 0, 0, 0.1);
+-        border-top: 6px solid #FFDC00; /* Bright yellow color */
++        border-top: 6px solid var(--je-lilac);
+         border-radius: 50%;
+         animation: jupyter-spin 1s linear infinite;
++        box-sizing: border-box;
+       }
+ 
+       body.jp-mod-dark .jupyterlite-loading-indicator-spinner {
+         border: 6px solid rgba(255, 255, 255, 0.1);
+-        border-top: 6px solid #FFDC00;
++        border-top: 6px solid var(--je-lilac);
++        box-sizing: border-box;
++      }
++
++      .jupyterlite-loading-indicator-logo {
++        position: absolute;
++        top: 50%;
++        left: 50%;
++        transform: translate(-50%, -50%);
++        width: 50px;
++        height: 50px;
++        background-image: url('logo.svg');
++        background-size: cover;
++        background-repeat: no-repeat;
++        background-position: center;
++        z-index: 1001;
++      }
++
++      body.jp-mod-dark .jupyterlite-loading-indicator-logo {
++        background-color: #6d28d9;
+       }
+ 
+       .jupyterlite-loading-indicator-text {
+@@ -114,8 +144,11 @@
+   </head>
+   <body class="jp-ThemedContainer" data-notebook="lab">
+     <div id="jupyterlite-loading-indicator" class="hidden">
+-      <div class="jupyterlite-loading-indicator-spinner"></div>
+-      <div class="jupyterlite-loading-indicator-text">Loading JupyterLite...</div>
++      <div class="jupyterlite-loading-indicator-container">
++        <div class="jupyterlite-loading-indicator-spinner"></div>
++        <div class="jupyterlite-loading-indicator-logo"></div>
++      </div>
++      <div class="jupyterlite-loading-indicator-text">Loading Jupyter Everywhere...</div>
+     </div>
+     <noscript>
+       <div style="text-align: center; padding: 20px;">
+-- 
+2.39.5 (Apple Git-154)
+
