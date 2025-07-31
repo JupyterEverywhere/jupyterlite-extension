@@ -11,6 +11,14 @@ dependencies:
   - seaborn
   - matplotlib
   - scikit-learn
-  - r-tidyverse
+  - r-base
+  - r-ggplot2
+  - r-dplyr
+  - r-tidyr
+  - r-readr
+  - r-purrr
+  - r-tibble
+  - r-stringr
+  - r-forcats
   - r-coursekata
   - r-neuralnet
