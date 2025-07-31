@@ -34,7 +34,7 @@ index 962feb4..9731e89 100644
 @@ -72,19 +76,45 @@
          display: block;
        }
- 
+
 -      .jupyterlite-loading-indicator-spinner {
 -        width: 60px;
 -        height: 60px;
@@ -55,7 +55,7 @@ index 962feb4..9731e89 100644
          animation: jupyter-spin 1s linear infinite;
 +        box-sizing: border-box;
        }
- 
+
        body.jp-mod-dark .jupyterlite-loading-indicator-spinner {
          border: 6px solid rgba(255, 255, 255, 0.1);
 -        border-top: 6px solid #FFDC00;
@@ -80,7 +80,7 @@ index 962feb4..9731e89 100644
 +      body.jp-mod-dark .jupyterlite-loading-indicator-logo {
 +        background-color: #6d28d9;
        }
- 
+
        .jupyterlite-loading-indicator-text {
 @@ -114,8 +144,11 @@
    </head>
@@ -96,6 +96,5 @@ index 962feb4..9731e89 100644
      </div>
      <noscript>
        <div style="text-align: center; padding: 20px;">
--- 
+--
 2.39.5 (Apple Git-154)
-
