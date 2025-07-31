@@ -12,6 +12,10 @@ dependencies:
   - matplotlib
   - scikit-learn
   - r-base
+  # -r-tidyverse is not available yet due to upper pin on r-base, and
+  # older r-base versions are not available on emscripten-forge, so we
+  # install some of the tidyverse packages individually (except for
+  # r-lubridate)
   - r-ggplot2
   - r-dplyr
   - r-tidyr
