@@ -16,9 +16,9 @@ import fastForwardSvg from '../style/icons/fast-forward.svg';
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
 import { Commands } from './commands';
-import { competitions } from './pages/competitions';
+// import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
-import { helpPlugin } from './pages/help';
+// import { helpPlugin } from './pages/help';
 import { generateDefaultNotebookName } from './notebook-name';
 import {
   IViewOnlyNotebookTracker,
@@ -508,7 +508,7 @@ export default [
   plugin,
   notebookPlugin,
   files,
-  competitions,
-  customSidebar,
-  helpPlugin
+  // competitions,
+  customSidebar
+  // helpPlugin
 ];
