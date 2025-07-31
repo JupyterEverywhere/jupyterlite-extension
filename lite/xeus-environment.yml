@@ -5,3 +5,10 @@ channels:
 dependencies:
   - xeus-python
   - xeus-r
+  - numpy
+  - pandas
+  - scipy
+  - seaborn
+  - matplotlib
+  - scikit-learn
+
