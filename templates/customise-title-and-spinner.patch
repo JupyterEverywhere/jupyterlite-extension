@@ -1,17 +1,17 @@
-From 331b85e6b233371a7903355fe915b7dca151a4fb Mon Sep 17 00:00:00 2001
+From 5908a72b1ee627276e3df8697d9d336b1a2795b0 Mon Sep 17 00:00:00 2001
 From: Agriya Khetarpal <74401230+agriyakhetarpal@users.noreply.github.com>
 Date: Tue, 22 Jul 2025 22:16:08 +0530
 Subject: [PATCH] Customise loading indicator and title for Jupyter Everywhere
 
 ---
- newindex.html | 49 +++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 41 insertions(+), 8 deletions(-)
+ index.html | 51 ++++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 42 insertions(+), 9 deletions(-)
 
 diff --git a/dist/lab/index.html b/dist/lab/index.html
-index 962feb4..9731e89 100644
+index 962feb4..eb849c1 100644
 --- a/dist/lab/index.html
 +++ b/dist/lab/index.html
-@@ -1,7 +1,7 @@
+@@ -1,10 +1,10 @@
  <!DOCTYPE html>
  <html>
    <head>
@@ -19,7 +19,11 @@ index 962feb4..9731e89 100644
 +    <title>Jupyter Everywhere</title>
      <meta charset="utf-8" />
      <meta name="viewport" content="width=device-width, initial-scale=1" />
-     <meta name="Description" content="WASM powered Jupyter running in the browser." />
+-    <meta name="Description" content="WASM powered Jupyter running in the browser." />
++    <meta name="Description" content="Jupyter for teaching, sharing, and exploring — everywhere." />
+     <link rel="manifest" href="../manifest.webmanifest" />
+     <link
+       id="jupyter-lite-main"
 @@ -33,6 +33,10 @@
        }.call(this));
      </script>
