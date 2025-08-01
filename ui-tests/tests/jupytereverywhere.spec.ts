@@ -440,7 +440,7 @@ test.describe('Landing page', () => {
   });
 });
 
-test.describe('Kernel Switching', () => {
+test.describe('Kernel and kernel switcher tests', () => {
   test('Should open kernel switcher menu', async ({ page }) => {
     const downloadButton = page.locator('.je-KernelSwitcherButton');
     await downloadButton.click();
@@ -450,11 +450,10 @@ test.describe('Kernel Switching', () => {
   });
 });
 
-test('Should switch to R kernel and run R code', async ({ page }) => {
-  await page.goto('lab/index.html');
+test('Start R kernel and run R code', async ({ page }) => {
+  await page.goto('lab/index.html?kernel=r');
   await page.waitForSelector('.jp-NotebookPanel');
 
-  await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
   await runCommand(page, 'notebook:insert-cell-below');
 
   const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
