@@ -473,6 +473,30 @@ test('Start R kernel and run R code', async ({ page }) => {
   expect(await output.screenshot()).toMatchSnapshot('r-output.png');
 });
 
+test('Switch to Python kernel and run Python code', async ({ page }) => {
+  await page.goto('lab/index.html?kernel=r');
+  await page.waitForSelector('.jp-NotebookPanel');
+
+  await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xpython' });
+  await runCommand(page, 'notebook:insert-cell-below');
+
+  const code = 'print("Hello from Python!")';
+  const cell = page.locator('.jp-Cell').last();
+  await cell.getByRole('textbox').fill(code);
+
+  await runCommand(page, 'notebook:run-cell');
+
+  const output = cell.locator('.jp-Cell-outputArea');
+  await expect(output).toBeVisible({
+    timeout: 20000 // shouldn't take too long to run but just to be safe
+  });
+
+  const text = await output.textContent();
+  expect(text).toContain('Hello from Python!');
+  // Add a snapshot of the output area
+  expect(await output.screenshot()).toMatchSnapshot('python-output.png');
+});
+
 test.describe('Leave confirmation', () => {
   test('Leave confirmation snapshot', async ({ page }) => {
     await mockTokenRoute(page);
