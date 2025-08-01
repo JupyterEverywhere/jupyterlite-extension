@@ -5,7 +5,7 @@ import { ReactiveToolbar, Toolbar } from '@jupyterlab/ui-components';
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { ABCWidgetFactory, DocumentRegistry, DocumentWidget } from '@jupyterlab/docregistry';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { IRenderMimeRegistry, MimeModel } from '@jupyterlab/rendermime';
 import { ITranslator } from '@jupyterlab/translation';
 import { INotebookModel, Notebook, StaticNotebook } from '@jupyterlab/notebook';
 import { createToolbarFactory, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
@@ -123,6 +123,7 @@ class ViewOnlyNotebookWidgetFactory extends ABCWidgetFactory<
   ): ViewOnlyNotebookPanel {
     const translator = (context as any).translator;
     const { contentFactory, mimeTypeService, rendermime } = this._options;
+    rendermime.createModel = rendermime.createModel || (() => new MimeModel());
     const nbOptions = {
       rendermime: source
         ? source.content.rendermime
