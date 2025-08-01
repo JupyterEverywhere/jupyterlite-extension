@@ -1,2 +1,2 @@
 jupyterlite==0.6.3
-jupyterlite-xeus==4.0.5
+jupyterlite-xeus==4.1.2
