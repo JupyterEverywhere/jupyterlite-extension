@@ -464,53 +464,59 @@ test.describe('Kernel and kernel switcher tests', () => {
       await page.locator('.je-KernelSwitcherDropdownButton-menu').screenshot()
     ).toMatchSnapshot('kernel-switcher-menu.png');
   });
-});
 
-test.skip('Should switch to R kernel and run R code', async ({ page }) => {
-  await page.goto('lab/index.html');
-  await page.waitForSelector('.jp-NotebookPanel');
+  test('Should switch to R kernel and run R code', async ({ page }) => {
+    await page.goto('lab/index.html&kernel=r');
+    await page.waitForSelector('.jp-NotebookPanel');
 
-  await runCommand(page, 'notebook:insert-cell-below');
+    await runCommand(page, 'notebook:insert-cell-below');
 
-  const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
-  const cell = page.locator('.jp-Cell').last();
-  await cell.getByRole('textbox').fill(code);
+    // Wait 20 seconds so that the kernel can initialise
+    await page.waitForTimeout(20000);
 
-  await runCommand(page, 'notebook:run-cell');
+    const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(code);
 
-  const output = cell.locator('.jp-Cell-outputArea');
-  await expect(output).toBeVisible({
-    timeout: 20000 // shouldn't take too long to run but just to be safe
+    await runCommand(page, 'notebook:run-cell');
+
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({
+      timeout: 20000 // shouldn't take too long to run but just to be safe
+    });
+
+    const text = await output.textContent();
+    expect(text).toContain('Call');
+    // Add a snapshot of the output area
+    expect(await output.screenshot()).toMatchSnapshot('r-output.png');
   });
 
-  const text = await output.textContent();
-  expect(text).toContain('Call');
-  // Add a snapshot of the output area
-  expect(await output.screenshot()).toMatchSnapshot('r-output.png');
-});
+  test('Switch to Python kernel and run Python code', async ({ page }) => {
+    await page.goto('lab/index.html?kernel=python');
+    await page.waitForSelector('.jp-NotebookPanel');
 
-test('Switch to Python kernel and run Python code', async ({ page }) => {
-  await page.goto('lab/index.html?kernel=r');
-  await page.waitForSelector('.jp-NotebookPanel');
+    await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xpython' });
+    await runCommand(page, 'notebook:insert-cell-below');
 
-  await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xpython' });
-  await runCommand(page, 'notebook:insert-cell-below');
+    // Wait 20 seconds so that the kernel can initialise
+    await page.waitForTimeout(20000);
 
-  const code = 'print("Hello from Python!")';
-  const cell = page.locator('.jp-Cell').last();
-  await cell.getByRole('textbox').fill(code);
+    const code = 'print("Hello from Python!")';
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(code);
 
-  await runCommand(page, 'notebook:run-cell');
+    await runCommand(page, 'notebook:run-cell');
 
-  const output = cell.locator('.jp-Cell-outputArea');
-  await expect(output).toBeVisible({
-    timeout: 20000 // shouldn't take too long to run but just to be safe
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({
+      timeout: 20000 // shouldn't take too long to run but just to be safe
+    });
+
+    const text = await output.textContent();
+    expect(text).toContain('Hello from Python!');
+    // Add a snapshot of the output area
+    expect(await output.screenshot()).toMatchSnapshot('python-output.png');
   });
-
-  const text = await output.textContent();
-  expect(text).toContain('Hello from Python!');
-  // Add a snapshot of the output area
-  expect(await output.screenshot()).toMatchSnapshot('python-output.png');
 });
 
 test.describe('Leave confirmation', () => {
