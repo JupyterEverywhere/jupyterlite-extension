@@ -1,6 +1,6 @@
 {
     "name": "jupytereverywhere",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "A Jupyter extension for k12 education",
     "keywords": [
         "jupyter",
