@@ -3449,7 +3449,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsdom@npm:^21.0.0":
+"@types/jsdom@npm:^21.1.1":
   version: 21.1.7
   resolution: "@types/jsdom@npm:21.1.7"
   dependencies:
