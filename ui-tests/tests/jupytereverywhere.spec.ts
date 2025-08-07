@@ -378,16 +378,16 @@ test.describe('Landing page', () => {
 
     await page.waitForTimeout(2000);
 
-    // Find the scroll height because the landing page is long and we want to
-    // capture the full page screenshot without the rest of it being empty; as
-    // we use a viewport to handle the hero section.
-    const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
-
     // Override the hero section's height so that we don't get blank sections
     // after the viewport.
     await page.addStyleTag({
       content: '.je-hero { min-height: auto !important; height: auto !important; }'
     });
+
+    // Find the scroll height because the landing page is long and we want to
+    // capture the full page screenshot without the rest of it being empty; as
+    // we use a viewport to handle the hero section.
+    const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
 
     await page.setViewportSize({
       width: 1440,
