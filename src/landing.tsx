@@ -61,6 +61,7 @@ function LandingPage(): JSX.Element {
           <h1>
             <span className="je-brand je-welcome">Welcome to</span>
             <span className="je-brand">Jupyter Everywhere</span>
+            <span className="je-brand">Beta</span>
           </h1>
 
           <div className="je-buttons">
