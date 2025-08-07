@@ -334,7 +334,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
      * display the shareable link dialog after the notebook is
      * saved manually by the user.
      */
-    commands.addCommand('jupytereverywhere:save-and-share', {
+    commands.addCommand(Commands.saveAndShareNotebookCommand, {
       label: 'Save and Share Notebook',
       execute: async () => {
         const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
@@ -353,7 +353,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
 
     app.commands.addKeyBinding({
-      command: 'jupytereverywhere:save-and-share',
+      command: Commands.saveAndShareNotebookCommand,
       keys: ['Accel S'],
       selector: '.jp-Notebook'
     });
