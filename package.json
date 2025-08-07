@@ -9,7 +9,7 @@
     ],
     "homepage": "",
     "bugs": {
-        "url": "/issues"
+        "url": "https://github.com/JupyterEverywhere/jupyterlite-extension/issues"
     },
     "license": "BSD-3-Clause",
     "author": {
