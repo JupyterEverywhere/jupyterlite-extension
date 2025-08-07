@@ -457,6 +457,7 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
   await runCommand(page, 'notebook:insert-cell-below');
 
+  await page.waitForTimeout(1000);
   const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
   const cell = page.locator('.jp-Cell').last();
   await cell.getByRole('textbox').fill(code);
@@ -472,6 +473,29 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   expect(text).toContain('Call');
   // Add a snapshot of the output area
   expect(await output.screenshot()).toMatchSnapshot('r-output.png');
+});
+
+test('Should import dplyr correctly', async ({ page }) => {
+  await page.goto('lab/index.html');
+  await page.waitForSelector('.jp-NotebookPanel');
+
+  await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
+  await runCommand(page, 'notebook:insert-cell-below');
+
+  await page.waitForTimeout(1000);
+  const code = 'library(dplyr); 2 ** 32';
+  const cell = page.locator('.jp-Cell').last();
+  await cell.getByRole('textbox').fill(code);
+
+  await runCommand(page, 'notebook:run-cell');
+
+  const output = cell.locator('.jp-Cell-outputArea');
+  await expect(output).toBeVisible({
+    timeout: 20000 // shouldn't take too long to run but just to be safe
+  });
+
+  const text = await output.textContent();
+  expect(text).toContain('4294967296');
 });
 
 test.describe('Leave confirmation', () => {
