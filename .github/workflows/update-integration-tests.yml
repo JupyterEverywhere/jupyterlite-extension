@@ -87,7 +87,6 @@ jobs:
       - name: Install extension
         run: |
           set -eux
-          jlpm
           python -m pip install .
 
       - name: Build landing page and JupyterLite app
