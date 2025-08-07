@@ -106,8 +106,8 @@
         "@lumino/coreutils": "^2.2.1",
         "@lumino/messaging": "^2.0.3",
         "@lumino/widgets": "^2.7.1",
-        "@types/jsdom": "^21.0.0",
-        "typescript": "4.9.5",
+        "@types/jsdom": "21.1.1",
+        "typescript": "5.1.6",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "lib0": "0.2.105"
@@ -139,7 +139,7 @@
         "stylelint-config-standard": "^34.0.0",
         "stylelint-csstree-validator": "^3.0.0",
         "stylelint-prettier": "^4.0.0",
-        "typescript": "4.9.5",
+        "typescript": "5.1.6",
         "yjs": "^13.5.0"
     },
     "sideEffects": [
