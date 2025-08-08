@@ -13,88 +13,36 @@ env:
 permissions: {}
 
 jobs:
-  build-python-distributions:
-    name: Build sdist and wheel
+  build-extension:
+    name: Build the jupyterlite-extension wheel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/build-extension
+
+  build-app:
+    name: Build the JupyterLite app
+    needs: build-extension
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
-
-      - name: Setup Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: ./.github/build-app
         with:
-          python-version: '3.11'
-
-      - name: Install jlpm
-        run: pip install "jupyterlab>=4.0.0,<5"
-
-      - name: Build the extension artifacts
-        run: pipx run build --outdir distributions
-
-      - name: Upload the extension artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: sdist-and-wheel
-          path: distributions/jupytereverywhere*
-          if-no-files-found: error
-
-  build-jupyterlite-app:
-    name: Build JupyterLite deployment
-    needs: build-python-distributions
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          persist-credentials: false
-
-      - name: Setup Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: '3.11'
-
-      - name: Install micromamba
-        uses: mamba-org/setup-micromamba@b09ef9b599704322748535812ca03efb2625677b # v2.0.5
-
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: sdist-and-wheel
-          path: distributions
-
-      - name: Install the dependencies
-        run: |
-          pip install distributions/jupytereverywhere*.whl
-          pip install "jupyterlab>=4.0.0,<5"
-          pip install -r lite/requirements.txt
-
-      - name: Build JupyterLite app
-        run: |
-          set -eux
-          cd lite
-          # Inject production build configuration
-          bash ../.github/inject-gh-pages-config.sh
-          cd ..
-          jlpm install
-          jlpm build:all
-
-      - name: Create archive of JupyterLite app
-        run: tar -czf jupyterlite-app-release.tar.gz dist/
-
-      - name: Upload JupyterLite app artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: jupyterlite-app-release
-          path: jupyterlite-app-release.tar.gz
-          if-no-files-found: error
+          mode: prod
 
   release:
-    name: Upload to GitHub Release
+    name: Package and upload to GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-jupyterlite-app]
+    needs: build-app
     if: github.event_name == 'release' && github.event.action == 'published'
     permissions:
       # Required to upload artifacts to a GitHub release identifier
@@ -103,11 +51,20 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - name: Download all artifacts
+      - name: Download the built app
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          path: upload
-          merge-multiple: true
+          name: lite-app-prod
+          path: dist/
+
+      - name: Create archive of JupyterLite app
+        run: tar -czf jupyterlite-app-release.tar.gz dist/
+
+      - name: Move everything into a single directory for attestation and publication
+        run: |
+          mkdir upload
+          mv dist/ upload/
+          mv jupyterlite-app-release.tar.gz upload/
 
       - name: Generate artifact attestations
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
