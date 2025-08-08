@@ -26,7 +26,12 @@ import {
   ViewOnlyNotebookPanel
 } from './view-only';
 
-import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
+import {
+  KERNEL_DISPLAY_NAMES,
+  KERNEL_URL_TO_NAME,
+  KERNEL_NAME_TO_URL,
+  switchKernel
+} from './kernels';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -75,6 +80,55 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
   }
 }
 
+function ensureLanguageMetadata(
+  panel: NotebookPanel | ViewOnlyNotebookPanel,
+  content: INotebookContent
+): boolean {
+  const prev = JSON.stringify({
+    ks: content.metadata?.kernelspec,
+    li: content.metadata?.language_info
+  });
+
+  // we go from URL alias (?kernel=python|r) to kernel name (xpython|xr)
+  const urlKernelParam = new URL(window.location.href).searchParams.get('kernel') || undefined;
+  const kernelFromUrl = urlKernelParam ? KERNEL_URL_TO_NAME[urlKernelParam] : undefined;
+
+  const kernelFromSession =
+    panel instanceof NotebookPanel ? panel.sessionContext.session?.kernel?.name : undefined;
+
+  const kernelName =
+    (content.metadata?.kernelspec as any)?.name || kernelFromSession || kernelFromUrl || 'xpython';
+
+  const language =
+    (content.metadata?.language_info as any)?.name ||
+    (content.metadata?.kernelspec as any)?.language ||
+    KERNEL_NAME_TO_URL[kernelName] ||
+    'python';
+
+  const display = KERNEL_DISPLAY_NAMES[kernelName] || (language === 'r' ? 'R' : 'Python');
+
+  content.metadata = {
+    ...content.metadata,
+    kernelspec: {
+      ...((content.metadata?.kernelspec as any) ?? {}),
+      name: kernelName,
+      display_name: display,
+      language
+    },
+    language_info: {
+      ...((content.metadata?.language_info as any) ?? {}),
+      name: language
+    }
+  };
+
+  const next = JSON.stringify({
+    ks: content.metadata.kernelspec,
+    li: content.metadata.language_info
+  });
+
+  return prev !== next;
+}
+
 /**
  * Notebook share/save handler. This function handles both sharing a new notebook and
  * updating an existing shared notebook.
@@ -103,6 +157,12 @@ async function handleNotebookSharing(
       }
       return;
     }
+    // Ensure that the language metadata exists, even if the kernel has not started yet.
+    const patched = ensureLanguageMetadata(notebookPanel, notebookContent);
+    if (patched) {
+      notebookPanel.context.model.fromJSON(notebookContent);
+    }
+
     if (sharedId) {
       console.log('Updating notebook:', sharedId);
       await sharingService.update(sharedId, notebookContent);
