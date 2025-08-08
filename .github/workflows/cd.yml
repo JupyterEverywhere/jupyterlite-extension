@@ -33,7 +33,7 @@ jobs:
         run: pip install "jupyterlab>=4.0.0,<5"
 
       - name: Build the extension artifacts
-        run: pipx run build --output-dir distributions
+        run: pipx run build --outdir distributions
 
       - name: Upload the extension artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
