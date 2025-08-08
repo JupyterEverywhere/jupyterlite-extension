@@ -21,15 +21,18 @@ runs:
         name: extension-artifacts
 
     - name: Install the dependencies
+      shell: bash
       run: |
         cd lite
         pip install -r requirements.txt
 
     - name: Install Jupyter Everywhere extension
+      shell: bash
       run: |
         pip install jupytereverywhere*.whl
 
     - name: Install jlpm
+      shell: bash
       run: |
         set -eux
         python -m pip install "jupyterlab>=4.0.0,<5"
@@ -37,6 +40,7 @@ runs:
     - name: Build the JupyterLite app in ${{ inputs.mode }} mode
       env:
         MATRIX_MODE: ${{ inputs.mode }}
+      shell: bash
       run: |
         cd lite
         if [[ "${MATRIX_MODE}" == "prod" ]]; then
@@ -65,6 +69,7 @@ runs:
 
     - name: Leave instructions for testing
       if: inputs.mode == 'prod'
+      shell: bash
       run: |
         echo "### JupyterLite App is ready" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
