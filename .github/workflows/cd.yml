@@ -1,0 +1,127 @@
+name: CD
+
+on:
+  release:
+    types: [published]
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday at midnight UTC
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 3
+
+permissions: {}
+
+jobs:
+  build-python-distributions:
+    name: Build sdist and wheel
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+
+      - name: Install jlpm
+        run: pip install "jupyterlab>=4.0.0,<5"
+
+      - name: Build the extension artifacts
+        run: pipx run build --output-dir distributions
+
+      - name: Upload the extension artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sdist-and-wheel
+          path: distributions/jupytereverywhere*
+          if-no-files-found: error
+
+  build-jupyterlite-app:
+    name: Build JupyterLite deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+
+      - name: Install micromamba
+        uses: mamba-org/setup-micromamba@b09ef9b599704322748535812ca03efb2625677b # v2.0.5
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: sdist-and-wheel
+          path: distributions
+
+      - name: Install the dependencies
+        run: |
+          pip install -r distributions/jupytereverywhere*.whl
+          pip install "jupyterlab>=4.0.0,<5"
+          pip install -r lite/requirements.txt
+
+      - name: Build JupyterLite app
+        run: |
+          set -eux
+          cd lite
+          # Inject production build configuration
+          bash ../.github/inject-gh-pages-config.sh
+          cd ..
+          jlpm install
+          jlpm build:all
+
+      - name: Upload JupyterLite app artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: jupyterlite-app-release
+          path: ./dist
+          if-no-files-found: error
+
+  release:
+    name: Upload to GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-python-distributions, build-jupyterlite-app]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    permissions:
+      # Required to upload artifacts to a GitHub release identifier
+      contents: write
+      # For GHA Attestations
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: upload
+          merge-multiple: true
+
+      - name: Generate artifact attestations
+        uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
+        with:
+          subject-path: "upload/*"
+
+      - name: Verify artifact attestations
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          for artifact in upload/*; do
+              echo "# ${artifact}"
+              gh attestation verify "${artifact}" --repo ${{ github.repository }}
+          done
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@51cfd90a6d81cfe329568f851fe2236ab4416d17 # v2.2.0
+        if: github.event_name == 'release' && github.event.action == 'published'
+        with:
+          files: upload/*
