@@ -114,11 +114,12 @@ jobs:
       - name: Verify artifact attestations
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           for artifact in upload/*; do
               echo "# ${artifact}"
-              gh attestation verify "${artifact}" --repo ${{ github.repository }}
+              gh attestation verify "${artifact}" --repo $GH_REPO
           done
 
       - name: Publish to GitHub Release
