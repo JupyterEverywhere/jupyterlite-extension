@@ -67,7 +67,7 @@ jobs:
 
       - name: Install the dependencies
         run: |
-          pip install -r distributions/jupytereverywhere*.whl
+          pip install distributions/jupytereverywhere*.whl
           pip install "jupyterlab>=4.0.0,<5"
           pip install -r lite/requirements.txt
 
