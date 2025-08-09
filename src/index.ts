@@ -2,7 +2,12 @@ import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/a
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
-import { INotebookContent } from '@jupyterlab/nbformat';
+import type {
+  INotebookContent,
+  INotebookMetadata,
+  IKernelspecMetadata,
+  ILanguageInfoMetadata
+} from '@jupyterlab/nbformat';
 
 import { customSidebar } from './sidebar';
 import { SharingService } from './sharing-service';
@@ -84,49 +89,55 @@ function ensureLanguageMetadata(
   panel: NotebookPanel | ViewOnlyNotebookPanel,
   content: INotebookContent
 ): boolean {
-  const prev = JSON.stringify({
-    ks: content.metadata?.kernelspec,
-    li: content.metadata?.language_info
-  });
+  const meta = (content.metadata ?? {}) as INotebookMetadata;
+  const before = JSON.stringify({ ks: meta.kernelspec, li: meta.language_info });
 
-  // we go from URL alias (?kernel=python|r) to kernel name (xpython|xr)
   const urlKernelParam = new URL(window.location.href).searchParams.get('kernel') || undefined;
   const kernelFromUrl = urlKernelParam ? KERNEL_URL_TO_NAME[urlKernelParam] : undefined;
-
   const kernelFromSession =
     panel instanceof NotebookPanel ? panel.sessionContext.session?.kernel?.name : undefined;
 
-  const kernelName =
-    (content.metadata?.kernelspec as any)?.name || kernelFromSession || kernelFromUrl || 'xpython';
+  const kernelName = meta.kernelspec?.name || kernelFromSession || kernelFromUrl || 'xpython';
 
-  const language =
-    (content.metadata?.language_info as any)?.name ||
-    (content.metadata?.kernelspec as any)?.language ||
-    KERNEL_NAME_TO_URL[kernelName] ||
+  const language: 'python' | 'r' =
+    (meta.language_info?.name as any) ||
+    (meta.kernelspec as IKernelspecMetadata | undefined)?.language ||
+    (KERNEL_NAME_TO_URL[kernelName] as any) ||
     'python';
 
   const display = KERNEL_DISPLAY_NAMES[kernelName] || (language === 'r' ? 'R' : 'Python');
 
-  content.metadata = {
-    ...content.metadata,
-    kernelspec: {
-      ...((content.metadata?.kernelspec as any) ?? {}),
-      name: kernelName,
-      display_name: display,
-      language
-    },
-    language_info: {
-      ...((content.metadata?.language_info as any) ?? {}),
-      name: language
-    }
-  };
+  const file_extension =
+    (meta.language_info as ILanguageInfoMetadata | undefined)?.file_extension ??
+    (language === 'r' ? '.r' : '.py');
+  const version = (meta.language_info as ILanguageInfoMetadata | undefined)?.version ?? '0';
 
-  const next = JSON.stringify({
-    ks: content.metadata.kernelspec,
-    li: content.metadata.language_info
+  const kernelspec: IKernelspecMetadata = {
+    ...(meta.kernelspec ?? {}),
+    name: kernelName,
+    display_name: display,
+    language
+  } as IKernelspecMetadata;
+
+  const language_info: ILanguageInfoMetadata = {
+    ...(meta.language_info ?? {}),
+    name: language,
+    file_extension,
+    version
+  } as ILanguageInfoMetadata;
+
+  content.metadata = {
+    ...(content.metadata ?? {}),
+    kernelspec,
+    language_info
+  } as INotebookMetadata;
+
+  const after = JSON.stringify({
+    ks: (content.metadata as INotebookMetadata).kernelspec,
+    li: (content.metadata as INotebookMetadata).language_info
   });
 
-  return prev !== next;
+  return before !== after;
 }
 
 /**
