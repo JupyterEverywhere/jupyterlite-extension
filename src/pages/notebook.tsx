@@ -10,7 +10,7 @@ import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
-import { KERNEL_URL_TO_NAME, KERNEL_NAME_TO_URL } from '../kernels';
+import { KERNEL_URL_TO_NAME } from '../kernels';
 
 /**
  * Maps the notebook content language to a kernel name. We currently
@@ -157,28 +157,6 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           kernelName: desiredKernel
         });
 
-        const panel = tracker.currentWidget;
-        if (panel) {
-          const json = panel.context.model.toJSON() as INotebookContent;
-          const language = KERNEL_NAME_TO_URL[desiredKernel] || 'python';
-
-          json.metadata = {
-            ...json.metadata,
-            kernelspec: {
-              ...((json.metadata?.kernelspec as any) ?? {}),
-              name: desiredKernel,
-              display_name: desiredKernel === 'xr' ? 'R' : 'Python',
-              language
-            },
-            language_info: {
-              ...((json.metadata?.language_info as any) ?? {}),
-              name: language
-            }
-          };
-
-          panel.context.model.fromJSON(json);
-        }
-
         console.log(`Created new notebook with kernel: ${desiredKernel}`);
       } catch (error) {
         console.error('Failed to create new notebook:', error);
@@ -201,10 +179,6 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         content.metadata.kernelspec = {
           name: kernelName,
           display_name: kernelName === 'xpython' ? 'Python 3' : 'R'
-        };
-        content.metadata.language_info = {
-          ...(content.metadata.language_info as any),
-          name: KERNEL_NAME_TO_URL[kernelName] || 'python'
         };
 
         const filename = `${(content.metadata?.name as string) || `Uploaded_${id}`}.ipynb`;
