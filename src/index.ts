@@ -85,58 +85,75 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
   }
 }
 
+/**
+ * Ensure that the notebook metadata contains the necessary language and kernelspec information.
+ * This function will patch the metadata if it is missing or incomplete. This happens only for
+ * the initial load of the notebook, so that the metadata is always present even if the kernel
+ * has not started yet. Subsequent changes to the notebook will change the metadata we set here.
+ * @param panel - The notebook panel that we ensure the metadata for.
+ * @param content - The notebook content to patch, if necessary.
+ * @returns - a boolean indicating whether the metadata was patched.
+ */
 function ensureLanguageMetadata(
   panel: NotebookPanel | ViewOnlyNotebookPanel,
   content: INotebookContent
 ): boolean {
   const meta = (content.metadata ?? {}) as INotebookMetadata;
-  const before = JSON.stringify({ ks: meta.kernelspec, li: meta.language_info });
+  const before = JSON.stringify({ kernelspec: meta.kernelspec, languageInfo: meta.language_info });
 
-  const urlKernelParam = new URL(window.location.href).searchParams.get('kernel') || undefined;
+  // We are trying to extract the kernel name from the URL, session, or metadata; because it is
+  // not guaranteed that the URL param might not be sanitised by the time we access it.
+  const urlKernelParam = new URL(window.location.href).searchParams.get('kernel') ?? undefined;
   const kernelFromUrl = urlKernelParam ? KERNEL_URL_TO_NAME[urlKernelParam] : undefined;
   const kernelFromSession =
     panel instanceof NotebookPanel ? panel.sessionContext.session?.kernel?.name : undefined;
 
-  const kernelName = meta.kernelspec?.name || kernelFromSession || kernelFromUrl || 'xpython';
+  const kernelName: 'xpython' | 'xr' =
+    (meta.kernelspec?.name as 'xpython' | 'xr' | undefined) ??
+    (kernelFromSession as 'xpython' | 'xr' | undefined) ??
+    (kernelFromUrl as 'xpython' | 'xr' | undefined) ??
+    'xpython';
 
-  const language: 'python' | 'r' =
-    (meta.language_info?.name as any) ||
-    (meta.kernelspec as IKernelspecMetadata | undefined)?.language ||
-    (KERNEL_NAME_TO_URL[kernelName] as any) ||
-    'python';
+  const language: 'python' | 'r' = KERNEL_NAME_TO_URL[kernelName] as 'python' | 'r';
+  const display: string = KERNEL_DISPLAY_NAMES[kernelName] ?? (language === 'r' ? 'R' : 'Python');
 
-  const display = KERNEL_DISPLAY_NAMES[kernelName] || (language === 'r' ? 'R' : 'Python');
+  const file_extension: string =
+    meta.language_info?.file_extension && meta.language_info.file_extension.trim() !== ''
+      ? meta.language_info.file_extension
+      : language === 'r'
+        ? '.r'
+        : '.py';
 
-  const file_extension =
-    (meta.language_info as ILanguageInfoMetadata | undefined)?.file_extension ??
-    (language === 'r' ? '.r' : '.py');
-  const version = (meta.language_info as ILanguageInfoMetadata | undefined)?.version ?? '0';
+  // We use a placeholder until kernel.info arrives and we override it later
+  const version: string =
+    typeof meta.language_info?.version === 'string' && meta.language_info.version.trim() !== ''
+      ? meta.language_info.version
+      : '0';
 
+  // Once grabbed, we patch the metadata with the kernelspec and language_info
+  // If the metadata already exists, we merge it with the existing metadata.
   const kernelspec: IKernelspecMetadata = {
     ...(meta.kernelspec ?? {}),
     name: kernelName,
     display_name: display,
     language
-  } as IKernelspecMetadata;
-
+  };
   const language_info: ILanguageInfoMetadata = {
     ...(meta.language_info ?? {}),
     name: language,
     file_extension,
     version
-  } as ILanguageInfoMetadata;
+  };
 
-  content.metadata = {
+  const patched: INotebookMetadata = {
     ...(content.metadata ?? {}),
     kernelspec,
     language_info
-  } as INotebookMetadata;
+  };
 
-  const after = JSON.stringify({
-    ks: (content.metadata as INotebookMetadata).kernelspec,
-    li: (content.metadata as INotebookMetadata).language_info
-  });
+  content.metadata = patched;
 
+  const after = JSON.stringify({ ks: patched.kernelspec, li: patched.language_info });
   return before !== after;
 }
 
