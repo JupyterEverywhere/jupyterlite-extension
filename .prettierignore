@@ -4,3 +4,11 @@ node_modules
 **/package.json
 !/package.json
 jupytereverywhere
+venv
+.venv
+env
+.env
+**/venv
+**/.venv
+**/env
+**/.env

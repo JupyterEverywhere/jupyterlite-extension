@@ -2,6 +2,8 @@
   "jupyter-lite-schema-version": 0,
   "jupyter-config-data": {
     "appName": "Jupyter Everywhere",
+    "contentsStorageName": "JupyterEverywhere Storage",
+    "settingsStorageName": "JupyterEverywhere Storage",
     "exposeAppInBrowser": true,
     "showLoadingIndicator": true,
     "enableMemoryStorage": true,
@@ -49,6 +51,9 @@
       "@jupyterlab/notebook-extension:tracker": {
         "autoStartDefaultKernel": true,
         "windowingMode": "none"
+      },
+      "@jupyterlab/application-extension:context-menu": {
+        "disabled": true
       }
     },
     "disabledExtensions": [

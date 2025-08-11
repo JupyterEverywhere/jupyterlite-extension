@@ -1,7 +1,6 @@
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { ReadonlyPartialJSONObject } from '@lumino/coreutils';
-import { Dialog, showDialog, ReactWidget } from '@jupyterlab/apputils';
+import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
 
@@ -10,15 +9,24 @@ import { SharingService } from './sharing-service';
 
 import { createSuccessDialog, createErrorDialog } from './ui-components/share-dialog';
 
+import { LabIcon } from '@jupyterlab/ui-components';
+import refreshIcon from '../style/icons/refresh.svg';
+import fastForwardSvg from '../style/icons/fast-forward.svg';
+
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
 import { Commands } from './commands';
-import { competitions } from './pages/competitions';
+// import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
+// import { helpPlugin } from './pages/help';
 import { generateDefaultNotebookName } from './notebook-name';
-import { viewOnlyNotebookFactoryPlugin } from './view-only';
+import {
+  IViewOnlyNotebookTracker,
+  viewOnlyNotebookFactoryPlugin,
+  ViewOnlyNotebookPanel
+} from './view-only';
 
-import '../style/index.css';
+import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -31,25 +39,7 @@ function generateShareURL(notebookID: string): string {
   return `${baseUrl}?notebook=${notebookID}`;
 }
 
-/**
- * Get the current notebook panel
- */
-function getCurrentNotebook(
-  tracker: INotebookTracker,
-  shell: JupyterFrontEnd.IShell,
-  args: ReadonlyPartialJSONObject = {}
-): NotebookPanel | null {
-  const widget = tracker.currentWidget;
-  const activate = args['activate'] !== false;
-
-  if (activate && widget) {
-    shell.activateById(widget.id);
-  }
-
-  return widget;
-}
-
-const manuallySharing = new WeakSet<NotebookPanel>();
+const manuallySharing = new WeakSet<NotebookPanel | ViewOnlyNotebookPanel>();
 
 /**
  * Show a dialog with a shareable link for the notebook.
@@ -58,7 +48,7 @@ const manuallySharing = new WeakSet<NotebookPanel>();
  */
 async function showShareDialog(sharingService: SharingService, notebookContent: INotebookContent) {
   // Grab the readable ID, or fall back to the UUID.
-  const readableID = notebookContent.metadata?.readableId as string | null;
+  const readableID = notebookContent.metadata?.readableId as string;
   const sharedID = notebookContent.metadata?.sharedId as string;
 
   const notebookID = readableID ?? sharedID;
@@ -94,16 +84,25 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
  * true when the user clicks "Share Notebook" from the menu.
  */
 async function handleNotebookSharing(
-  notebookPanel: NotebookPanel,
+  notebookPanel: NotebookPanel | ViewOnlyNotebookPanel,
   sharingService: SharingService,
   manual: boolean
 ) {
   const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
+  const isViewOnly = notebookContent.metadata?.isSharedNotebook === true;
   const sharedId = notebookContent.metadata?.sharedId as string | undefined;
   const defaultName = generateDefaultNotebookName();
 
   try {
+    if (isViewOnly) {
+      // Skip CKHub sync for view-only notebooks
+      console.log('View-only notebook: skipping CKHub sync and showing share URL.');
+      if (manual) {
+        await showShareDialog(sharingService, notebookContent);
+      }
+      return;
+    }
     if (sharedId) {
       console.log('Updating notebook:', sharedId);
       await sharingService.update(sharedId, notebookContent);
@@ -138,14 +137,34 @@ async function handleNotebookSharing(
 }
 
 /**
+ * Helper to start the save reminder timer. Clears any existing timer
+ * and sets a new one to show the notification after 5 minutes.
+ */
+function startSaveReminder(currentTimeout: number | null): number {
+  if (currentTimeout) {
+    window.clearTimeout(currentTimeout);
+  }
+  return window.setTimeout(() => {
+    Notification.info(
+      "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
+      { autoClose: 8000 }
+    );
+  }, 300 * 1000); // once after 5 minutes
+}
+
+/**
  * JUPYTEREVERYWHERE EXTENSION
  */
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:plugin',
   description: 'A Jupyter extension for k12 education',
   autoStart: true,
-  requires: [INotebookTracker],
-  activate: (app: JupyterFrontEnd, tracker: INotebookTracker) => {
+  requires: [INotebookTracker, IViewOnlyNotebookTracker],
+  activate: (
+    app: JupyterFrontEnd,
+    tracker: INotebookTracker,
+    readonlyTracker: IViewOnlyNotebookTracker
+  ) => {
     const { commands, shell } = app;
 
     if ((shell as ILabShell).mode !== 'single-document') {
@@ -179,7 +198,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
      * 1. A "Download as IPyNB" command.
      */
     commands.addCommand(Commands.downloadNotebookCommand, {
-      label: 'Download as IPyNB',
+      label: 'Download as a notebook',
       execute: args => {
         // Execute the built-in download command
         return commands.execute('docmanager:download');
@@ -192,14 +211,15 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(Commands.downloadPDFCommand, {
       label: 'Download as PDF',
       execute: async args => {
-        const current = getCurrentNotebook(tracker, shell, args);
-        if (!current) {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+
+        if (!panel) {
           console.warn('No active notebook to download as PDF');
           return;
         }
 
         try {
-          await exportNotebookAsPDF(current);
+          await exportNotebookAsPDF(panel);
         } catch (error) {
           console.error('Failed to export notebook as PDF:', error);
           await showDialog({
@@ -212,14 +232,86 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
 
     /**
+     * Add a command to restart the notebook kernel, terming it as "memory"
+     */
+    const RefreshLabIcon = new LabIcon({
+      name: 'jupytereverywhere:refresh',
+      svgstr: refreshIcon
+    });
+
+    commands.addCommand(Commands.restartMemoryCommand, {
+      label: 'Restart Notebook Memory',
+      icon: RefreshLabIcon,
+      execute: async () => {
+        const panel = tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to restart.');
+          return;
+        }
+
+        const result = await showDialog({
+          title: 'Would you like to restart the notebook’s memory?',
+          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Restart' })]
+        });
+
+        if (result.button.accept) {
+          try {
+            await panel.sessionContext.restartKernel();
+          } catch (err) {
+            console.error('Memory restart failed', err);
+          }
+        }
+      }
+    });
+
+    /**
+     * Add a command to restart the notebook kernel, terming it as "memory",
+     * and run all cells after the restart.
+     */
+    const customFastForwardIcon = new LabIcon({
+      name: 'jupytereverywhere:restart-run',
+      svgstr: fastForwardSvg
+    });
+
+    commands.addCommand(Commands.restartMemoryAndRunAllCommand, {
+      label: 'Restart Notebook Memory and Run All Cells',
+      icon: customFastForwardIcon,
+      isEnabled: () => !!tracker.currentWidget,
+      execute: async () => {
+        const panel = tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to restart and run.');
+          return;
+        }
+
+        const result = await showDialog({
+          title: 'Would you like to restart the notebook’s memory and rerun all cells?',
+          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Restart' })]
+        });
+
+        if (result.button.accept) {
+          try {
+            await panel.sessionContext.restartKernel();
+            await commands.execute('notebook:run-all-cells');
+          } catch (err) {
+            console.error('Restarting and running all cells failed', err);
+          }
+        }
+      }
+    });
+
+    /**
      * Add custom Share notebook command
      */
     commands.addCommand(Commands.shareNotebookCommand, {
       label: 'Share Notebook',
       execute: async () => {
         try {
-          const notebookPanel = tracker.currentWidget;
+          const notebookPanel = readonlyTracker.currentWidget
+            ? readonlyTracker.currentWidget
+            : tracker.currentWidget;
           if (!notebookPanel) {
+            console.warn('Notebook panel not found, no notebook to share');
             return;
           }
 
@@ -236,6 +328,178 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
+    /**
+     * Add a custom Save and Share notebook command. This command
+     * is activated only on key bindings (Accel S) and is used to
+     * display the shareable link dialog after the notebook is
+     * saved manually by the user.
+     */
+    commands.addCommand(Commands.saveAndShareNotebookCommand, {
+      label: 'Save and Share Notebook',
+      execute: async () => {
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+        if (!panel) {
+          console.warn('No active notebook to save');
+          return;
+        }
+        if (panel.context.model.readOnly) {
+          console.info('Notebook is read-only, skipping save-and-share.');
+          return;
+        }
+        manuallySharing.add(panel);
+        await panel.context.save();
+        await handleNotebookSharing(panel, sharingService, true);
+      }
+    });
+
+    app.commands.addKeyBinding({
+      command: Commands.saveAndShareNotebookCommand,
+      keys: ['Accel S'],
+      selector: '.jp-Notebook'
+    });
+
+    commands.addCommand('jupytereverywhere:switch-kernel', {
+      label: args => {
+        const kernel = (args['kernel'] as string) || '';
+        const isActive = args['isActive'] as boolean;
+        const display = KERNEL_DISPLAY_NAMES[kernel] || kernel;
+
+        if (isActive) {
+          return display;
+        }
+        return `Switch to ${display}`;
+      },
+      execute: async args => {
+        const kernel = args['kernel'] as string | undefined;
+        const panel = tracker.currentWidget;
+
+        if (!kernel) {
+          console.warn('No kernel specified for switching.');
+          return;
+        }
+        if (!panel) {
+          console.warn('No active notebook panel.');
+          return;
+        }
+
+        const currentKernel = panel.sessionContext.session?.kernel?.name || '';
+
+        if (currentKernel !== kernel) {
+          const currentKernelDisplay = KERNEL_DISPLAY_NAMES[currentKernel] || currentKernel;
+          const targetKernelDisplay = KERNEL_DISPLAY_NAMES[kernel] || kernel;
+          Notification.warning(
+            `You are about to switch your notebook coding language from ${currentKernelDisplay} to ${targetKernelDisplay}. Your previously created code will not run as intended.`,
+            { autoClose: 5000 }
+          );
+        }
+
+        await switchKernel(panel, kernel);
+      }
+    });
+
+    /**
+     * Add custom Create Copy notebook command
+     * Note: this command is supported and displayed only for View Only notebooks.
+     */
+    commands.addCommand(Commands.createCopyNotebookCommand, {
+      label: 'Create Copy',
+      execute: async () => {
+        try {
+          const readonlyPanel = readonlyTracker.currentWidget;
+
+          if (!readonlyPanel) {
+            console.warn('No view-only notebook is currently active.');
+            return;
+          }
+
+          const originalContent = readonlyPanel.context.model.toJSON() as INotebookContent;
+          // Remove any sharing-specific metadata from the copy,
+          // as we create a fresh notebook with new metadata below.
+          const purgedMetadata = { ...originalContent.metadata };
+          delete purgedMetadata.isSharedNotebook;
+          delete purgedMetadata.sharedId;
+          delete purgedMetadata.readableId;
+          delete purgedMetadata.domainId;
+          delete purgedMetadata.sharedName;
+          delete purgedMetadata.lastShared;
+
+          // Ensure that we preserve kernelspec metadata
+          const kernelSpec = originalContent.metadata?.kernelspec;
+
+          // Remove cell-level editable=false; as the notebook has
+          // now been copied and should be possible to write to.
+          const cleanedCells =
+            originalContent.cells?.map(cell => {
+              const cellCopy = { ...cell };
+              cellCopy.metadata = { ...cellCopy.metadata };
+              delete cellCopy.metadata.editable;
+              return cellCopy;
+            }) ?? [];
+
+          if (kernelSpec) {
+            purgedMetadata.kernelspec = kernelSpec;
+          }
+
+          const copyContent: INotebookContent = {
+            ...originalContent,
+            cells: cleanedCells,
+            metadata: purgedMetadata
+          };
+
+          const result = await app.serviceManager.contents.newUntitled({
+            type: 'notebook'
+          });
+
+          await app.serviceManager.contents.save(result.path, {
+            type: 'notebook',
+            format: 'json',
+            content: copyContent
+          });
+
+          // Open the notebook in the normal notebook factory, and
+          // close the previously opened notebook (the view-only one).
+          await commands.execute('docmanager:open', {
+            path: result.path
+          });
+
+          await readonlyPanel.close();
+
+          // Remove notebook param from the URL
+          const currentUrl = new URL(window.location.href);
+          currentUrl.searchParams.delete('notebook');
+          window.history.replaceState({}, '', currentUrl.toString());
+
+          console.log(`Notebook copied as: ${result.path}`);
+        } catch (error) {
+          console.error('Failed to create notebook copy:', error);
+          await showDialog({
+            title: 'Error while creating a copy of the notebook',
+            body: ReactWidget.create(createErrorDialog(error)),
+            buttons: [Dialog.okButton()]
+          });
+        }
+      }
+    });
+    // Track user time, and show a reminder to save the notebook after
+    // five minutes using a toast notification.
+    // Then reset the timer when the notebook is saved manually.
+    let saveReminderTimeout: number | null = null;
+
+    tracker.widgetAdded.connect((_, panel) => {
+      if (saveReminderTimeout) {
+        window.clearTimeout(saveReminderTimeout);
+      }
+
+      panel.context.ready.then(() => {
+        saveReminderTimeout = startSaveReminder(saveReminderTimeout);
+
+        panel.context.saveState.connect((_, state) => {
+          if (state === 'completed') {
+            saveReminderTimeout = startSaveReminder(saveReminderTimeout);
+          }
+        });
+      });
+    });
   }
 };
 
@@ -244,6 +508,7 @@ export default [
   plugin,
   notebookPlugin,
   files,
-  competitions,
+  // competitions,
   customSidebar
+  // helpPlugin
 ];

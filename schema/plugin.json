@@ -7,49 +7,11 @@
   "jupyter.lab.toolbars": {
     "ViewOnlyNotebook": [
       {
-        "name": "save",
-        "disabled": true
+        "name": "createCopy",
+        "caption": "Create a new editable copy of this notebook",
+        "rank": 30
       },
-      {
-        "name": "cut",
-        "command": "notebook:cut-cell",
-        "disabled": true
-      },
-      {
-        "name": "copy",
-        "command": "notebook:copy-cell",
-        "disabled": true
-      },
-      {
-        "name": "paste",
-        "command": "notebook:paste-cell-below",
-        "disabled": true
-      },
-      {
-        "name": "run",
-        "caption": "Run cell",
-        "disabled": true
-      },
-      {
-        "name": "interrupt",
-        "caption": "Interrupt notebook",
-        "disabled": true
-      },
-      {
-        "name": "restart",
-        "caption": "Restart notebook",
-        "disabled": true
-      },
-      {
-        "name": "restart-and-run",
-        "caption": "Restart and run all cells",
-        "disabled": true
-      },
-      {
-        "name": "cellType",
-        "command": "",
-        "disabled": true
-      },
+      { "name": "spacer", "type": "spacer", "rank": 32 },
       {
         "name": "share",
         "rank": 35
@@ -96,11 +58,14 @@
       },
       {
         "name": "restart",
-        "caption": "Restart notebook"
+        "command": "jupytereverywhere:restart-memory",
+        "caption": "Restart notebook",
+        "label": ""
       },
       {
         "name": "restart-and-run",
-        "caption": "Restart and run all cells"
+        "caption": "Restart and run all cells",
+        "command": "jupytereverywhere:restart-and-run-all"
       },
       {
         "name": "share",
@@ -109,6 +74,11 @@
       {
         "name": "downloadDropdown",
         "rank": 36
+      },
+      { "name": "spacer", "type": "spacer", "rank": 37 },
+      {
+        "name": "jeKernelSwitcher",
+        "rank": 38
       },
       {
         "name": "cellType",

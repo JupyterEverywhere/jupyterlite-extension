@@ -62,11 +62,11 @@ class FilteredToolbar extends ReactiveToolbar {
   private _itemsToFilterOut: Set<string> | undefined;
 }
 
-class ViewOnlyNotebook extends StaticNotebook {
+export class ViewOnlyNotebook extends StaticNotebook {
   // Add any customization for view-only notebook here if needed
 }
 
-class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookModel> {
+export class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookModel> {
   /**
    * Construct a new view-only notebook panel.
    */
@@ -80,6 +80,7 @@ class ViewOnlyNotebookPanel extends DocumentWidget<ViewOnlyNotebook, INotebookMo
 
     this.addClass(NOTEBOOK_PANEL_CLASS);
     this.toolbar.addClass(NOTEBOOK_PANEL_TOOLBAR_CLASS);
+    this.toolbar.addClass('je-ViewOnlyNotebookToolbar');
     this.content.addClass(NOTEBOOK_PANEL_NOTEBOOK_CLASS);
 
     this.content.model = this.context.model;

@@ -1,18 +1,46 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { INotebookTracker } from '@jupyterlab/notebook';
+import { INotebookTracker, INotebookWidgetFactory } from '@jupyterlab/notebook';
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { EverywhereIcons } from '../icons';
 import { ToolbarButton, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils';
 import { DownloadDropdownButton } from '../ui-components/DownloadDropdownButton';
 import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
+import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
+import { KERNEL_URL_TO_NAME } from '../kernels';
+
+/**
+ * Maps the notebook content language to a kernel name. We currently
+ * only support Python and R notebooks, so this function maps them
+ * to 'xpython' and 'xr' respectively. If the language is not recognized,
+ * it defaults to 'xpython'.
+ * @param content - The notebook content to map the language to a kernel name.
+ * @returns - The kernel name as a string, either 'xpython' for Python or 'xr' for R.
+ */
+function mapLanguageToKernel(content: INotebookContent): string {
+  const rawLang =
+    (content?.metadata?.kernelspec?.language as string | undefined)?.toLowerCase() ||
+    (content?.metadata?.language_info?.name as string | undefined)?.toLowerCase() ||
+    'python';
+
+  if (rawLang === 'r') {
+    return 'xr';
+  }
+  return 'xpython';
+}
 
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:notebook',
   autoStart: true,
-  requires: [INotebookTracker, IViewOnlyNotebookTracker, IToolbarWidgetRegistry],
+  requires: [
+    INotebookTracker,
+    IViewOnlyNotebookTracker,
+    IToolbarWidgetRegistry,
+    INotebookWidgetFactory
+  ],
   activate: (
     app: JupyterFrontEnd,
     tracker: INotebookTracker,
@@ -24,6 +52,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
     const params = new URLSearchParams(window.location.search);
     let notebookId = params.get('notebook');
+    const uploadedNotebookId = params.get('uploaded-notebook');
 
     if (notebookId?.endsWith('.ipynb')) {
       notebookId = notebookId.slice(0, -6);
@@ -36,7 +65,8 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       try {
         console.log(`Loading shared notebook with ID: ${id}`);
 
-        const apiUrl = 'http://localhost:8080/api/v1';
+        const apiUrl =
+          PageConfig.getOption('sharing_service_api_url') || 'http://localhost:8080/api/v1';
         const sharingService = new SharingService(apiUrl);
 
         console.log(`API URL: ${apiUrl}`);
@@ -88,6 +118,12 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
           factory: VIEW_ONLY_NOTEBOOK_FACTORY
         });
 
+        // Remove kernel param from URL, as we no longer need it on
+        // a view-only notebook.
+        const url = new URL(window.location.href);
+        url.searchParams.delete('kernel');
+        window.history.replaceState({}, '', url.toString());
+
         console.log(`Successfully loaded shared notebook: ${filename}`);
       } catch (error) {
         console.error('Failed to load shared notebook:', error);
@@ -113,22 +149,83 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
      */
     const createNewNotebook = async (): Promise<void> => {
       try {
-        const result = await commands.execute('docmanager:new-untitled', { type: 'notebook' });
-        if (result) {
-          await commands.execute('docmanager:open', { path: 'Untitled.ipynb' });
-        }
+        const params = new URLSearchParams(window.location.search);
+        const desiredKernelParam = params.get('kernel') || 'python';
+        const desiredKernel = KERNEL_URL_TO_NAME[desiredKernelParam] || 'xpython';
+
+        await commands.execute('notebook:create-new', {
+          kernelName: desiredKernel
+        });
+
+        console.log(`Created new notebook with kernel: ${desiredKernel}`);
       } catch (error) {
         console.error('Failed to create new notebook:', error);
       }
     };
 
-    // If a notebook ID is provided in the URL, load it; otherwise,
-    // create a new notebook
+    const openUploadedNotebook = async (id: string): Promise<void> => {
+      try {
+        const raw = localStorage.getItem(`uploaded-notebook:${id}`);
+        // Should not happen
+        if (!raw) {
+          console.warn(`No uploaded notebook found for ID: ${id}`);
+          await createNewNotebook();
+          return;
+        }
+
+        const content = JSON.parse(raw) as INotebookContent;
+
+        const kernelName = mapLanguageToKernel(content);
+        content.metadata.kernelspec = {
+          name: kernelName,
+          display_name: kernelName === 'xpython' ? 'Python 3' : 'R'
+        };
+
+        const filename = `${(content.metadata?.name as string) || `Uploaded_${id}`}.ipynb`;
+
+        await contents.save(filename, {
+          type: 'notebook',
+          format: 'json',
+          content
+        });
+        await commands.execute('docmanager:open', { path: filename });
+
+        // Once we have the notebook in the editor, it is now safe to drop
+        // the uploaded notebook ID from the URL and the temporary storage.
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('uploaded-notebook');
+        window.history.replaceState({}, '', currentUrl.toString());
+
+        localStorage.removeItem(`uploaded-notebook:${id}`);
+        console.log(`Opened uploaded notebook: ${filename}`);
+      } catch (error) {
+        console.error('Failed to open uploaded notebook:', error);
+        await createNewNotebook();
+      }
+    };
+
+    // If a notebook ID is provided in the URL (whether shared or uploaded),
+    // load it; otherwise, create a new notebook
     if (notebookId) {
       void loadSharedNotebook(notebookId);
+    } else if (uploadedNotebookId) {
+      void openUploadedNotebook(uploadedNotebookId);
     } else {
       void createNewNotebook();
     }
+
+    // Remove kernel URL param after notebook kernel is ready, as
+    // we don't want it to linger and confuse users.
+    tracker.widgetAdded.connect((_, panel) => {
+      panel.sessionContext.ready.then(() => {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('kernel')) {
+          url.searchParams.delete('kernel');
+          window.history.replaceState({}, '', url.toString());
+          console.log('Removed kernel param from URL after kernel init.');
+        }
+      });
+    });
 
     const sidebarItem = new SidebarIcon({
       label: 'Notebook',
@@ -150,6 +247,19 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     for (const toolbarName of ['Notebook', 'ViewOnlyNotebook']) {
       toolbarRegistry.addFactory(
         toolbarName,
+        'createCopy',
+        () =>
+          new ToolbarButton({
+            label: 'Create Copy',
+            tooltip: 'Create an editable copy of this notebook',
+            className: 'je-CreateCopyButton',
+            onClick: () => {
+              void commands.execute(Commands.createCopyNotebookCommand);
+            }
+          })
+      );
+      toolbarRegistry.addFactory(
+        toolbarName,
         'downloadDropdown',
         () => new DownloadDropdownButton(commands)
       );
@@ -166,6 +276,21 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
               void commands.execute(Commands.shareNotebookCommand);
             }
           })
+      );
+      toolbarRegistry.addFactory('Notebook', 'save', () => {
+        return new ToolbarButton({
+          label: '',
+          icon: EverywhereIcons.save,
+          tooltip: 'Save this notebook',
+          onClick: () => {
+            void app.commands.execute(Commands.saveAndShareNotebookCommand);
+          }
+        });
+      });
+      toolbarRegistry.addFactory(
+        'Notebook',
+        'jeKernelSwitcher',
+        () => new KernelSwitcherDropdownButton(commands, tracker)
       );
     }
   }
