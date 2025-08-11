@@ -22,6 +22,7 @@
   --je-round-corners: 12px;
   --je-font-family: 'Inter', sans-serif;
   --je-dialog-round-corners: 12px;
+  --je-toastify-z-index: calc(var(--toastify-z-index) + 2);
   --je-document-padding: calc(var(--je-scale) * 51px);
   --je-sidebar-width: calc(var(--je-scale) * 110px);
   --je-toolbar-height: calc(var(--je-scale) * 67px);
@@ -108,6 +109,10 @@
   height: calc(var(--je-scale) * 41px);
   margin-left: calc(var(--je-scale) * 30px);
   margin-right: calc(var(--je-scale) * 20px);
+}
+
+.jp-toastContainer {
+  z-index: var(--je-toastify-z-index);
 }
 
 .jp-SideBar {
