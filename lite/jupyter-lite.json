@@ -7,7 +7,7 @@
     "exposeAppInBrowser": true,
     "showLoadingIndicator": true,
     "enableMemoryStorage": true,
-    "contentsStorageDrivers": "memoryStorageDriver",
+    "contentsStorageDrivers": ["memoryStorageDriver"],
     "settingsOverrides": {
       "@jupyterlab/mainmenu-extension:plugin": {
         "menus": [
