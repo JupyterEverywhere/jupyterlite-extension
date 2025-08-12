@@ -39,9 +39,9 @@ const PYTHON_TEST_NOTEBOOK: JSONObject = {
   ],
   metadata: {
     kernelspec: {
-      display_name: 'Python 3.13 (XPython)',
+      display_name: 'Python 3 (ipykernel)',
       language: 'python',
-      name: 'xpython'
+      name: 'python3'
     },
     language_info: {
       codemirror_mode: {
