@@ -471,6 +471,7 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   await page.waitForSelector('.jp-NotebookPanel');
 
   await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
+  await page.waitForTimeout(10000);
   await runCommand(page, 'notebook:insert-cell-below');
 
   const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
