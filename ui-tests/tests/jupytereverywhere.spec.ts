@@ -458,8 +458,8 @@ test.describe('Landing page', () => {
 
 test.describe('Kernel Switching', () => {
   test('Should open kernel switcher menu', async ({ page }) => {
-    const downloadButton = page.locator('.je-KernelSwitcherButton');
-    await downloadButton.click();
+    const dropdownButton = page.locator('.je-KernelSwitcherButton');
+    await dropdownButton.click();
     expect(
       await page.locator('.je-KernelSwitcherDropdownButton-menu').screenshot()
     ).toMatchSnapshot('kernel-switcher-menu.png');
