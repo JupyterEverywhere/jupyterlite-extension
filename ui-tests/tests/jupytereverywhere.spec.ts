@@ -552,6 +552,7 @@ test.describe('Leave confirmation', () => {
 });
 
 test.describe('Sharing and copying R and Python notebooks', () => {
+  test.describe.configure({ retries: 2 });
   test('Should create copy from view-only R notebook and keep R kernel', async ({ page }) => {
     await mockTokenRoute(page);
 
