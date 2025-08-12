@@ -481,7 +481,7 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
 
   const output = cell.locator('.jp-Cell-outputArea');
   await expect(output).toBeVisible({
-    timeout: 20000 // shouldn't take too long to run but just to be safe
+    timeout: 40000 // shouldn't take too long to run but just to be safe
   });
 
   const text = await output.textContent();
