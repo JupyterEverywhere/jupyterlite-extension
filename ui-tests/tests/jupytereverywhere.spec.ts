@@ -598,7 +598,7 @@ test.describe('Sharing and copying R and Python notebooks', () => {
 
     // Verify kernel is Python
     const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(2000);
     expect(kernelLabel.toLowerCase()).toContain('python');
   });
 });
