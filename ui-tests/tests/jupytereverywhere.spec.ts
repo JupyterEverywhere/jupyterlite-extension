@@ -466,7 +466,7 @@ test.describe('Kernel Switching', () => {
   });
 });
 
-test.skip('Should switch to R kernel and run R code', async ({ page }) => {
+test('Should switch to R kernel and run R code', async ({ page }) => {
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-NotebookPanel');
 
