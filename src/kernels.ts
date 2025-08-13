@@ -7,11 +7,13 @@ export const KERNEL_URL_TO_NAME: Record<string, string> = {
 
 export const KERNEL_NAME_TO_URL: Record<string, string> = {
   python: 'python',
+  xpython: 'python',
   xr: 'r'
 };
 
 export const KERNEL_DISPLAY_NAMES: Record<string, string> = {
   python: 'Python',
+  xpython: 'Python',
   xr: 'R'
 };
 
