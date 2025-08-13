@@ -598,6 +598,9 @@ test.describe('Sharing and copying R and Python notebooks', () => {
     // Wait for the notebook to switch to editable mode
     await page.waitForSelector('.jp-NotebookPanel');
 
+    // Wait for the kernel to initialise
+    await page.waitForTimeout(10000);
+
     // Verify kernel is Python
     const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
     expect(kernelLabel.toLowerCase()).toContain('python');
