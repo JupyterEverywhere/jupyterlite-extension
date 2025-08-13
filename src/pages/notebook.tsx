@@ -10,7 +10,7 @@ import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
-import { KERNEL_URL_TO_NAME } from '../kernels';
+import { KERNEL_URL_TO_NAME, KERNEL_DISPLAY_NAMES } from '../kernels';
 
 /**
  * Maps the notebook content language to a kernel name. We currently
@@ -178,7 +178,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         const kernelName = mapLanguageToKernel(content);
         content.metadata.kernelspec = {
           name: kernelName,
-          display_name: kernelName === 'python' ? 'Python 3' : 'R'
+          display_name: KERNEL_DISPLAY_NAMES[kernelName] ?? kernelName
         };
 
         const filename = `${(content.metadata?.name as string) || `Uploaded_${id}`}.ipynb`;
