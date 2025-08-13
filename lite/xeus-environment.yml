@@ -4,9 +4,7 @@ channels:
   - https://repo.prefix.dev/conda-forge
 dependencies:
   - xeus-python
-  # https://github.com/jupyter-xeus/xeus-r/commit/094d4e9d87b367f93c92792eee2950c89a171c0c
-  # Add https://github.com/jupyter-xeus/xeus-r/pull/161 until it is released
-  - git+https://github.com/jupyter-xeus/xeus-r.git@094d4e9d87b367f93c92792eee2950c89a171c0c
+  - xeus-r
   - numpy
   - pandas
   - scipy
