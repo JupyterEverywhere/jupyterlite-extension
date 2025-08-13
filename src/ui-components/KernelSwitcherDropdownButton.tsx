@@ -4,7 +4,7 @@ import { Message } from '@lumino/messaging';
 import { ToolbarButtonComponent, ReactWidget } from '@jupyterlab/ui-components';
 import { EverywhereIcons } from '../icons';
 import { CommandRegistry } from '@lumino/commands';
-import { KERNEL_DISPLAY_NAMES } from '../kernels';
+import { ACTIVE_KERNELS, KERNEL_DISPLAY_NAMES } from '../kernels';
 import { INotebookTracker } from '@jupyterlab/notebook';
 
 export class KernelSwitcherDropdownButton extends ReactWidget {
@@ -71,16 +71,17 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
   }
 
   private _showMenu(): void {
-    const currentKernel = this._tracker.currentWidget?.sessionContext.session?.kernel?.name;
+    const currentKernel =
+      this._tracker.currentWidget?.sessionContext.session?.kernel?.name ?? undefined;
 
-    const allKernels = Object.keys(KERNEL_DISPLAY_NAMES);
+    const isCurrentActive =
+      typeof currentKernel === 'string' && ACTIVE_KERNELS.includes(currentKernel);
 
     // We order the kernels, so that the current kernel appears first
     // in the dropdown.
-    const orderedKernels = currentKernel
-      ? [currentKernel, ...allKernels.filter(k => k !== currentKernel)]
-      : allKernels;
-
+    const orderedKernels = isCurrentActive
+      ? [currentKernel!, ...ACTIVE_KERNELS.filter(k => k !== currentKernel)]
+      : ACTIVE_KERNELS;
     this._menu.clearItems();
 
     for (const kernel of orderedKernels) {

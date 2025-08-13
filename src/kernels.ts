@@ -18,6 +18,12 @@ export const KERNEL_DISPLAY_NAMES: Record<string, string> = {
 };
 
 /**
+ * List of kernels that will appear in the kernel switcher dropdown,
+ * i.e., for which we have an available factory.
+ */
+export const ACTIVE_KERNELS: readonly string[] = ['python', 'xr'];
+
+/**
  * Switch the notebook's kernel if it differs from the desired one.
  * @param panel The NotebookPanel to operate on
  * @param desiredKernel The kernel name to switch to (e.g. "python", "xr")
