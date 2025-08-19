@@ -137,7 +137,7 @@ jobs:
         pip install "jupyterlab==4.5.0a3" jupytereverywhere*.whl
 
 
-        jupyter labextension list
+        jupyter labextension list --verbose
         jupyter labextension list 2>&1 | grep -ie "jupytereverywhere.*OK"
         python -m jupyterlab.browser_check --no-browser-test
 
