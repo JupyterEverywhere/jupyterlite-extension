@@ -2513,9 +2513,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/coreutils@npm:^6.4.0-alpha.3":
-  version: 6.4.6
-  resolution: "@jupyterlab/coreutils@npm:6.4.6"
+"@jupyterlab/coreutils@npm:^6.5.0-alpha.3":
+  version: 6.5.0-alpha.3
+  resolution: "@jupyterlab/coreutils@npm:6.5.0-alpha.3"
   dependencies:
     "@lumino/coreutils": ^2.2.1
     "@lumino/disposable": ^2.1.4
@@ -2523,7 +2523,7 @@ __metadata:
     minimist: ~1.2.0
     path-browserify: ^1.0.0
     url-parse: ~1.5.4
-  checksum: b95c62cb0616acf23eb913a5c58acffab570b59bccd6b33fe3795a7b3be9e6423be317c12acd21fcf42ac6915f0c21374a633f53101e51e22922f27265f87230
+  checksum: 041fd93bd2311f05c0fcb910d30708b7535c64b96a634b02288b89d7cae75a487714a78e466af0f5d8a73a53bfc02750683cae8229b6f2735cd2ec19ff17dcb7
   languageName: node
   linkType: hard
 
@@ -8783,7 +8783,7 @@ __metadata:
     "@jupyterlab/builder": ^4.5.0-alpha.3
     "@jupyterlab/cells": ^4.5.0-alpha.3
     "@jupyterlab/codeeditor": ^4.5.0-alpha.3
-    "@jupyterlab/coreutils": ^4.5.0-alpha.3
+    "@jupyterlab/coreutils": ^6.5.0-alpha.3
     "@jupyterlab/docregistry": ^4.5.0-alpha.3
     "@jupyterlab/nbformat": ^4.5.0-alpha.3
     "@jupyterlab/notebook": ^4.5.0-alpha.3
