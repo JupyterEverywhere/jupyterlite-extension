@@ -8,7 +8,7 @@ A Jupyter extension for k12 education
 
 ## Requirements
 
-- JupyterLab >= 4.0.0
+- JupyterLab == 4.5.0a3
 
 ## Install
 

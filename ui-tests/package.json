@@ -9,7 +9,7 @@
     "test:update": "jlpm playwright test --update-snapshots"
   },
   "devDependencies": {
-    "@jupyterlab/application": "^4.0.0",
+    "@jupyterlab/application": "^4.5.0-alpha.3",
     "@playwright/test": "^1.52.0"
   }
 }

@@ -35,7 +35,7 @@ runs:
       shell: bash
       run: |
         set -eux
-        python -m pip install "jupyterlab>=4.0.0,<5"
+        python -m pip install "jupyterlab==4.5.0a3"
 
     - name: Build the JupyterLite app in ${{ inputs.mode }} mode
       env:
