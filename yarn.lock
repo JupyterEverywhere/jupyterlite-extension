@@ -2818,22 +2818,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/services@npm:^7.4.6":
-  version: 7.4.6
-  resolution: "@jupyterlab/services@npm:7.4.6"
+"@jupyterlab/services@npm:^7.5.0-alpha.3":
+  version: 7.5.0-alpha.3
+  resolution: "@jupyterlab/services@npm:7.5.0-alpha.3"
   dependencies:
     "@jupyter/ydoc": ^3.1.0
-    "@jupyterlab/coreutils": ^6.4.6
-    "@jupyterlab/nbformat": ^4.4.6
-    "@jupyterlab/settingregistry": ^4.4.6
-    "@jupyterlab/statedb": ^4.4.6
+    "@jupyterlab/coreutils": ^6.5.0-alpha.3
+    "@jupyterlab/nbformat": ^4.5.0-alpha.3
+    "@jupyterlab/settingregistry": ^4.5.0-alpha.3
+    "@jupyterlab/statedb": ^4.5.0-alpha.3
     "@lumino/coreutils": ^2.2.1
     "@lumino/disposable": ^2.1.4
     "@lumino/polling": ^2.1.4
     "@lumino/properties": ^2.0.3
     "@lumino/signaling": ^2.1.4
     ws: ^8.11.0
-  checksum: d57b06a9b3a7a56d82288d064379500ec2f8c30ffc838730837e37d87e2368991e2f61ac4df191316ecf5866ca0aa1e9aea4c55ef10579d7a6fe749b3baaf11c
+  checksum: c279b082f73f895d8ba0b3f48b58570b4fafe5964747b923fd8603d992337fa37b9144b33ac68e681ac5485284ea80366f88065ae34b2a586c94c9a5acda2f91
   languageName: node
   linkType: hard
 
@@ -8788,7 +8788,7 @@ __metadata:
     "@jupyterlab/nbformat": ^4.5.0-alpha.3
     "@jupyterlab/notebook": ^4.5.0-alpha.3
     "@jupyterlab/rendermime": ^4.5.0-alpha.3
-    "@jupyterlab/services": ^7.4.6
+    "@jupyterlab/services": ^7.5.0-alpha.3
     "@jupyterlab/settingregistry": ^4.5.0-alpha.3
     "@jupyterlab/testutils": ^4.5.0-alpha.3
     "@jupyterlab/translation": ^4.5.0-alpha.3
