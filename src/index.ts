@@ -138,22 +138,6 @@ async function handleNotebookSharing(
 }
 
 /**
- * Helper to start the save reminder timer. Clears any existing timer
- * and sets a new one to show the notification after 5 minutes.
- */
-function startSaveReminder(currentTimeout: number | null): number {
-  if (currentTimeout) {
-    window.clearTimeout(currentTimeout);
-  }
-  return window.setTimeout(() => {
-    Notification.info(
-      "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
-      { autoClose: 8000 }
-    );
-  }, 300 * 1000); // once after 5 minutes
-}
-
-/**
  * JUPYTEREVERYWHERE EXTENSION
  */
 const plugin: JupyterFrontEndPlugin<void> = {
@@ -476,24 +460,74 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-    // Track user time, and show a reminder to save the notebook after
-    // five minutes using a toast notification.
-    // Then reset the timer when the notebook is saved manually.
+    // Track user time, and show a reminder to save the notebook once after
+    // five minutes of editing (i.e., once it becomes non-empty and dirty)
+    // using a toast notification.
     let saveReminderTimeout: number | null = null;
+    let isSaveReminderScheduled = false; // a 5-minute timer is scheduled, but it hasn't fired yet
+    let hasShownSaveReminder = false; // we've already shown the toast once for this notebook
+
+    /**
+     * Helper to start the save reminder timer. Clears any existing timer
+     * and sets a new one to show the notification after 5 minutes.
+     */
+    function startSaveReminder(currentTimeout: number | null, onFire?: () => void): number {
+      if (currentTimeout) {
+        window.clearTimeout(currentTimeout);
+      }
+      return window.setTimeout(() => {
+        Notification.info(
+          "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
+          { autoClose: 8000 }
+        );
+        onFire?.();
+      }, 300 * 1000); // once after 5 minutes
+    }
 
     tracker.widgetAdded.connect((_, panel) => {
       if (saveReminderTimeout) {
         window.clearTimeout(saveReminderTimeout);
+        saveReminderTimeout = null;
       }
+      isSaveReminderScheduled = false;
+      hasShownSaveReminder = false;
 
-      panel.context.ready.then(() => {
-        saveReminderTimeout = startSaveReminder(saveReminderTimeout);
+      const maybeScheduleSaveReminder = () => {
+        if (hasShownSaveReminder) {
+          return;
+        }
 
-        panel.context.saveState.connect((_, state) => {
-          if (state === 'completed') {
-            saveReminderTimeout = startSaveReminder(saveReminderTimeout);
-          }
+        const content = panel.context.model.toJSON() as INotebookContent;
+        // Schedule after the notebook becomes non-empty
+        if (isNotebookEmpty(content)) {
+          return;
+        }
+        if (isSaveReminderScheduled) {
+          return;
+        }
+
+        isSaveReminderScheduled = true;
+        saveReminderTimeout = startSaveReminder(saveReminderTimeout, () => {
+          hasShownSaveReminder = true;
+          isSaveReminderScheduled = false;
         });
+      };
+
+      // After the model is ready, check immediately and on any content change.
+      void panel.context.ready.then(() => {
+        // We cover the case where the notebook loads already non-empty, say,
+        // if the user uploads a notebook into the application.
+        maybeScheduleSaveReminder();
+        panel.context.model.contentChanged.connect(() => {
+          maybeScheduleSaveReminder(); // schedule when first content appears
+        });
+      });
+
+      panel.disposed.connect(() => {
+        if (saveReminderTimeout) {
+          window.clearTimeout(saveReminderTimeout);
+          saveReminderTimeout = null;
+        }
       });
     });
   }
