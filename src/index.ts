@@ -1,4 +1,4 @@
-import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
@@ -27,6 +27,7 @@ import {
 } from './view-only';
 
 import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
+import { singleDocumentMode } from './single-mode';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -165,12 +166,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     tracker: INotebookTracker,
     readonlyTracker: IViewOnlyNotebookTracker
   ) => {
-    const { commands, shell } = app;
-
-    if ((shell as ILabShell).mode !== 'single-document') {
-      // workaround issue with jupyterlite single doc mode
-      commands.execute('application:set-mode', { mode: 'single-document' });
-    }
+    const { commands } = app;
 
     // Get API URL from configuration or use a default
     const apiUrl =
@@ -509,6 +505,7 @@ export default [
   notebookPlugin,
   files,
   // competitions,
-  customSidebar
-  // helpPlugin
+  customSidebar,
+  // helpPlugin,
+  singleDocumentMode
 ];
