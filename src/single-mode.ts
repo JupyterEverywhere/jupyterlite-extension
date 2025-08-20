@@ -7,7 +7,7 @@ import {
 import { PageConfig } from '@jupyterlab/coreutils';
 
 /**
- * Hard-enforce single-document mode after restore and keep the URL param in sync (?todo drop this)
+ * Hard-enforce single-document mode after restore and keep the URL param in sync (?todo drop this and figure out the right schema?)
  */
 export const singleDocumentMode: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:force-single-mode',
@@ -43,6 +43,12 @@ export const singleDocumentMode: JupyterFrontEndPlugin<void> = {
           setSingle();
         }
       });
+
+      // 3) Now drop mode=single-document URL param from URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('mode');
+      const next = `${url.pathname}${url.search}${url.hash}`;
+      router?.navigate(next, { skipRouting: true });
     });
   }
 };
