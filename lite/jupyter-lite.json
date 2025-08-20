@@ -79,6 +79,8 @@
 
       "@jupyterlab/filebrowser-extension:widget",
 
+      "@jupyterlab/workspaces-extension",
+
       "@jupyterlab/console-extension",
       "@jupyterlab/tooltip-extension:consoles",
       "@jupyterlab/inspector-extension:consoles",
