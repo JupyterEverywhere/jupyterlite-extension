@@ -499,9 +499,7 @@ test.describe('Leave confirmation', () => {
 
     // Make the notebook dirty so the leave confirmation is shown
     const firstCell = page.locator('.jp-Cell').first();
-    await firstCell
-      .getByRole('textbox')
-      .fill('print("hello from a non-empty notebook")');
+    await firstCell.getByRole('textbox').fill('print("hello from a non-empty notebook")');
 
     const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
     await jeButton.click();
@@ -512,7 +510,9 @@ test.describe('Leave confirmation', () => {
     expect(await dialog.screenshot()).toMatchSnapshot('leave-confirmation-dialog.png');
   });
 
-  test('Should not show leave confirmation for empty notebook and should navigate to landing directly', async ({ page }) => {
+  test('Should not show leave confirmation for empty notebook and should navigate to landing directly', async ({
+    page
+  }) => {
     await mockTokenRoute(page);
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-NotebookPanel');
