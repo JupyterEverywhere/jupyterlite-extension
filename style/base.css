@@ -64,6 +64,10 @@
   justify-content: center;
 }
 
+.jp-Dialog-footerButtons {
+  text-align: center;
+}
+
 .jp-Dialog {
   clip-path: rect(
     calc(var(--je-document-padding) + var(--je-toolbar-height) + var(--je-margin-below-toolbar))
