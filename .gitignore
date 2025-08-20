@@ -1,6 +1,7 @@
 _output/
 .jupyterlite.doit.db
 uv.lock
+.envrc
 
 *.bundle.*
 lib/
