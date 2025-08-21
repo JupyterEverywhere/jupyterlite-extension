@@ -503,6 +503,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
 
         const content = panel.context.model.toJSON() as INotebookContent;
+        // Skip for view-only notebooks
+        if (panel.context.model.readOnly || content.metadata?.isSharedNotebook === true) {
+          return;
+        }
         // Schedule after the notebook becomes non-empty
         if (isNotebookEmpty(content)) {
           return;
@@ -542,6 +546,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
             // once the notebook becomes dirty again.
           }
         });
+      });
+
+      // If a view-only notebook is opened or becomes active, ensure no reminder can fire.
+      readonlyTracker.widgetAdded.connect(() => {
+        if (saveReminderTimeout) {
+          window.clearTimeout(saveReminderTimeout);
+          saveReminderTimeout = null;
+        }
+        isSaveReminderScheduled = false;
+        hasShownSaveReminder = false;
       });
 
       panel.disposed.connect(() => {
