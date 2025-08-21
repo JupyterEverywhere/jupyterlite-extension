@@ -300,8 +300,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
           manuallySharing.add(notebookPanel);
 
           // Save the notebook before we share it.
-          await notebookPanel.context.save();
           manualSaveCount++;
+          await notebookPanel.context.save();
 
           await handleNotebookSharing(notebookPanel, sharingService, true);
         } catch (error) {
@@ -328,9 +328,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
         manuallySharing.add(panel);
+        manualSaveCount++;
         await panel.context.save();
         await handleNotebookSharing(panel, sharingService, true);
-        manualSaveCount++;
       }
     });
 
@@ -537,6 +537,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               saveReminderTimeout = null;
             }
             isSaveReminderScheduled = false;
+            hasShownSaveReminder = false;
             // Note: we do not reschedule here; it will be scheduled on the next content change
             // once the notebook becomes dirty again.
           }
