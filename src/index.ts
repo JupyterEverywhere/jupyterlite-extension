@@ -301,6 +301,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           // Save the notebook before we share it.
           await notebookPanel.context.save();
+          manualSaveCount++;
 
           await handleNotebookSharing(notebookPanel, sharingService, true);
         } catch (error) {
@@ -329,6 +330,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         manuallySharing.add(panel);
         await panel.context.save();
         await handleNotebookSharing(panel, sharingService, true);
+        manualSaveCount++;
       }
     });
 
@@ -466,6 +468,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let saveReminderTimeout: number | null = null;
     let isSaveReminderScheduled = false; // a 5-minute timer is scheduled, but it hasn't fired yet
     let hasShownSaveReminder = false; // we've already shown the toast once for this notebook
+    let manualSaveCount = 0; // number of manual saves performed by the user in this session
 
     /**
      * Helper to start the save reminder timer. Clears any existing timer
@@ -476,10 +479,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
         window.clearTimeout(currentTimeout);
       }
       return window.setTimeout(() => {
-        Notification.info(
-          "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
-          { autoClose: 8000 }
-        );
+        const message =
+          manualSaveCount > 0
+            ? "It's been 5 minutes since you last saved this notebook. Make sure to save the link to your notebook to edit your work later."
+            : "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.";
+
+        Notification.info(message, { autoClose: 8000 });
         onFire?.();
       }, 300 * 1000); // once after 5 minutes
     }
