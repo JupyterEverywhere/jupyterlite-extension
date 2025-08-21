@@ -521,6 +521,21 @@ const plugin: JupyterFrontEndPlugin<void> = {
         panel.context.model.contentChanged.connect(() => {
           maybeScheduleSaveReminder(); // schedule when first content appears
         });
+
+        // Reset the reminder timer whenever the user saves manually.
+        // We clear any pending timer and wait for the next edit (dirty state)
+        // to schedule a fresh 5-minute reminder.
+        panel.context.saveState.connect((_, state) => {
+          if (state === 'completed') {
+            if (saveReminderTimeout) {
+              window.clearTimeout(saveReminderTimeout);
+              saveReminderTimeout = null;
+            }
+            isSaveReminderScheduled = false;
+            // Note: we do not reschedule here; it will be scheduled on the next content change
+            // once the notebook becomes dirty again.
+          }
+        });
       });
 
       panel.disposed.connect(() => {
