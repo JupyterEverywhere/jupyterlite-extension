@@ -88,7 +88,7 @@ async function handleNotebookSharing(
   notebookPanel: NotebookPanel | ViewOnlyNotebookPanel,
   sharingService: SharingService,
   manual: boolean,
-  onManualSave?: () => void
+  onManualSave: () => void
 ) {
   const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
@@ -100,7 +100,7 @@ async function handleNotebookSharing(
   // We do this early in the manual flow for clarity; the local save already happened
   // in the command handlers and this flag only affects reminder wording.
   if (manual && !isViewOnly) {
-    onManualSave?.();
+    onManualSave();
   }
 
   try {
@@ -177,7 +177,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             // Skip auto-sync if it's a manual share.
             return;
           }
-          await handleNotebookSharing(widget, sharingService, false);
+          await handleNotebookSharing(widget, sharingService, false, () => {});
         }
       });
     });
@@ -287,6 +287,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
+
+    // Track user time, and show a reminder to save the notebook once after
+    // five minutes of editing (i.e., once it becomes non-empty and dirty)
+    // using a toast notification.
+    let saveReminderTimeout: number | null = null;
+    let isSaveReminderScheduled = false; // a 5-minute timer is scheduled, but it hasn't fired yet
+    let hasShownSaveReminder = false; // we've already shown the toast once for this notebook
+    let hasManuallySaved = false; // whether the user has manually saved at least once in this session
 
     /**
      * Add custom Share notebook command
@@ -472,13 +480,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-    // Track user time, and show a reminder to save the notebook once after
-    // five minutes of editing (i.e., once it becomes non-empty and dirty)
-    // using a toast notification.
-    let saveReminderTimeout: number | null = null;
-    let isSaveReminderScheduled = false; // a 5-minute timer is scheduled, but it hasn't fired yet
-    let hasShownSaveReminder = false; // we've already shown the toast once for this notebook
-    let hasManuallySaved = false; // whether the user has manually saved at least once in this session
 
     /**
      * Helper to start the save reminder timer. Clears any existing timer
