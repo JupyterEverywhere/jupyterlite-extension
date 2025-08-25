@@ -7,11 +7,21 @@ import { EverywhereIcons } from './icons';
 import { LEAVE_CONFIRMATION_TITLE, LeaveConfirmation } from './ui-components/LeaveConfirmation';
 import { Commands } from './commands';
 
+import { INotebookTracker } from '@jupyterlab/notebook';
+import { INotebookContent } from '@jupyterlab/nbformat';
+import { IViewOnlyNotebookTracker } from './view-only';
+import { isNotebookEmpty } from './notebook-utils';
+
 export const customSidebar: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:sidebar',
   autoStart: true,
-  requires: [ILabShell],
-  activate: (app: JupyterFrontEnd, shell: ILabShell) => {
+  requires: [ILabShell, INotebookTracker, IViewOnlyNotebookTracker],
+  activate: (
+    app: JupyterFrontEnd,
+    shell: ILabShell,
+    tracker: INotebookTracker,
+    readonlyTracker: IViewOnlyNotebookTracker
+  ) => {
     // Overwrite behaviour of the sidebar panel
     const leftHandler = shell['_leftHandler'];
     const sidebar: TabBar<Widget> = leftHandler._sideBar;
@@ -31,7 +41,7 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
         if (newWidget && newWidget instanceof SidebarIcon) {
           const cancel = newWidget.execute();
           if (cancel) {
-            console.log('Attempting to revert to:', oldWidget.label);
+            console.log('Attempting to revert to:', oldWidget?.label);
             if (args.previousTitle) {
               const previousIndex = sidebar.titles.indexOf(oldWidget);
               if (previousIndex >= 0) {
@@ -54,26 +64,51 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
         icon: EverywhereIcons.logo,
         execute: () => {
           void (async () => {
-            const result = await showDialog({
-              title: LEAVE_CONFIRMATION_TITLE,
-              body: new LeaveConfirmation(),
-              buttons: [
-                Dialog.cancelButton({ label: 'Cancel' }),
-                Dialog.okButton({ label: 'Yes' })
-              ],
-              defaultButton: 0
-            });
+            const readOnlyNotebookPanel = readonlyTracker.currentWidget;
+            const notebookPanel = tracker.currentWidget;
 
-            if (result.button.label === 'Yes') {
-              try {
-                await app.commands.execute(Commands.shareNotebookCommand);
-              } catch (error) {
-                console.error(
-                  'Failed to share notebook before leaving to the Landing page:',
-                  error
-                );
-              }
+            // If a view-only notebook is open: skip dialog and go home,
+            // as we cannot save the notebook anyway + we can assume the
+            // user retrieved the URL from somewhere (either someone else's
+            // or their own notebook) to paste or share in the first place
+            if (readOnlyNotebookPanel) {
               window.location.href = '/index.html';
+              return;
+            }
+
+            // If we have a new notebook, decide based on emptiness.
+            if (notebookPanel) {
+              const content = notebookPanel.context.model.toJSON() as INotebookContent;
+              const empty = isNotebookEmpty(content);
+
+              if (empty) {
+                window.location.href = '/index.html';
+                return;
+              }
+
+              // Non-empty regular notebook -> confirm and optionally save/share
+              const result = await showDialog({
+                title: LEAVE_CONFIRMATION_TITLE,
+                body: new LeaveConfirmation(),
+                buttons: [
+                  Dialog.cancelButton({ label: 'Cancel' }),
+                  Dialog.okButton({ label: 'Yes' })
+                ],
+                defaultButton: 0
+              });
+
+              if (result.button.label === 'Yes') {
+                try {
+                  await app.commands.execute(Commands.shareNotebookCommand);
+                } catch (error) {
+                  console.error(
+                    'Failed to share notebook before leaving to the Landing page:',
+                    error
+                  );
+                }
+                window.location.href = '/index.html';
+              }
+              return;
             }
           })();
 

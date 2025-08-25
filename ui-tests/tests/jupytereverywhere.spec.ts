@@ -497,6 +497,10 @@ test.describe('Leave confirmation', () => {
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-NotebookPanel');
 
+    // Make the notebook dirty so the leave confirmation is shown
+    const firstCell = page.locator('.jp-Cell').first();
+    await firstCell.getByRole('textbox').fill('print("hello from a non-empty notebook")');
+
     const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
     await jeButton.click();
 
@@ -506,10 +510,30 @@ test.describe('Leave confirmation', () => {
     expect(await dialog.screenshot()).toMatchSnapshot('leave-confirmation-dialog.png');
   });
 
+  test('Should not show leave confirmation for empty notebook and should navigate to landing directly', async ({
+    page
+  }) => {
+    await mockTokenRoute(page);
+    await page.goto('lab/index.html');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
+    const nav = page.waitForURL(/\/index\.html$/);
+    await jeButton.click();
+    await nav;
+
+    await expect(page.locator('.je-hero')).toBeVisible();
+    await expect(page.locator('.jp-Dialog')).toHaveCount(0);
+  });
+
   test('When cancelled, should remain on the notebook view', async ({ page }) => {
     await mockTokenRoute(page);
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-NotebookPanel');
+
+    // Make the notebook dirty so the leave confirmation is shown
+    const firstCell = page.locator('.jp-Cell').first();
+    await firstCell.getByRole('textbox').fill('x = 1');
 
     const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
     await jeButton.click();
@@ -528,6 +552,10 @@ test.describe('Leave confirmation', () => {
     await mockShareNotebookResponse(page, 'test-redirect-notebook-id');
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-NotebookPanel');
+
+    // Make the notebook dirty so the leave confirmation is shown
+    const firstCell = page.locator('.jp-Cell').first();
+    await firstCell.getByRole('textbox').fill('print("share me")');
 
     const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
     await jeButton.click();
