@@ -87,13 +87,21 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
 async function handleNotebookSharing(
   notebookPanel: NotebookPanel | ViewOnlyNotebookPanel,
   sharingService: SharingService,
-  manual: boolean
+  manual: boolean,
+  onManualSave?: () => void
 ) {
   const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
   const isViewOnly = notebookContent.metadata?.isSharedNotebook === true;
   const sharedId = notebookContent.metadata?.sharedId as string | undefined;
   const defaultName = generateDefaultNotebookName();
+
+  // Mark that the user has performed at least one manual save in this session.
+  // We do this early in the manual flow for clarity; the local save already happened
+  // in the command handlers and this flag only affects reminder wording.
+  if (manual && !isViewOnly) {
+    onManualSave?.();
+  }
 
   try {
     if (isViewOnly) {
@@ -283,6 +291,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
     /**
      * Add custom Share notebook command
      */
+    const markManualSave = () => {
+      hasManuallySaved = true;
+    };
+
     commands.addCommand(Commands.shareNotebookCommand, {
       label: 'Share Notebook',
       execute: async () => {
@@ -300,10 +312,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
           manuallySharing.add(notebookPanel);
 
           // Save the notebook before we share it.
-          manualSaveCount++;
           await notebookPanel.context.save();
 
-          await handleNotebookSharing(notebookPanel, sharingService, true);
+          await handleNotebookSharing(notebookPanel, sharingService, true, markManualSave);
         } catch (error) {
           console.error('Error in share command:', error);
         }
@@ -328,9 +339,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
         manuallySharing.add(panel);
-        manualSaveCount++;
         await panel.context.save();
-        await handleNotebookSharing(panel, sharingService, true);
+        await handleNotebookSharing(panel, sharingService, true, markManualSave);
       }
     });
 
@@ -468,24 +478,23 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let saveReminderTimeout: number | null = null;
     let isSaveReminderScheduled = false; // a 5-minute timer is scheduled, but it hasn't fired yet
     let hasShownSaveReminder = false; // we've already shown the toast once for this notebook
-    let manualSaveCount = 0; // number of manual saves performed by the user in this session
+    let hasManuallySaved = false; // whether the user has manually saved at least once in this session
 
     /**
      * Helper to start the save reminder timer. Clears any existing timer
      * and sets a new one to show the notification after 5 minutes.
      */
-    function startSaveReminder(currentTimeout: number | null, onFire?: () => void): number {
+    function startSaveReminder(currentTimeout: number | null, onFire: () => void): number {
       if (currentTimeout) {
         window.clearTimeout(currentTimeout);
       }
       return window.setTimeout(() => {
-        const message =
-          manualSaveCount > 0
-            ? "It's been 5 minutes since you last saved this notebook. Make sure to save the link to your notebook to edit your work later."
-            : "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.";
+        const message = hasManuallySaved
+          ? "It's been 5 minutes since you last saved this notebook. Make sure to save the link to your notebook to edit your work later."
+          : "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.";
 
         Notification.info(message, { autoClose: 8000 });
-        onFire?.();
+        onFire();
       }, 300 * 1000); // once after 5 minutes
     }
 
