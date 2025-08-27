@@ -28,6 +28,7 @@ import {
 
 import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
 import { singleDocumentMode } from './single-mode';
+import { runCellButtonPlugin } from './run-button';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -586,5 +587,6 @@ export default [
   // competitions,
   customSidebar,
   // helpPlugin,
-  singleDocumentMode
+  singleDocumentMode,
+  runCellButtonPlugin
 ];
