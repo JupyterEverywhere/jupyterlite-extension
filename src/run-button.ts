@@ -47,6 +47,7 @@ export class InputPromptIndicator extends Widget implements IInputPromptIndicato
 export class JEInputPrompt extends Widget implements IInputPrompt {
   private _customExecutionCount: string | null = null;
   private _isHovered: boolean = false;
+  private _isActive: boolean = false;
   private _promptIndicator: InputPromptIndicator;
   private _runButton: ToolbarButton;
 
@@ -80,9 +81,6 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     this.updateRunButtonVisibility();
   }
 
-  /**
-   * Handle DOM events; unsure if we'll keep them...
-   */
   handleEvent(event: Event): void {
     switch (event.type) {
       case 'mouseover':
@@ -100,6 +98,7 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     super.onAfterAttach(msg);
     this.node.addEventListener('mouseover', this, true);
     this.node.addEventListener('mouseout', this, true);
+    this.watchForActiveState();
   }
 
   protected onBeforeDetach(msg: Message): void {
@@ -108,13 +107,51 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     this.node.removeEventListener('mouseout', this, true);
   }
 
+  private watchForActiveState(): void {
+    // Find the parent cell element.
+    const cellElement = this.node.closest('.jp-Cell') as HTMLElement;
+    if (!cellElement) {
+      return;
+    }
+
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const wasActive = this._isActive;
+          this._isActive = cellElement.classList.contains('jp-mod-active');
+
+          if (wasActive !== this._isActive) {
+            this.updateRunButtonVisibility();
+          }
+        }
+      });
+    });
+
+    observer.observe(cellElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    this._isActive = cellElement.classList.contains('jp-mod-active');
+    this.updateRunButtonVisibility();
+
+    // Clean up
+    this.disposed.connect(() => {
+      observer.disconnect();
+    });
+  }
+
   private updateRunButtonVisibility(): void {
     if (!this._runButton) {
       return;
     }
 
-    // Show run button on hover or if cell hasn't been executed
-    if (this._isHovered || !this.executionCount) {
+    // We'll show the run button on the following conditions:
+    // 1. Cell is being hovered over OR
+    // 2. Cell is active (being edited/worked on)
+    const shouldShow = this._isHovered || this._isActive;
+
+    if (shouldShow) {
       this._runButton.show();
       this._promptIndicator.hide();
     } else {
