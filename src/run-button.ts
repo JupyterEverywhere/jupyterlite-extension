@@ -52,31 +52,24 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
   private _promptIndicator: InputPromptIndicator;
   private _runButton?: ToolbarButton;
 
-  constructor() {
+  constructor(private _app: JupyterFrontEnd) {
     super();
     this.addClass(INPUT_PROMPT_CLASS);
 
     const layout = (this.layout = new PanelLayout());
     this._promptIndicator = new InputPromptIndicator();
     layout.addWidget(this._promptIndicator);
-  }
-
-  get runButton(): ToolbarButton | undefined {
-    return this._runButton;
-  }
-
-  set runButton(button: ToolbarButton | undefined) {
-    if (this._runButton && this.layout) {
-      (this.layout as PanelLayout).removeWidget(this._runButton);
-    }
-
-    if (button) {
-      this._runButton = button;
-      this._runButton.addClass(INPUT_AREA_PROMPT_RUN_CLASS);
-      this._runButton.addClass('je-cell-run-button');
-      (this.layout as PanelLayout).addWidget(this._runButton);
-      this.updateRunButtonVisibility();
-    }
+    this._runButton = new ToolbarButton({
+      icon: EverywhereIcons.run,
+      onClick: () => {
+        this._app.commands.execute('notebook:run-cell');
+      },
+      tooltip: trans.__('Run this cell')
+    });
+    this._runButton.addClass(INPUT_AREA_PROMPT_RUN_CLASS);
+    this._runButton.addClass('je-cell-run-button');
+    (this.layout as PanelLayout).addWidget(this._runButton);
+    this.updateRunButtonVisibility();
   }
 
   get executionCount(): string | null {
@@ -134,8 +127,12 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
 }
 
 export class JENotebookContentFactory extends Notebook.ContentFactory {
+  constructor (options: JENotebookContentFactory.IOptions) {
+    super(options)
+    this._app = options.app;
+  }
   createInputPrompt(): JEInputPrompt {
-    return new JEInputPrompt();
+    return new JEInputPrompt(this._app);
   }
 
   createNotebook(options: Notebook.IOptions): Notebook {
@@ -156,7 +153,8 @@ export const notebookFactoryPlugin: JupyterFrontEndPlugin<NotebookPanel.IContent
     const editorFactory = editorServices.factoryService.newInlineEditor;
 
     const factory = new JENotebookContentFactory({
-      editorFactory
+      editorFactory,
+      app
     });
 
     return factory;
