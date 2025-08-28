@@ -120,8 +120,26 @@
 }
 
 .jp-InputArea-prompt-run.je-cell-run-button {
-  scale: calc(var(--je-scale) * 3);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%) scale(calc(var(--je-scale) * 2.5));
+}
 
+/* Hide all dirty state indicators */
+.jp-Cell.jp-mod-dirty .jp-Cell-inputCollapser,
+.jp-InputCollapser.jp-Cell-inputCollapser,
+.jp-OutputCollapser.jp-Cell-outputCollapser,
+.jp-Collapser-child {
+  display: none;
+}
+
+.jp-Cell.jp-mod-dirty::before {
+  display: none;
+}
+
+.jp-Cell.jp-mod-dirty .jp-InputArea::before {
+  display: none;
 }
 
 .jp-SideBar {
@@ -190,6 +208,10 @@
   --jp-cell-editor-background: #f7f7f7;
   --jp-cell-editor-border-color: #a7a9ac;
   --jp-border-width: calc(var(--je-scale) * 1px);
+}
+
+.jp-InputArea {
+  position: relative;
 }
 
 .jp-InputArea-editor {
