@@ -62,7 +62,7 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
       onClick: () => {
         this._app.commands.execute('notebook:run-cell');
       },
-      tooltip: trans.__('Run this cell')
+      tooltip: 'Run this cell'
     });
     this._runButton.addClass(INPUT_AREA_PROMPT_RUN_CLASS);
     this._runButton.addClass('je-cell-run-button');
