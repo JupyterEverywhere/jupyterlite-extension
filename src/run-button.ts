@@ -2,7 +2,6 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { INotebookTracker, NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { ToolbarButton } from '@jupyterlab/ui-components';
-import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 import { Widget, PanelLayout } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 import { Notebook } from '@jupyterlab/notebook';
