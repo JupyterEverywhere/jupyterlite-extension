@@ -68,7 +68,7 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     });
     this._runButton.addClass(INPUT_AREA_PROMPT_RUN_CLASS);
     this._runButton.addClass('je-cell-run-button');
-    (this.layout as PanelLayout).addWidget(this._runButton);
+    layout.addWidget(this._runButton);
     this.updateRunButtonVisibility();
   }
 
