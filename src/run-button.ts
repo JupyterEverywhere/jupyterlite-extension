@@ -3,6 +3,7 @@ import { IEditorServices } from '@jupyterlab/codeeditor';
 import { ToolbarButton } from '@jupyterlab/ui-components';
 import { Widget, PanelLayout } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
+import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
 import { EverywhereIcons } from './icons';
 
 const INPUT_PROMPT_CLASS = 'jp-InputPrompt';
