@@ -582,7 +582,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
 export default [
   viewOnlyNotebookFactoryPlugin,
   notebookFactoryPlugin,
-  runCellButtonPlugin,
   plugin,
   notebookPlugin,
   files,
