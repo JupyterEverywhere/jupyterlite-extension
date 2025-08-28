@@ -119,8 +119,9 @@
   z-index: var(--je-toastify-z-index);
 }
 
-.jp-ToolbarButtonComponent > svg {
-  scale: calc(var(--je-scale) + 0.85);
+.jp-InputArea-prompt-run.je-cell-run-button {
+  scale: calc(var(--je-scale) * 3);
+
 }
 
 .jp-SideBar {
