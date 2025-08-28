@@ -1,10 +1,8 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { INotebookTracker, NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { ToolbarButton } from '@jupyterlab/ui-components';
 import { Widget, PanelLayout } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
-import { Notebook } from '@jupyterlab/notebook';
 import { EverywhereIcons } from './icons';
 
 const INPUT_PROMPT_CLASS = 'jp-InputPrompt';
@@ -49,7 +47,7 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
   private _customExecutionCount: string | null = null;
   private _isHovered: boolean = false;
   private _promptIndicator: InputPromptIndicator;
-  private _runButton?: ToolbarButton;
+  private _runButton: ToolbarButton;
 
   constructor(private _app: JupyterFrontEnd) {
     super();
@@ -125,11 +123,20 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
   }
 }
 
+export namespace JENotebookContentFactory {
+  export interface IOptions extends Notebook.ContentFactory.IOptions {
+    app: JupyterFrontEnd;
+  }
+}
+
 export class JENotebookContentFactory extends Notebook.ContentFactory {
-  constructor (options: JENotebookContentFactory.IOptions) {
-    super(options)
+  private _app: JupyterFrontEnd;
+
+  constructor(options: JENotebookContentFactory.IOptions) {
+    super(options);
     this._app = options.app;
   }
+
   createInputPrompt(): JEInputPrompt {
     return new JEInputPrompt(this._app);
   }
