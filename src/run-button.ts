@@ -52,7 +52,7 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
   private _promptIndicator: InputPromptIndicator;
   private _runButton?: ToolbarButton;
 
-  constructor(translator?: ITranslator) {
+  constructor() {
     super();
     this.addClass(INPUT_PROMPT_CLASS);
 
@@ -134,50 +134,10 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
 }
 
 export class JENotebookContentFactory extends Notebook.ContentFactory {
-  private _translator: ITranslator;
-  private _tracker: INotebookTracker;
-
-  constructor(
-    options: Notebook.ContentFactory.IOptions & {
-      translator?: ITranslator;
-      tracker: INotebookTracker;
-    }
-  ) {
-    super(options);
-    this._translator = options.translator || nullTranslator;
-    this._tracker = options.tracker;
-  }
-
   createInputPrompt(): JEInputPrompt {
-    const prompt = new JEInputPrompt(this._translator);
-
-    setTimeout(() => {
-      this.setupRunButton(prompt);
-    }, 0);
-
-    return prompt;
+    return new JEInputPrompt();
   }
 
-  private setupRunButton(prompt: JEInputPrompt): void {
-    const trans = this._translator.load('jupyterlab');
-
-    const runButton = new ToolbarButton({
-      icon: EverywhereIcons.run,
-      onClick: () => {
-        const currentPanel = this._tracker.currentWidget;
-        if (currentPanel) {
-          void NotebookActions.runAndAdvance(currentPanel.content, currentPanel.sessionContext);
-        }
-      },
-      tooltip: trans.__('Run this cell')
-    });
-
-    prompt.runButton = runButton;
-  }
-
-  /**
-   * Create a new content area for the panel.
-   */
   createNotebook(options: Notebook.IOptions): Notebook {
     return new Notebook(options);
   }
@@ -186,28 +146,71 @@ export class JENotebookContentFactory extends Notebook.ContentFactory {
 /**
  * Plugin that provides the custom notebook factory with run buttons
  */
-export const runCellButtonPlugin: JupyterFrontEndPlugin<NotebookPanel.IContentFactory> = {
+export const notebookFactoryPlugin: JupyterFrontEndPlugin<NotebookPanel.IContentFactory> = {
   id: 'jupytereverywhere:notebook-factory',
-  description: 'Provides notebook cell factory with run buttons',
+  description: 'Provides notebook cell factory with input prompts',
   provides: NotebookPanel.IContentFactory,
-  requires: [IEditorServices, INotebookTracker],
-  optional: [ITranslator],
+  requires: [IEditorServices],
   autoStart: true,
-  activate: (
-    app: JupyterFrontEnd,
-    editorServices: IEditorServices,
-    tracker: INotebookTracker,
-    translator?: ITranslator
-  ) => {
+  activate: (app: JupyterFrontEnd, editorServices: IEditorServices) => {
     const editorFactory = editorServices.factoryService.newInlineEditor;
 
     const factory = new JENotebookContentFactory({
-      editorFactory,
-      translator,
-      tracker
+      editorFactory
     });
 
-    console.log('Agriya debug notebook factory with run buttons activated');
     return factory;
+  }
+};
+
+/**
+ * Plugin that sets up run buttons on notebook cells
+ */
+export const runCellButtonPlugin: JupyterFrontEndPlugin<void> = {
+  id: 'jupytereverywhere:run-cell-button',
+  description: 'Add run buttons to notebook cells',
+  autoStart: true,
+  requires: [INotebookTracker],
+  optional: [ITranslator],
+  activate: (app: JupyterFrontEnd, tracker: INotebookTracker, translator?: ITranslator) => {
+    const trans = (translator ?? nullTranslator).load('jupyterlab');
+
+    const runButtonFactory = (panel: NotebookPanel) =>
+      new ToolbarButton({
+        icon: EverywhereIcons.run,
+        onClick: () => {
+          void NotebookActions.runAndAdvance(panel.content, panel.sessionContext);
+        },
+        tooltip: trans.__('Run this cell and advance')
+      });
+
+    tracker.widgetAdded.connect((_, panel) => {
+      const cellListChanged = () => {
+        panel.content.widgets.forEach(cell => {
+          cell.ready
+            .then(() => {
+              if (cell.inputArea) {
+                const prompt = (cell.inputArea as any).prompt || (cell.inputArea as any)._prompt;
+
+                if (prompt && 'runButton' in prompt) {
+                  prompt.runButton = runButtonFactory(panel);
+                }
+              }
+            })
+            .catch(() => {
+              // no-op
+            });
+        });
+      };
+
+      panel.content.model?.cells.changed.connect(cellListChanged);
+
+      // Also run immediately for existing cells
+      cellListChanged();
+
+      panel.disposed.connect(() => {
+        panel.content.model?.cells.changed.disconnect(cellListChanged);
+      });
+    });
   }
 };
