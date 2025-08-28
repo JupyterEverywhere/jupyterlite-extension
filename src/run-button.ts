@@ -59,7 +59,7 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     this._promptIndicator = new InputPromptIndicator();
     layout.addWidget(this._promptIndicator);
     this._runButton = new ToolbarButton({
-      icon: EverywhereIcons.run,
+      icon: EverywhereIcons.runCell,
       onClick: () => {
         this._app.commands.execute('notebook:run-cell');
       },

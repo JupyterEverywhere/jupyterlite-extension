@@ -21,6 +21,7 @@ import competitionSvg from '../style/icons/competition.svg';
 import notebookSvg from '../style/icons/notebook.svg';
 import logoSvg from '../style/icons/logo.svg';
 import runSvg from '../style/icons/run.svg';
+import runCellSvg from '../style/icons/run-cell.svg';
 import refreshSvg from '../style/icons/refresh.svg';
 import stopSvg from '../style/icons/stop.svg';
 import fastForwardSvg from '../style/icons/fast-forward.svg';
@@ -88,6 +89,10 @@ export namespace EverywhereIcons {
   export const logo = new LabIcon({
     name: 'everywhere:logo',
     svgstr: logoSvg
+  });
+  export const runCell = new LabIcon({
+    name: 'everywhere:run-cell',
+    svgstr: runCellSvg
   });
   export const downloadCaret = new LabIcon({
     name: 'everywhere:download-caret',
