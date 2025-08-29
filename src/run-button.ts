@@ -2,7 +2,6 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { ToolbarButton } from '@jupyterlab/ui-components';
 import { Widget, PanelLayout } from '@lumino/widgets';
-import { Message } from '@lumino/messaging';
 import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
 import { EverywhereIcons } from './icons';
 
@@ -46,8 +45,6 @@ export class InputPromptIndicator extends Widget implements IInputPromptIndicato
 
 export class JEInputPrompt extends Widget implements IInputPrompt {
   private _customExecutionCount: string | null = null;
-  private _isHovered: boolean = false;
-  private _isActive: boolean = false;
   private _promptIndicator: InputPromptIndicator;
   private _runButton: ToolbarButton;
 
@@ -68,7 +65,6 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     this._runButton.addClass(INPUT_AREA_PROMPT_RUN_CLASS);
     this._runButton.addClass('je-cell-run-button');
     layout.addWidget(this._runButton);
-    this.updateRunButtonVisibility();
   }
 
   get executionCount(): string | null {
@@ -78,86 +74,6 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
   set executionCount(value: string | null) {
     this._customExecutionCount = value;
     this._promptIndicator.executionCount = value;
-    this.updateRunButtonVisibility();
-  }
-
-  handleEvent(event: Event): void {
-    switch (event.type) {
-      case 'mouseover':
-        this._isHovered = true;
-        this.updateRunButtonVisibility();
-        break;
-      case 'mouseout':
-        this._isHovered = false;
-        this.updateRunButtonVisibility();
-        break;
-    }
-  }
-
-  protected onAfterAttach(msg: Message): void {
-    super.onAfterAttach(msg);
-    this.node.addEventListener('mouseover', this, true);
-    this.node.addEventListener('mouseout', this, true);
-    this.watchForActiveState();
-  }
-
-  protected onBeforeDetach(msg: Message): void {
-    super.onBeforeDetach(msg);
-    this.node.removeEventListener('mouseover', this, true);
-    this.node.removeEventListener('mouseout', this, true);
-  }
-
-  private watchForActiveState(): void {
-    // Find the parent cell element.
-    const cellElement = this.node.closest('.jp-Cell') as HTMLElement;
-    if (!cellElement) {
-      return;
-    }
-
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          const wasActive = this._isActive;
-          this._isActive = cellElement.classList.contains('jp-mod-active');
-
-          if (wasActive !== this._isActive) {
-            this.updateRunButtonVisibility();
-          }
-        }
-      });
-    });
-
-    observer.observe(cellElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    this._isActive = cellElement.classList.contains('jp-mod-active');
-    this.updateRunButtonVisibility();
-
-    // Clean up
-    this.disposed.connect(() => {
-      observer.disconnect();
-    });
-  }
-
-  private updateRunButtonVisibility(): void {
-    if (!this._runButton) {
-      return;
-    }
-
-    // We'll show the run button on the following conditions:
-    // 1. Cell is being hovered over OR
-    // 2. Cell is active (being edited/worked on)
-    const shouldShow = this._isHovered || this._isActive;
-
-    if (shouldShow) {
-      this._runButton.show();
-      this._promptIndicator.hide();
-    } else {
-      this._runButton.hide();
-      this._promptIndicator.show();
-    }
   }
 }
 

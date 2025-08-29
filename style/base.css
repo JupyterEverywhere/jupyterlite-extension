@@ -124,6 +124,18 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%) scale(calc(var(--je-scale) * 2.5));
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Don't show run button on raw cells */
+.jp-RawCell .jp-InputArea-prompt-run.je-cell-run-button {
+  display: none;
+}
+
+.jp-Cell:hover:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button,
+.jp-Cell.jp-mod-active:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button {
+  opacity: 1;
 }
 
 /* Hide all dirty state indicators */
@@ -140,6 +152,20 @@
 
 .jp-Cell.jp-mod-dirty .jp-InputArea::before {
   display: none;
+}
+
+/* Ensure markdown and raw cells have a height that's
+consistent with code cells */
+.jp-MarkdownCell .jp-InputArea,
+.jp-RawCell .jp-InputArea {
+  min-height: 40px;
+}
+
+.jp-MarkdownCell .jp-RenderedHTMLCommon,
+.jp-MarkdownCell .jp-InputArea-editor {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
 }
 
 .jp-SideBar {
@@ -208,15 +234,6 @@
   --jp-cell-editor-background: #f7f7f7;
   --jp-cell-editor-border-color: #a7a9ac;
   --jp-border-width: calc(var(--je-scale) * 1px);
-}
-
-.jp-InputArea {
-  position: relative;
-}
-
-.jp-InputArea-editor {
-  border-radius: var(--je-round-corners);
-  padding: calc(var(--je-scale) * 5px);
 }
 
 /* View Only header */
