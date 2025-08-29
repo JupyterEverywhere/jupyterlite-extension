@@ -236,6 +236,15 @@ consistent with code cells */
   --jp-border-width: calc(var(--je-scale) * 1px);
 }
 
+.jp-InputArea {
+  position: relative;
+}
+
+.jp-InputArea-editor {
+  border-radius: var(--je-round-corners);
+  padding: calc(var(--je-scale) * 5px);
+}
+
 /* View Only header */
 .je-ViewOnlyHeader {
   min-height: 40px;
