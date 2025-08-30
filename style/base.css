@@ -154,6 +154,15 @@
   display: none;
 }
 
+.jp-InputArea {
+  position: relative;
+}
+
+.jp-InputArea-editor {
+  border-radius: var(--je-round-corners);
+  padding: calc(var(--je-scale) * 5px);
+}
+
 /* Ensure markdown and raw cells have a height that's
 consistent with code cells */
 .jp-MarkdownCell .jp-InputArea,
@@ -234,15 +243,6 @@ consistent with code cells */
   --jp-cell-editor-background: #f7f7f7;
   --jp-cell-editor-border-color: #a7a9ac;
   --jp-border-width: calc(var(--je-scale) * 1px);
-}
-
-.jp-InputArea {
-  position: relative;
-}
-
-.jp-InputArea-editor {
-  border-radius: var(--je-round-corners);
-  padding: calc(var(--je-scale) * 5px);
 }
 
 /* View Only header */
