@@ -28,6 +28,7 @@ import {
 
 import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
 import { singleDocumentMode } from './single-mode';
+import { notebookFactoryPlugin } from './run-button';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -580,6 +581,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
 export default [
   viewOnlyNotebookFactoryPlugin,
+  notebookFactoryPlugin,
   plugin,
   notebookPlugin,
   files,

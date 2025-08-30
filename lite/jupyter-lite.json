@@ -80,6 +80,8 @@
 
       "@jupyterlab/filebrowser-extension:widget",
 
+      "@jupyterlab/notebook-extension:factory",
+
       "@jupyterlab/workspaces-extension",
 
       "@jupyterlab/console-extension",
