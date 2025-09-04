@@ -47,7 +47,6 @@ const INPUT_PROMPT_CLASS = 'jp-InputPrompt';
 const INPUT_AREA_PROMPT_INDICATOR_CLASS = 'jp-InputArea-prompt-indicator';
 const INPUT_AREA_PROMPT_INDICATOR_EMPTY_CLASS = 'jp-InputArea-prompt-indicator-empty';
 const INPUT_AREA_PROMPT_RUN_CLASS = 'jp-InputArea-prompt-run';
-// TODO licensing stuff here
 
 export interface IInputPromptIndicator extends Widget {
   executionCount: string | null;
