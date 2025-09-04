@@ -202,7 +202,6 @@ consistent with code cells */
 .jp-MarkdownCell .jp-RenderedHTMLCommon,
 .jp-MarkdownCell .jp-InputArea-editor {
   min-height: 32px;
-  display: flex;
   align-items: center;
 }
 
