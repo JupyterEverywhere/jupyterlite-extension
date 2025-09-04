@@ -701,3 +701,74 @@ test.describe('Kernel commands should use memory terminology', () => {
     await promise;
   });
 });
+
+test.describe('Per cell run buttons', () => {
+  test('Clicking the run button executes code and shows output', async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const cell = page.locator('.jp-CodeCell').first();
+    const editor = cell.getByRole('textbox');
+
+    await editor.click(); // make it active so the run button is visible
+    await editor.fill('print("hello from jupytereverywhere")');
+
+    const runBtn = cell.locator('.je-cell-run-button');
+    await expect(runBtn).toBeVisible();
+
+    await runBtn.click();
+
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({ timeout: 20000 });
+    await expect(output).toContainText('hello from jupytereverywhere', { timeout: 20000 });
+  });
+
+  test('Hides input execution count on hover/active', async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Ensure two cells so we can toggle active state cleanly, and
+    // put some output in the first cell so it has an OutputPrompt.
+    await runCommand(page, 'notebook:insert-cell-below');
+
+    const firstCell = page.locator('.jp-CodeCell').first();
+    const secondCell = page.locator('.jp-CodeCell').nth(1);
+
+    await firstCell.getByRole('textbox').click();
+    await firstCell.getByRole('textbox').fill('1+1');
+    await firstCell.locator('.je-cell-run-button').click();
+    await expect(firstCell.locator('.jp-Cell-outputArea')).toBeVisible({ timeout: 10000 });
+
+    const inputIndicator = firstCell.locator('.jp-InputArea-prompt-indicator');
+    const outputPrompt = firstCell.locator('.jp-OutputPrompt');
+
+    // When the first cell is active, the input indicator should be hidden
+    await firstCell.click();
+    await expect(inputIndicator).toBeHidden();
+
+    // Make another cell active, so the first is not active/selected
+    await secondCell.click();
+    await expect(inputIndicator).toBeVisible();
+
+    // Hover over the first cell; input indicator should get hidden again
+    // However, the output prompt should remain visible at all times
+    await firstCell.hover();
+    await expect(inputIndicator).toBeHidden();
+    await expect(outputPrompt).toBeVisible();
+  });
+
+  test('Run button is hidden on Raw cells and reappears on Code cells', async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const cell = page.locator('.jp-Cell').first();
+    const runBtn = cell.locator('.je-cell-run-button');
+
+    await runCommand(page, 'notebook:change-cell-to-raw');
+    await expect(runBtn).toBeHidden();
+
+    await runCommand(page, 'notebook:change-cell-to-code');
+    await cell.click();
+    await expect(runBtn).toBeVisible();
+
+    await runCommand(page, 'notebook:change-cell-to-markdown');
+    await expect(runBtn).toBeVisible();
+  });
+});
