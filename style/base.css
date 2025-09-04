@@ -119,6 +119,17 @@
   z-index: var(--je-toastify-z-index);
 }
 
+.jp-InputArea-prompt-indicator {
+  left: 0;
+  line-height: 25px;
+}
+
+.jp-InputArea-prompt-indicator::before {
+  left: 0;
+  line-height: 25px;
+  top: 5px;
+}
+
 .jp-InputArea-prompt-run.je-cell-run-button {
   position: absolute;
   right: 8px;
@@ -144,6 +155,19 @@
 .jp-OutputCollapser.jp-Cell-outputCollapser,
 .jp-Collapser-child {
   display: none;
+}
+
+.jp-Notebook .jp-CodeCell:hover .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-active .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-selected .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell:hover .jp-InputPrompt > .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-active .jp-InputPrompt > .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-selected .jp-InputPrompt > .jp-InputArea-prompt-indicator {
+  visibility: hidden;
+}
+
+.jp-Notebook .jp-Cell .jp-OutputPrompt {
+  visibility: visible;
 }
 
 .jp-Cell.jp-mod-dirty::before {
