@@ -178,6 +178,11 @@
   display: none;
 }
 
+/* Hide the • (U+2022) character for dirty cells */
+.jp-Cell.jp-mod-dirty .jp-InputPrompt::before {
+  content: '';
+}
+
 .jp-InputArea {
   position: relative;
 }
