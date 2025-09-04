@@ -179,7 +179,7 @@
 }
 
 /* Hide the • (U+2022) character for dirty cells */
-.jp-Cell.jp-mod-dirty .jp-InputPrompt::before {
+.jp-Cell.jp-mod-dirty .jp-InputPrompt.jp-InputArea-prompt::before {
   content: '';
 }
 
