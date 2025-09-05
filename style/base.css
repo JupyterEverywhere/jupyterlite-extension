@@ -130,13 +130,15 @@
   top: 5px;
 }
 
-.jp-InputArea-prompt-run.je-cell-run-button {
+.jp-InputArea-prompt-run.je-cell-run-button,
+.jp-InputArea-prompt-stop.je-cell-stop-button {
   position: absolute;
   right: 8px;
   top: 50%;
   transform: translateY(-50%) scale(calc(var(--je-scale) * 2.5));
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
+  pointer-events: none;
 }
 
 /* Don't show run button on raw cells */
@@ -144,9 +146,27 @@
   display: none;
 }
 
+/* Don't show stop button on raw cells */
+.jp-RawCell .jp-InputArea-prompt-stop.je-cell-stop-button {
+  display: none;
+}
+
 .jp-Cell:hover:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button,
 .jp-Cell.jp-mod-active:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button {
   opacity: 1;
+  pointer-events: auto;
+}
+
+.jp-Cell.je-executing:not(.jp-RawCell) .jp-InputArea-prompt-stop.je-cell-stop-button,
+.jp-InputPrompt.je-executing:not(.jp-RawCell) .jp-InputArea-prompt-stop.je-cell-stop-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.jp-Cell.je-executing:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button,
+.jp-InputPrompt.je-executing:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Hide all dirty state indicators */
