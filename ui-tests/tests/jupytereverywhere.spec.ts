@@ -752,7 +752,9 @@ test.describe('Per cell run buttons', () => {
     await expect(inputIndicator).toBeHidden();
   });
 
-  test('Run button is hidden on Raw cells and reappears on Code/Markdown cells', async ({ page }) => {
+  test('Run button is hidden on Raw cells and reappears on Code/Markdown cells', async ({
+    page
+  }) => {
     await page.waitForSelector('.jp-NotebookPanel');
 
     const cell = page.locator('.jp-Cell').first();
