@@ -166,7 +166,11 @@
   visibility: hidden;
 }
 
-.jp-Notebook .jp-Cell .jp-OutputPrompt {
+.jp-Notebook .jp-Cell:not(.jp-mod-active) .jp-OutputPrompt {
+  visibility: hidden;
+}
+
+.jp-Notebook .jp-Cell.jp-mod-active .jp-OutputPrompt {
   visibility: visible;
 }
 
