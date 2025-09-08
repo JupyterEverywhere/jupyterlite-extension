@@ -22,6 +22,7 @@
   --je-round-corners: 12px;
   --je-font-family: 'Inter', sans-serif;
   --je-dialog-round-corners: 12px;
+  --je-cell-height: 40px;
   --je-toastify-z-index: calc(var(--toastify-z-index) + 2);
   --je-document-padding: calc(var(--je-scale) * 51px);
   --je-sidebar-width: calc(var(--je-scale) * 110px);
@@ -196,7 +197,11 @@
 consistent with code cells */
 .jp-MarkdownCell .jp-InputArea,
 .jp-RawCell .jp-InputArea {
-  min-height: 40px;
+  min-height: var(--je-cell-height);
+}
+
+.jp-CodeCell .jp-Cell-inputWrapper {
+  min-height: var(--je-cell-height);
 }
 
 .jp-MarkdownCell .jp-RenderedHTMLCommon,
