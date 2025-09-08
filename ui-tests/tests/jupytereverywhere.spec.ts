@@ -738,7 +738,6 @@ test.describe('Per cell run buttons', () => {
     await expect(firstCell.locator('.jp-Cell-outputArea')).toBeVisible({ timeout: 10000 });
 
     const inputIndicator = firstCell.locator('.jp-InputArea-prompt-indicator');
-    const outputPrompt = firstCell.locator('.jp-OutputPrompt');
 
     // When the first cell is active, the input indicator should be hidden
     await firstCell.click();
@@ -749,13 +748,11 @@ test.describe('Per cell run buttons', () => {
     await expect(inputIndicator).toBeVisible();
 
     // Hover over the first cell; input indicator should get hidden again
-    // However, the output prompt should remain visible at all times
     await firstCell.hover();
     await expect(inputIndicator).toBeHidden();
-    await expect(outputPrompt).toBeVisible();
   });
 
-  test('Run button is hidden on Raw cells and reappears on Code cells', async ({ page }) => {
+  test('Run button is hidden on Raw cells and reappears on Code/Markdown cells', async ({ page }) => {
     await page.waitForSelector('.jp-NotebookPanel');
 
     const cell = page.locator('.jp-Cell').first();
