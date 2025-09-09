@@ -752,6 +752,50 @@ test.describe('Per cell run buttons', () => {
     await expect(inputIndicator).toBeHidden();
   });
 
+  test('For non-active/non-focused cells with an input execution count, there should not be an output execution count', async ({
+    page
+  }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Ensure three cells so we can toggle active state cleanly.
+    await runCommand(page, 'notebook:insert-cell-below');
+    await runCommand(page, 'notebook:insert-cell-below');
+    const firstCell = page.locator('.jp-CodeCell').first();
+    const secondCell = page.locator('.jp-CodeCell').nth(1);
+    const thirdCell = page.locator('.jp-CodeCell').nth(2);
+
+    // Put some code in the first two cells and run them to get input
+    // execution counts and an output prompt in the second cell.
+    await firstCell.getByRole('textbox').click();
+    await firstCell.getByRole('textbox').fill('x = 5');
+    await firstCell.locator('.je-cell-run-button').click();
+
+    await secondCell.getByRole('textbox').click();
+    await secondCell.getByRole('textbox').fill('x');
+    await secondCell.locator('.je-cell-run-button').click();
+
+    // Go to the third cell so the first two are not active/focused
+    await thirdCell.getByRole('textbox').click();
+
+    // Wait for the execution counts to appear. Now, the second cell (inactive)
+    // should have an input prompt, but no output prompt.
+    const output = secondCell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({ timeout: 30000 });
+    await expect(output).toContainText('5', { timeout: 30000 });
+
+    const secondInputIndicator = secondCell.locator('.jp-InputPrompt');
+    const secondOutputIndicator = secondCell.locator('.jp-OutputPrompt');
+    await expect(secondInputIndicator).toBeVisible({ timeout: 10000 });
+    await expect(secondOutputIndicator).toBeHidden({ timeout: 10000 });
+
+    expect(
+      await page.locator('.jp-LabShell').screenshot({
+        mask: [page.locator('.jp-KernelStatus-widget')],
+        maskColor: '#fff'
+      })
+    ).toMatchSnapshot('multiple-cells-prompt-indicators.png');
+  });
+
   test('Run button is hidden on Raw cells and reappears on Code/Markdown cells', async ({
     page
   }) => {
