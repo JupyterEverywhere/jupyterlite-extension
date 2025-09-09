@@ -58,6 +58,7 @@
     "disabledExtensions": [
       "@jupyterlab/extensionmanager-extension",
       "@jupyterlab/apputils-extension:announcements",
+      "@jupyterlab/apputils-extension:state",
       "@jupyterlab/debugger-extension",
       "@jupyterlab/application-extension:property-inspector",
 
