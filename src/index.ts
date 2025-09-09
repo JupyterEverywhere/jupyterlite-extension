@@ -3,6 +3,7 @@ import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
+import { IStateDB, StateDB } from '@jupyterlab/statedb';
 
 import { customSidebar } from './sidebar';
 import { SharingService } from './sharing-service';
@@ -579,7 +580,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
   }
 };
 
+const stateDBShim: JupyterFrontEndPlugin<IStateDB> = {
+  id: '@jupyter-everywhere/apputils-extension:state',
+  autoStart: true,
+  provides: IStateDB,
+  activate: (app: JupyterFrontEnd) => {
+    return new StateDB();
+  }
+};
+
 export default [
+  stateDBShim,
   viewOnlyNotebookFactoryPlugin,
   notebookFactoryPlugin,
   plugin,
