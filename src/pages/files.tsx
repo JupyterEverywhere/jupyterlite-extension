@@ -1,4 +1,4 @@
-import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
+import { JupyterFrontEndPlugin, JupyterFrontEnd, IRouter } from '@jupyterlab/application';
 import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
@@ -257,9 +257,9 @@ class Files extends ReactWidget {
 export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
-  requires: [IContentsManager],
-  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager) => {
-    const createWidget = () => {
+  requires: [IContentsManager, IRouter],
+  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager, router: IRouter) => {
+    const createWidget = (): MainAreaWidget<Files> => {
       const content = new Files(contentsManager);
       const widget = new MainAreaWidget({ content });
       widget.id = 'je-files';
@@ -278,12 +278,20 @@ export const files: JupyterFrontEndPlugin<void> = {
 
     let widget = createWidget();
 
+    const base = router.base.replace(/\/$/, '');
+    const esc = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const filesPattern = new RegExp(`^${esc(base)}\\/files(?:\\/?|\\/index\\.html)(?:[?#].*)?$`);
+    router.register({
+      pattern: filesPattern,
+      command: Commands.openFiles
+    });
+
     app.shell.add(
       new SidebarIcon({
         label: 'Files',
         icon: EverywhereIcons.folderSidebar,
         execute: () => {
-          void app.commands.execute(Commands.openFiles);
+          router.navigate(`${base}/lab/files/`);
           return undefined;
         }
       }),
@@ -303,6 +311,13 @@ export const files: JupyterFrontEndPlugin<void> = {
           app.shell.add(widget, 'main');
         }
         app.shell.activateById(widget.id);
+      }
+    });
+
+    void app.restored.then(() => {
+      const here = window.location.pathname + window.location.search + window.location.hash;
+      if (filesPattern.test(window.location.pathname)) {
+        router.navigate(here);
       }
     });
   }
