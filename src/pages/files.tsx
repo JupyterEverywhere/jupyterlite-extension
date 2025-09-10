@@ -292,6 +292,7 @@ export const files: JupyterFrontEndPlugin<void> = {
         icon: EverywhereIcons.folderSidebar,
         execute: () => {
           router.navigate(`${base}/lab/files/`);
+          void app.commands.execute(Commands.openFiles);
           return undefined;
         }
       }),
