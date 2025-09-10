@@ -258,8 +258,13 @@ class Files extends ReactWidget {
 export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
-  requires: [IContentsManager, ILiteRouter],
-  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager, router: ILiteRouter) => {
+  requires: [IContentsManager],
+  optional: [ILiteRouter],
+  activate: (
+    app: JupyterFrontEnd,
+    contentsManager: Contents.IManager,
+    router: ILiteRouter | null
+  ) => {
     const createWidget = () => {
       const content = new Files(contentsManager);
       const widget = new MainAreaWidget({ content });
@@ -279,7 +284,7 @@ export const files: JupyterFrontEndPlugin<void> = {
 
     let widget = createWidget();
 
-    const base = router.base.replace(/\/$/, '');
+    const base = router?.base.replace(/\/$/, '');
 
     app.shell.add(
       new SidebarIcon({
