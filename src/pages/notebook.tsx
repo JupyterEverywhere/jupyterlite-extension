@@ -1,4 +1,5 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { INotebookTracker, INotebookWidgetFactory } from '@jupyterlab/notebook';
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
@@ -41,11 +42,13 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     IToolbarWidgetRegistry,
     INotebookWidgetFactory
   ],
+  optional: [ILiteRouter],
   activate: (
     app: JupyterFrontEnd,
     tracker: INotebookTracker,
     readonlyTracker: IViewOnlyNotebookTracker,
-    toolbarRegistry: IToolbarWidgetRegistry
+    toolbarRegistry: IToolbarWidgetRegistry,
+    router?: ILiteRouter | null
   ) => {
     const { commands, shell, serviceManager } = app;
     const { contents } = serviceManager;
@@ -231,6 +234,13 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       label: 'Notebook',
       icon: EverywhereIcons.notebook,
       execute: () => {
+        const base = (router?.base || '').replace(/\/$/, '');
+        const next = `${base}/lab/index.html`;
+        const here = window.location.pathname + window.location.search + window.location.hash;
+        if (here !== next) {
+          window.history.pushState({}, '', next);
+        }
+
         if (readonlyTracker.currentWidget) {
           return shell.activateById(readonlyTracker.currentWidget.id);
         }
@@ -293,5 +303,14 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         () => new KernelSwitcherDropdownButton(commands, tracker)
       );
     }
+
+    // Canonicalise the URL if we are directly at /lab/.
+    void app.restored.then(() => {
+      const url = new URL(window.location.href);
+      if (/\/lab\/$/.test(url.pathname)) {
+        url.pathname = url.pathname.replace(/\/lab\/$/, '/lab/index.html');
+        window.history.replaceState({}, '', url.toString());
+      }
+    });
   }
 };

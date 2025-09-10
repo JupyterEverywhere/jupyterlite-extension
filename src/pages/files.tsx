@@ -1,4 +1,5 @@
-import { JupyterFrontEndPlugin, JupyterFrontEnd, IRouter } from '@jupyterlab/application';
+import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
@@ -257,8 +258,8 @@ class Files extends ReactWidget {
 export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
-  requires: [IContentsManager, IRouter],
-  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager, router: IRouter) => {
+  requires: [IContentsManager, ILiteRouter],
+  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager, router: ILiteRouter) => {
     const createWidget = (): MainAreaWidget<Files> => {
       const content = new Files(contentsManager);
       const widget = new MainAreaWidget({ content });
@@ -279,19 +280,17 @@ export const files: JupyterFrontEndPlugin<void> = {
     let widget = createWidget();
 
     const base = router.base.replace(/\/$/, '');
-    const esc = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const filesPattern = new RegExp(`^${esc(base)}\\/files(?:\\/?|\\/index\\.html)(?:[?#].*)?$`);
-    router.register({
-      pattern: filesPattern,
-      command: Commands.openFiles
-    });
 
     app.shell.add(
       new SidebarIcon({
         label: 'Files',
         icon: EverywhereIcons.folderSidebar,
         execute: () => {
-          router.navigate(`${base}/lab/files/`);
+          const next = `${base}/lab/files/`;
+          const here = window.location.pathname + window.location.search + window.location.hash;
+          if (here !== next) {
+            window.history.pushState({}, '', next);
+          }
           void app.commands.execute(Commands.openFiles);
           return undefined;
         }
@@ -312,13 +311,6 @@ export const files: JupyterFrontEndPlugin<void> = {
           app.shell.add(widget, 'main');
         }
         app.shell.activateById(widget.id);
-      }
-    });
-
-    void app.restored.then(() => {
-      const here = window.location.pathname + window.location.search + window.location.hash;
-      if (filesPattern.test(window.location.pathname)) {
-        router.navigate(here);
       }
     });
   }

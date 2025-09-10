@@ -1,4 +1,5 @@
-import { JupyterFrontEnd, JupyterFrontEndPlugin, IRouter } from '@jupyterlab/application';
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { Commands } from './commands';
 
 const ROUTE_FILES_CMD = Commands.routeFiles;
@@ -6,14 +7,12 @@ const ROUTE_FILES_CMD = Commands.routeFiles;
 const routesPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:routes',
   autoStart: true,
-  optional: [IRouter],
-  activate: (app: JupyterFrontEnd, router: IRouter | null) => {
+  optional: [ILiteRouter],
+  activate: (app: JupyterFrontEnd, router: ILiteRouter | null) => {
     if (!router) {
       return;
     }
 
-    // WWe wait for the app to be fully restored so the Files plugin is registered
-    // (I'm not sure if the order matters).
     app.commands.addCommand(ROUTE_FILES_CMD, {
       label: 'Open Files (route)',
       execute: async () => {
@@ -23,16 +22,23 @@ const routesPlugin: JupyterFrontEndPlugin<void> = {
     });
 
     const base = router.base.replace(/\/+$/, '');
-    const patterns = [
-      /^\/files(?:\/.*)?$/,
-      new RegExp(`^${base.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}/files(?:/.*)?$`)
-    ];
+    const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    patterns.forEach(pattern => {
-      router.register({ command: ROUTE_FILES_CMD, pattern });
-    });
+    const patterns = [/^\/files(?:\/.*)?$/, new RegExp(`^${esc(base)}\\/files(?:\\/.*)?$`)];
+    patterns.forEach(pattern => router.register({ command: ROUTE_FILES_CMD, pattern }));
 
-    router.route(window.location.pathname + window.location.search + window.location.hash);
+    // TODO: this won't work until we have a lab/files/index.html to land on.
+    // Even if we do, then the extensions will fail to load due to invalid JSON.
+    // Handle direct loads (e.g. if a user were to open /lab/files/ in a new tab)
+    // const here = window.location.pathname + window.location.search + window.location.hash;
+    // if (typeof (router as any).route === 'function') {
+    //   (router as any).route(here);
+    // } else {
+    //     // Fallback: if URL matches our patterns, run the command.
+    //     if (patterns.some(p => p.test(here))) {
+    //     void app.commands.execute(Commands.openFiles);
+    //   }
+    // }
   }
 };
 
