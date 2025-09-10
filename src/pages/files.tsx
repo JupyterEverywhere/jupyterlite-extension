@@ -260,7 +260,7 @@ export const files: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [IContentsManager, ILiteRouter],
   activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager, router: ILiteRouter) => {
-    const createWidget = (): MainAreaWidget<Files> => {
+    const createWidget = () => {
       const content = new Files(contentsManager);
       const widget = new MainAreaWidget({ content });
       widget.id = 'je-files';
