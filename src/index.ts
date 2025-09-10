@@ -16,6 +16,7 @@ import fastForwardSvg from '../style/icons/fast-forward.svg';
 
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
+import routesPlugin from './routes';
 import { Commands } from './commands';
 // import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
@@ -596,6 +597,7 @@ export default [
   plugin,
   notebookPlugin,
   files,
+  routesPlugin,
   // competitions,
   customSidebar,
   // helpPlugin,
