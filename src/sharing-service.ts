@@ -158,6 +158,10 @@ export class SharingService {
 
   /**
    * Retrieves the current authentication token, authenticating if necessary.
+   * Our strategy is as follows:
+   * 1. If we have an in-memory token, return it.
+   * 2. Otherwise, we try a cookie-based refresh first to resume a prior session.
+   * 3. If that fails (no/expired cookie), we issue a fresh token/session.
    *
    * @returns A promise that resolves to the current authentication token.
    */
@@ -166,7 +170,15 @@ export class SharingService {
       if (this._token) {
         return this._token;
       }
-      return await this.authenticate();
+      try {
+        // Attempt to resume the existing session using the HttpOnly cookie
+        this._token = await this.refresh();
+        return this._token;
+      } catch {
+        // No valid cookie/session; issue a new one
+        this._token = await this.authenticate();
+        return this._token;
+      }
     })();
   }
 
@@ -193,6 +205,7 @@ export class SharingService {
 
     const response = await fetch(endpoint, {
       method: 'POST',
+      credentials: 'include',
       headers: await this.makeHeaders()
     });
 
@@ -211,23 +224,18 @@ export class SharingService {
   }
 
   /**
-   * Refreshes the current token.
+   * Refreshes the current token using the cookie set by the server.
    *
-   * @param token - The token to be refreshed. If not provided, the current token will be used.
    * @returns A promise that resolves to the refreshed token.
-   * @throws {Error} If the authentication request fails or the token response is invalid.
+   * @throws {Error} If the refresh request fails or the token response is invalid.
    */
-  async refresh(token?: IToken): Promise<IToken> {
-    if (!token) {
-      token = await this.token;
-    }
-
+  async refresh(): Promise<IToken> {
     const endpoint = new URL('auth/refresh', this.api_url);
 
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: await this.makeHeaders(),
-      body: JSON.stringify({ token: token.token })
+      credentials: 'include',
+      headers: await this.makeHeaders()
     });
 
     if (!response.ok) {
@@ -245,6 +253,23 @@ export class SharingService {
   }
 
   /**
+   * Perform a "log out"-like action by asking the server to clear the
+   * HttpOnly cookie, and then drop our in-memory token.
+   */
+  async logout(): Promise<void> {
+    const endpoint = new URL('auth/logout', this.api_url);
+    try {
+      await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'include',
+        headers: await this.makeHeaders()
+      });
+    } finally {
+      this._token = undefined;
+    }
+  }
+
+  /**
    * Retrieves a notebook by its ID.
    *
    * @param id - The ID of the notebook to retrieve.
@@ -259,6 +284,7 @@ export class SharingService {
 
     const token = await this.token;
     const response = await fetch(endpoint, {
+      credentials: 'include',
       headers: await this.makeHeaders(token)
     });
 
@@ -294,6 +320,7 @@ export class SharingService {
     const token = await this.token;
     const response = await fetch(endpoint, {
       method: 'POST',
+      credentials: 'include',
       headers: await this.makeHeaders(token),
       body: JSON.stringify(requestData)
     });
@@ -329,6 +356,7 @@ export class SharingService {
     const token = await this.token;
     const response = await fetch(endpoint, {
       method: 'PUT',
+      credentials: 'include',
       headers: await this.makeHeaders(token),
       body: JSON.stringify(requestData)
     });
