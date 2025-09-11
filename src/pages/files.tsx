@@ -1,4 +1,5 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
@@ -258,7 +259,12 @@ export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
   requires: [IContentsManager],
-  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager) => {
+  optional: [ILiteRouter],
+  activate: (
+    app: JupyterFrontEnd,
+    contentsManager: Contents.IManager,
+    router: ILiteRouter | null
+  ) => {
     const createWidget = () => {
       const content = new Files(contentsManager);
       const widget = new MainAreaWidget({ content });
@@ -278,11 +284,18 @@ export const files: JupyterFrontEndPlugin<void> = {
 
     let widget = createWidget();
 
+    const base = router?.base.replace(/\/$/, '');
+
     app.shell.add(
       new SidebarIcon({
         label: 'Files',
         icon: EverywhereIcons.folderSidebar,
         execute: () => {
+          const next = `${base}/lab/files/`;
+          const here = window.location.pathname + window.location.search + window.location.hash;
+          if (here !== next) {
+            window.history.pushState({}, '', next);
+          }
           void app.commands.execute(Commands.openFiles);
           return undefined;
         }
