@@ -1,17 +1,9 @@
-name: xeus-kernels
+name: xeus-kernel
 channels:
   - https://repo.mamba.pm/emscripten-forge
   - https://repo.prefix.dev/conda-forge
 dependencies:
-  - xeus-python
   - xeus-r
-  - numpy
-  - pandas
-  - scipy
-  - seaborn
-  - matplotlib
-  - scikit-learn
-  - r-base
   # -r-tidyverse is not available yet due to upper pin on r-base, and
   # older r-base versions are not available on emscripten-forge, so we
   # install some of the tidyverse packages individually (except for

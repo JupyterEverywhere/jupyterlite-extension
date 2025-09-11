@@ -10,15 +10,15 @@ import { Commands } from '../commands';
 import { SharingService } from '../sharing-service';
 import { VIEW_ONLY_NOTEBOOK_FACTORY, IViewOnlyNotebookTracker } from '../view-only';
 import { KernelSwitcherDropdownButton } from '../ui-components/KernelSwitcherDropdownButton';
-import { KERNEL_URL_TO_NAME } from '../kernels';
+import { KERNEL_URL_TO_NAME, KERNEL_DISPLAY_NAMES } from '../kernels';
 
 /**
  * Maps the notebook content language to a kernel name. We currently
  * only support Python and R notebooks, so this function maps them
- * to 'xpython' and 'xr' respectively. If the language is not recognized,
- * it defaults to 'xpython'.
+ * to 'python' and 'xr' respectively. If the language is not recognized,
+ * it defaults to 'python' (Pyodide).
  * @param content - The notebook content to map the language to a kernel name.
- * @returns - The kernel name as a string, either 'xpython' for Python or 'xr' for R.
+ * @returns - The kernel name as a string, either 'python' for Python or 'xr' for R.
  */
 function mapLanguageToKernel(content: INotebookContent): string {
   const rawLang =
@@ -29,7 +29,7 @@ function mapLanguageToKernel(content: INotebookContent): string {
   if (rawLang === 'r') {
     return 'xr';
   }
-  return 'xpython';
+  return 'python';
 }
 
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
@@ -151,7 +151,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       try {
         const params = new URLSearchParams(window.location.search);
         const desiredKernelParam = params.get('kernel') || 'python';
-        const desiredKernel = KERNEL_URL_TO_NAME[desiredKernelParam] || 'xpython';
+        const desiredKernel = KERNEL_URL_TO_NAME[desiredKernelParam] || 'python';
 
         await commands.execute('notebook:create-new', {
           kernelName: desiredKernel
@@ -178,7 +178,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         const kernelName = mapLanguageToKernel(content);
         content.metadata.kernelspec = {
           name: kernelName,
-          display_name: kernelName === 'xpython' ? 'Python 3' : 'R'
+          display_name: KERNEL_DISPLAY_NAMES[kernelName] ?? kernelName
         };
 
         const filename = `${(content.metadata?.name as string) || `Uploaded_${id}`}.ipynb`;

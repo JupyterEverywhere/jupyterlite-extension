@@ -39,9 +39,9 @@ const PYTHON_TEST_NOTEBOOK: JSONObject = {
   ],
   metadata: {
     kernelspec: {
-      display_name: 'Python 3.13 (XPython)',
+      display_name: 'Python 3 (ipykernel)',
       language: 'python',
-      name: 'xpython'
+      name: 'python3'
     },
     language_info: {
       codemirror_mode: {
@@ -458,19 +458,20 @@ test.describe('Landing page', () => {
 
 test.describe('Kernel Switching', () => {
   test('Should open kernel switcher menu', async ({ page }) => {
-    const downloadButton = page.locator('.je-KernelSwitcherButton');
-    await downloadButton.click();
+    const dropdownButton = page.locator('.je-KernelSwitcherButton');
+    await dropdownButton.click();
     expect(
       await page.locator('.je-KernelSwitcherDropdownButton-menu').screenshot()
     ).toMatchSnapshot('kernel-switcher-menu.png');
   });
 });
 
-test.skip('Should switch to R kernel and run R code', async ({ page }) => {
+test('Should switch to R kernel and run R code', async ({ page }) => {
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-NotebookPanel');
 
   await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
+  await page.waitForTimeout(10000);
   await runCommand(page, 'notebook:insert-cell-below');
 
   const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
@@ -496,6 +497,10 @@ test.describe('Leave confirmation', () => {
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-NotebookPanel');
 
+    // Make the notebook dirty so the leave confirmation is shown
+    const firstCell = page.locator('.jp-Cell').first();
+    await firstCell.getByRole('textbox').fill('print("hello from a non-empty notebook")');
+
     const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
     await jeButton.click();
 
@@ -505,10 +510,30 @@ test.describe('Leave confirmation', () => {
     expect(await dialog.screenshot()).toMatchSnapshot('leave-confirmation-dialog.png');
   });
 
+  test('Should not show leave confirmation for empty notebook and should navigate to landing directly', async ({
+    page
+  }) => {
+    await mockTokenRoute(page);
+    await page.goto('lab/index.html');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
+    const nav = page.waitForURL(/\/index\.html$/);
+    await jeButton.click();
+    await nav;
+
+    await expect(page.locator('.je-hero')).toBeVisible();
+    await expect(page.locator('.jp-Dialog')).toHaveCount(0);
+  });
+
   test('When cancelled, should remain on the notebook view', async ({ page }) => {
     await mockTokenRoute(page);
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-NotebookPanel');
+
+    // Make the notebook dirty so the leave confirmation is shown
+    const firstCell = page.locator('.jp-Cell').first();
+    await firstCell.getByRole('textbox').fill('x = 1');
 
     const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
     await jeButton.click();
@@ -527,6 +552,10 @@ test.describe('Leave confirmation', () => {
     await mockShareNotebookResponse(page, 'test-redirect-notebook-id');
     await page.goto('lab/index.html');
     await page.waitForSelector('.jp-NotebookPanel');
+
+    // Make the notebook dirty so the leave confirmation is shown
+    const firstCell = page.locator('.jp-Cell').first();
+    await firstCell.getByRole('textbox').fill('print("share me")');
 
     const jeButton = page.locator('.jp-SideBar').getByTitle('Jupyter Everywhere');
     await jeButton.click();
@@ -551,6 +580,7 @@ test.describe('Leave confirmation', () => {
 });
 
 test.describe('Sharing and copying R and Python notebooks', () => {
+  test.describe.configure({ retries: 2 });
   test('Should create copy from view-only R notebook and keep R kernel', async ({ page }) => {
     await mockTokenRoute(page);
 
@@ -595,6 +625,9 @@ test.describe('Sharing and copying R and Python notebooks', () => {
 
     // Wait for the notebook to switch to editable mode
     await page.waitForSelector('.jp-NotebookPanel');
+
+    // Wait for the kernel to initialise
+    await page.waitForTimeout(10000);
 
     // Verify kernel is Python
     const kernelLabel = await page.locator('.je-KernelSwitcherButton').innerText();
@@ -666,5 +699,119 @@ test.describe('Kernel commands should use memory terminology', () => {
 
     await dialog.press('Escape');
     await promise;
+  });
+});
+
+test.describe('Per cell run buttons', () => {
+  test('Clicking the run button executes code and shows output', async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const cell = page.locator('.jp-CodeCell').first();
+    const editor = cell.getByRole('textbox');
+
+    await editor.click(); // make it active so the run button is visible
+    await editor.fill('print("hello from jupytereverywhere")');
+
+    const runBtn = cell.locator('.je-cell-run-button');
+    await expect(runBtn).toBeVisible();
+
+    await runBtn.click();
+
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({ timeout: 20000 });
+    await expect(output).toContainText('hello from jupytereverywhere', { timeout: 20000 });
+  });
+
+  test('Hides input execution count on hover/active', async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Ensure two cells so we can toggle active state cleanly, and
+    // put some output in the first cell so it has an OutputPrompt.
+    await runCommand(page, 'notebook:insert-cell-below');
+
+    const firstCell = page.locator('.jp-CodeCell').first();
+    const secondCell = page.locator('.jp-CodeCell').nth(1);
+
+    await firstCell.getByRole('textbox').click();
+    await firstCell.getByRole('textbox').fill('1+1');
+    await firstCell.locator('.je-cell-run-button').click();
+    await expect(firstCell.locator('.jp-Cell-outputArea')).toBeVisible({ timeout: 10000 });
+
+    const inputIndicator = firstCell.locator('.jp-InputArea-prompt-indicator');
+
+    // When the first cell is active, the input indicator should be hidden
+    await firstCell.click();
+    await expect(inputIndicator).toBeHidden();
+
+    // Make another cell active, so the first is not active/selected
+    await secondCell.click();
+    await expect(inputIndicator).toBeVisible();
+
+    // Hover over the first cell; input indicator should get hidden again
+    await firstCell.hover();
+    await expect(inputIndicator).toBeHidden();
+  });
+
+  test('For non-active/non-focused cells with an input execution count, there should not be an output execution count', async ({
+    page
+  }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    // Ensure three cells so we can toggle active state cleanly.
+    await runCommand(page, 'notebook:insert-cell-below');
+    await runCommand(page, 'notebook:insert-cell-below');
+    const firstCell = page.locator('.jp-CodeCell').first();
+    const secondCell = page.locator('.jp-CodeCell').nth(1);
+    const thirdCell = page.locator('.jp-CodeCell').nth(2);
+
+    // Put some code in the first two cells and run them to get input
+    // execution counts and an output prompt in the second cell.
+    await firstCell.getByRole('textbox').click();
+    await firstCell.getByRole('textbox').fill('x = 5');
+    await firstCell.locator('.je-cell-run-button').click();
+
+    await secondCell.getByRole('textbox').click();
+    await secondCell.getByRole('textbox').fill('x');
+    await secondCell.locator('.je-cell-run-button').click();
+
+    // Go to the third cell so the first two are not active/focused
+    await thirdCell.getByRole('textbox').click();
+
+    // Wait for the execution counts to appear. Now, the second cell (inactive)
+    // should have an input prompt, but no output prompt.
+    const output = secondCell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({ timeout: 30000 });
+    await expect(output).toContainText('5', { timeout: 30000 });
+
+    const secondInputIndicator = secondCell.locator('.jp-InputPrompt');
+    const secondOutputIndicator = secondCell.locator('.jp-OutputPrompt');
+    await expect(secondInputIndicator).toBeVisible({ timeout: 10000 });
+    await expect(secondOutputIndicator).toBeHidden({ timeout: 10000 });
+
+    expect(
+      await page.locator('.jp-LabShell').screenshot({
+        mask: [page.locator('.jp-KernelStatus-widget')],
+        maskColor: '#fff'
+      })
+    ).toMatchSnapshot('multiple-cells-prompt-indicators.png');
+  });
+
+  test('Run button is hidden on Raw cells and reappears on Code/Markdown cells', async ({
+    page
+  }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const cell = page.locator('.jp-Cell').first();
+    const runBtn = cell.locator('.je-cell-run-button');
+
+    await runCommand(page, 'notebook:change-cell-to-raw');
+    await expect(runBtn).toBeHidden();
+
+    await runCommand(page, 'notebook:change-cell-to-code');
+    await cell.click();
+    await expect(runBtn).toBeVisible();
+
+    await runCommand(page, 'notebook:change-cell-to-markdown');
+    await expect(runBtn).toBeVisible();
   });
 });

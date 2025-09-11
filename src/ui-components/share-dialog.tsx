@@ -1,7 +1,7 @@
 import { ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 
-import { generateDefaultNotebookName } from '../notebook-name';
+import { generateDefaultNotebookName } from '../notebook-utils';
 
 /**
  * Share dialog data interface.

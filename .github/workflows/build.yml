@@ -29,7 +29,7 @@ jobs:
       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@affc83be6020d529b9368cd4d63e467877606600 # v1
 
     - name: Install dependencies
-      run: python -m pip install -U "jupyterlab>=4.0.0,<5"
+      run: python -m pip install -U "jupyterlab==4.5.0a3"
 
     - name: Lint the extension
       run: |
@@ -134,10 +134,10 @@ jobs:
         sudo rm -rf $(which node)
         sudo rm -rf $(which node)
 
-        pip install "jupyterlab>=4.0.0,<5" jupytereverywhere*.whl
+        pip install "jupyterlab==4.5.0a3" jupytereverywhere*.whl
 
 
-        jupyter labextension list
+        jupyter labextension list --verbose
         jupyter labextension list 2>&1 | grep -ie "jupytereverywhere.*OK"
         python -m jupyterlab.browser_check --no-browser-test
 
@@ -167,7 +167,7 @@ jobs:
     - name: Install jlpm
       run: |
         set -eux
-        python -m pip install "jupyterlab>=4.0.0,<5"
+        python -m pip install "jupyterlab==4.5.0a3"
 
     - name: Install dependencies
       working-directory: ui-tests

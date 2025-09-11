@@ -1,19 +1,27 @@
 import { NotebookPanel } from '@jupyterlab/notebook';
 
 export const KERNEL_URL_TO_NAME: Record<string, string> = {
-  python: 'xpython',
+  python: 'python',
   r: 'xr'
 };
 
 export const KERNEL_NAME_TO_URL: Record<string, string> = {
+  python: 'python',
   xpython: 'python',
   xr: 'r'
 };
 
 export const KERNEL_DISPLAY_NAMES: Record<string, string> = {
+  python: 'Python',
   xpython: 'Python',
   xr: 'R'
 };
+
+/**
+ * List of kernels that will appear in the kernel switcher dropdown,
+ * i.e., for which we have an available factory.
+ */
+export const ACTIVE_KERNELS: readonly string[] = ['python', 'xr'];
 
 /**
  * Switch the notebook's kernel if it differs from the desired one.

@@ -22,6 +22,7 @@
   --je-round-corners: 12px;
   --je-font-family: 'Inter', sans-serif;
   --je-dialog-round-corners: 12px;
+  --je-cell-height: 40px;
   --je-toastify-z-index: calc(var(--toastify-z-index) + 2);
   --je-document-padding: calc(var(--je-scale) * 51px);
   --je-sidebar-width: calc(var(--je-scale) * 110px);
@@ -62,6 +63,10 @@
 
 .jp-Dialog-footer {
   justify-content: center;
+}
+
+.jp-Dialog-footerButtons {
+  text-align: center;
 }
 
 .jp-Dialog {
@@ -113,6 +118,100 @@
 
 .jp-toastContainer {
   z-index: var(--je-toastify-z-index);
+}
+
+.jp-InputArea-prompt-indicator {
+  left: 0;
+  line-height: 25px;
+}
+
+.jp-InputArea-prompt-indicator::before {
+  left: 0;
+  line-height: 25px;
+  top: 5px;
+}
+
+.jp-InputArea-prompt-run.je-cell-run-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%) scale(calc(var(--je-scale) * 2.5));
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Don't show run button on raw cells */
+.jp-RawCell .jp-InputArea-prompt-run.je-cell-run-button {
+  display: none;
+}
+
+.jp-Cell:hover:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button,
+.jp-Cell.jp-mod-active:not(.jp-RawCell) .jp-InputArea-prompt-run.je-cell-run-button {
+  opacity: 1;
+}
+
+/* Hide all dirty state indicators */
+.jp-Cell.jp-mod-dirty .jp-Cell-inputCollapser,
+.jp-InputCollapser.jp-Cell-inputCollapser,
+.jp-OutputCollapser.jp-Cell-outputCollapser,
+.jp-Collapser-child {
+  display: none;
+}
+
+.jp-Notebook .jp-CodeCell:hover .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-active .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-selected .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell:hover .jp-InputPrompt > .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-active .jp-InputPrompt > .jp-InputArea-prompt-indicator,
+.jp-Notebook .jp-CodeCell.jp-mod-selected .jp-InputPrompt > .jp-InputArea-prompt-indicator {
+  visibility: hidden;
+}
+
+.jp-Notebook .jp-Cell:not(.jp-mod-active) .jp-OutputPrompt {
+  visibility: hidden;
+}
+
+.jp-Notebook .jp-Cell.jp-mod-active .jp-OutputPrompt {
+  visibility: visible;
+}
+
+.jp-Cell.jp-mod-dirty::before {
+  display: none;
+}
+
+.jp-Cell.jp-mod-dirty .jp-InputArea::before {
+  display: none;
+}
+
+/* Hide the • (U+2022) character for dirty cells */
+.jp-Cell.jp-mod-dirty .jp-InputPrompt.jp-InputArea-prompt::before {
+  content: '';
+}
+
+.jp-InputArea {
+  position: relative;
+}
+
+.jp-InputArea-editor {
+  border-radius: var(--je-round-corners);
+  padding: calc(var(--je-scale) * 5px);
+}
+
+/* Ensure markdown and raw cells have a height that's
+consistent with code cells */
+.jp-MarkdownCell .jp-InputArea,
+.jp-RawCell .jp-InputArea {
+  min-height: var(--je-cell-height);
+}
+
+.jp-CodeCell .jp-Cell-inputWrapper {
+  min-height: var(--je-cell-height);
+}
+
+.jp-MarkdownCell .jp-RenderedHTMLCommon,
+.jp-MarkdownCell .jp-InputArea-editor {
+  min-height: 32px;
+  align-items: center;
 }
 
 .jp-SideBar {
@@ -181,11 +280,6 @@
   --jp-cell-editor-background: #f7f7f7;
   --jp-cell-editor-border-color: #a7a9ac;
   --jp-border-width: calc(var(--je-scale) * 1px);
-}
-
-.jp-InputArea-editor {
-  border-radius: var(--je-round-corners);
-  padding: calc(var(--je-scale) * 5px);
 }
 
 /* View Only header */

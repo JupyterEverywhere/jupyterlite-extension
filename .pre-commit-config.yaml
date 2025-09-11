@@ -9,7 +9,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
         exclude: ui-tests/.*-snapshots
@@ -49,7 +49,7 @@ repos:
         additional_dependencies: ['validate-pyproject-schema-store[all]']
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.11.0
+    rev: v1.12.1
     hooks:
       - id: zizmor
         args: ['--pedantic', '--fix=safe']

@@ -2,6 +2,7 @@
   "jupyter-lite-schema-version": 0,
   "jupyter-config-data": {
     "appName": "Jupyter Everywhere",
+    "mode": "single-document",
     "contentsStorageName": "JupyterEverywhere Storage",
     "settingsStorageName": "JupyterEverywhere Storage",
     "exposeAppInBrowser": true,
@@ -59,6 +60,7 @@
     "disabledExtensions": [
       "@jupyterlab/extensionmanager-extension",
       "@jupyterlab/apputils-extension:announcements",
+      "@jupyterlab/apputils-extension:state",
       "@jupyterlab/debugger-extension",
       "@jupyterlab/application-extension:property-inspector",
 
@@ -80,6 +82,10 @@
       "@jupyterlite/application-extension:lsp-connection-manager",
 
       "@jupyterlab/filebrowser-extension:widget",
+
+      "@jupyterlab/notebook-extension:factory",
+
+      "@jupyterlab/workspaces-extension",
 
       "@jupyterlab/console-extension",
       "@jupyterlab/tooltip-extension:consoles",

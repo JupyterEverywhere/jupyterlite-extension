@@ -1,8 +1,9 @@
-import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { Dialog, showDialog, ReactWidget, Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { INotebookContent } from '@jupyterlab/nbformat';
+import { IStateDB, StateDB } from '@jupyterlab/statedb';
 
 import { customSidebar } from './sidebar';
 import { SharingService } from './sharing-service';
@@ -19,7 +20,7 @@ import { Commands } from './commands';
 // import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
 // import { helpPlugin } from './pages/help';
-import { generateDefaultNotebookName } from './notebook-name';
+import { generateDefaultNotebookName, isNotebookEmpty } from './notebook-utils';
 import {
   IViewOnlyNotebookTracker,
   viewOnlyNotebookFactoryPlugin,
@@ -27,6 +28,8 @@ import {
 } from './view-only';
 
 import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
+import { singleDocumentMode } from './single-mode';
+import { notebookFactoryPlugin } from './run-button';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -86,13 +89,21 @@ async function showShareDialog(sharingService: SharingService, notebookContent: 
 async function handleNotebookSharing(
   notebookPanel: NotebookPanel | ViewOnlyNotebookPanel,
   sharingService: SharingService,
-  manual: boolean
+  manual: boolean,
+  onManualSave: () => void
 ) {
   const notebookContent = notebookPanel.context.model.toJSON() as INotebookContent;
 
   const isViewOnly = notebookContent.metadata?.isSharedNotebook === true;
   const sharedId = notebookContent.metadata?.sharedId as string | undefined;
   const defaultName = generateDefaultNotebookName();
+
+  // Mark that the user has performed at least one manual save in this session.
+  // We do this early in the manual flow for clarity; the local save already happened
+  // in the command handlers and this flag only affects reminder wording.
+  if (manual && !isViewOnly) {
+    onManualSave();
+  }
 
   try {
     if (isViewOnly) {
@@ -137,22 +148,6 @@ async function handleNotebookSharing(
 }
 
 /**
- * Helper to start the save reminder timer. Clears any existing timer
- * and sets a new one to show the notification after 5 minutes.
- */
-function startSaveReminder(currentTimeout: number | null): number {
-  if (currentTimeout) {
-    window.clearTimeout(currentTimeout);
-  }
-  return window.setTimeout(() => {
-    Notification.info(
-      "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.",
-      { autoClose: 8000 }
-    );
-  }, 300 * 1000); // once after 5 minutes
-}
-
-/**
  * JUPYTEREVERYWHERE EXTENSION
  */
 const plugin: JupyterFrontEndPlugin<void> = {
@@ -165,12 +160,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     tracker: INotebookTracker,
     readonlyTracker: IViewOnlyNotebookTracker
   ) => {
-    const { commands, shell } = app;
-
-    if ((shell as ILabShell).mode !== 'single-document') {
-      // workaround issue with jupyterlite single doc mode
-      commands.execute('application:set-mode', { mode: 'single-document' });
-    }
+    const { commands } = app;
 
     // Get API URL from configuration or use a default
     const apiUrl =
@@ -189,7 +179,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             // Skip auto-sync if it's a manual share.
             return;
           }
-          await handleNotebookSharing(widget, sharingService, false);
+          await handleNotebookSharing(widget, sharingService, false, () => {});
         }
       });
     });
@@ -300,9 +290,21 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
 
+    // Track user time, and show a reminder to save the notebook once after
+    // five minutes of editing (i.e., once it becomes non-empty and dirty)
+    // using a toast notification.
+    let saveReminderTimeout: number | null = null;
+    let isSaveReminderScheduled = false; // a 5-minute timer is scheduled, but it hasn't fired yet
+    let hasShownSaveReminder = false; // we've already shown the toast once for this notebook
+    let hasManuallySaved = false; // whether the user has manually saved at least once in this session
+
     /**
      * Add custom Share notebook command
      */
+    const markManualSave = () => {
+      hasManuallySaved = true;
+    };
+
     commands.addCommand(Commands.shareNotebookCommand, {
       label: 'Share Notebook',
       execute: async () => {
@@ -322,7 +324,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           // Save the notebook before we share it.
           await notebookPanel.context.save();
 
-          await handleNotebookSharing(notebookPanel, sharingService, true);
+          await handleNotebookSharing(notebookPanel, sharingService, true, markManualSave);
         } catch (error) {
           console.error('Error in share command:', error);
         }
@@ -348,7 +350,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
         manuallySharing.add(panel);
         await panel.context.save();
-        await handleNotebookSharing(panel, sharingService, true);
+        await handleNotebookSharing(panel, sharingService, true, markManualSave);
       }
     });
 
@@ -480,35 +482,122 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-    // Track user time, and show a reminder to save the notebook after
-    // five minutes using a toast notification.
-    // Then reset the timer when the notebook is saved manually.
-    let saveReminderTimeout: number | null = null;
+
+    /**
+     * Helper to start the save reminder timer. Clears any existing timer
+     * and sets a new one to show the notification after 5 minutes.
+     */
+    function startSaveReminder(currentTimeout: number | null, onFire: () => void): number {
+      if (currentTimeout) {
+        window.clearTimeout(currentTimeout);
+      }
+      return window.setTimeout(() => {
+        const message = hasManuallySaved
+          ? "It's been 5 minutes since you last saved this notebook. Make sure to save the link to your notebook to edit your work later."
+          : "It's been 5 minutes since you've been working on this notebook. Make sure to save the link to your notebook to edit your work later.";
+
+        Notification.info(message, { autoClose: 8000 });
+        onFire();
+      }, 300 * 1000); // once after 5 minutes
+    }
 
     tracker.widgetAdded.connect((_, panel) => {
       if (saveReminderTimeout) {
         window.clearTimeout(saveReminderTimeout);
+        saveReminderTimeout = null;
       }
+      isSaveReminderScheduled = false;
+      hasShownSaveReminder = false;
 
-      panel.context.ready.then(() => {
-        saveReminderTimeout = startSaveReminder(saveReminderTimeout);
+      const maybeScheduleSaveReminder = () => {
+        if (hasShownSaveReminder) {
+          return;
+        }
 
+        const content = panel.context.model.toJSON() as INotebookContent;
+        // Skip for view-only notebooks
+        if (panel.context.model.readOnly || content.metadata?.isSharedNotebook === true) {
+          return;
+        }
+        // Schedule after the notebook becomes non-empty
+        if (isNotebookEmpty(content)) {
+          return;
+        }
+        if (isSaveReminderScheduled) {
+          return;
+        }
+
+        isSaveReminderScheduled = true;
+        saveReminderTimeout = startSaveReminder(saveReminderTimeout, () => {
+          hasShownSaveReminder = true;
+          isSaveReminderScheduled = false;
+        });
+      };
+
+      // After the model is ready, check immediately and on any content change.
+      void panel.context.ready.then(() => {
+        // We cover the case where the notebook loads already non-empty, say,
+        // if the user uploads a notebook into the application.
+        maybeScheduleSaveReminder();
+        panel.context.model.contentChanged.connect(() => {
+          maybeScheduleSaveReminder(); // schedule when first content appears
+        });
+
+        // Reset the reminder timer whenever the user saves manually.
+        // We clear any pending timer and wait for the next edit (dirty state)
+        // to schedule a fresh 5-minute reminder.
         panel.context.saveState.connect((_, state) => {
           if (state === 'completed') {
-            saveReminderTimeout = startSaveReminder(saveReminderTimeout);
+            if (saveReminderTimeout) {
+              window.clearTimeout(saveReminderTimeout);
+              saveReminderTimeout = null;
+            }
+            isSaveReminderScheduled = false;
+            hasShownSaveReminder = false;
+            // Note: we do not reschedule here; it will be scheduled on the next content change
+            // once the notebook becomes dirty again.
           }
         });
+      });
+
+      // If a view-only notebook is opened or becomes active, ensure no reminder can fire.
+      readonlyTracker.widgetAdded.connect(() => {
+        if (saveReminderTimeout) {
+          window.clearTimeout(saveReminderTimeout);
+          saveReminderTimeout = null;
+        }
+        isSaveReminderScheduled = false;
+        hasShownSaveReminder = false;
+      });
+
+      panel.disposed.connect(() => {
+        if (saveReminderTimeout) {
+          window.clearTimeout(saveReminderTimeout);
+          saveReminderTimeout = null;
+        }
       });
     });
   }
 };
 
+const stateDBShim: JupyterFrontEndPlugin<IStateDB> = {
+  id: '@jupyter-everywhere/apputils-extension:state',
+  autoStart: true,
+  provides: IStateDB,
+  activate: (app: JupyterFrontEnd) => {
+    return new StateDB();
+  }
+};
+
 export default [
+  stateDBShim,
   viewOnlyNotebookFactoryPlugin,
+  notebookFactoryPlugin,
   plugin,
   notebookPlugin,
   files,
   // competitions,
-  customSidebar
-  // helpPlugin
+  customSidebar,
+  // helpPlugin,
+  singleDocumentMode
 ];
