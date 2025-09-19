@@ -491,6 +491,30 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   expect(await output.screenshot()).toMatchSnapshot('r-output.png');
 });
 
+test.describe('Kernel networking', () => {
+  const remote_url =
+    'https://raw.githubusercontent.com/JupyterEverywhere/jupyterlite-extension/refs/heads/main/ui-tests/test-files/b-dataset.csv';
+
+  test('R kernel should be able to fetch from a remote URL', async ({ page }) => {
+    await page.goto('lab/index.html?kernel=r');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const code = `read.csv("${remote_url}")`;
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(code);
+
+    await runCommand(page, 'notebook:run-cell');
+
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({
+      timeout: 20000 // shouldn't take too long to run but just to be safe
+    });
+
+    const text = await output.textContent();
+    expect(text).toContain('col1');
+  });
+});
+
 test.describe('Leave confirmation', () => {
   test('Leave confirmation snapshot', async ({ page }) => {
     await mockTokenRoute(page);
