@@ -85,6 +85,9 @@
       "@jupyterlab/apputils-extension:splash",
       "@jupyterlab/celltags-extension",
       "@jupyterlab/pluginmanager-extension",
+
+      "@jupyterlab/fileeditor-extension",
+      "@jupyterlab/tooltip-extension:files",
       "@jupyterlab/filebrowser-extension",
       "@jupyterlab/toc-extension",
 
