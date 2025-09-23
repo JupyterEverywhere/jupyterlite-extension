@@ -491,6 +491,30 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   expect(await output.screenshot()).toMatchSnapshot('r-output.png');
 });
 
+test.describe('Kernel networking', () => {
+  const remote_url =
+    'https://raw.githubusercontent.com/JupyterEverywhere/jupyterlite-extension/refs/heads/main/ui-tests/test-files/b-dataset.csv';
+
+  test('R kernel should be able to fetch from a remote URL', async ({ page }) => {
+    await page.goto('lab/index.html?kernel=r');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const code = `read.csv("${remote_url}")`;
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(code);
+
+    await runCommand(page, 'notebook:run-cell');
+
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({
+      timeout: 20000 // shouldn't take too long to run but just to be safe
+    });
+
+    const text = await output.textContent();
+    expect(text).toContain('col1');
+  });
+});
+
 test.describe('Leave confirmation', () => {
   test('Leave confirmation snapshot', async ({ page }) => {
     await mockTokenRoute(page);
@@ -699,6 +723,32 @@ test.describe('Kernel commands should use memory terminology', () => {
 
     await dialog.press('Escape');
     await promise;
+  });
+});
+
+test.describe('Placeholders in cells', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+  });
+  test('Code cell editor placeholder', async ({ page }) => {
+    await runCommand(page, 'notebook:enter-command-mode');
+
+    const cell = page.locator('.jp-CodeCell').first();
+    expect(await cell.screenshot()).toMatchSnapshot('code-editor-placeholder.png');
+  });
+  test('Markdown cell editor placeholder', async ({ page }) => {
+    await runCommand(page, 'notebook:change-cell-to-markdown');
+    await runCommand(page, 'notebook:enter-command-mode');
+
+    const cell = page.locator('.jp-MarkdownCell').first();
+    expect(await cell.screenshot()).toMatchSnapshot('markdown-editor-placeholder.png');
+  });
+  test('Rendered Markdown cell placeholder', async ({ page }) => {
+    await runCommand(page, 'notebook:change-cell-to-markdown');
+    await runCommand(page, 'notebook:run-cell');
+
+    const cell = page.locator('.jp-MarkdownCell').first();
+    expect(await cell.screenshot()).toMatchSnapshot('rendered-markdown-placeholder.png');
   });
 });
 
