@@ -14,7 +14,7 @@ export const placeholderPlugin: JupyterFrontEndPlugin<void> = {
     extensions.addExtension(
       Object.freeze({
         name: 'placeholder',
-        default: 'Test',
+        default: null,
         factory: () =>
           EditorExtensionRegistry.createConfigurableExtension((text: string | null) =>
             text ? placeholder(text) : []
