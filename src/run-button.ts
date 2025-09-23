@@ -36,11 +36,9 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { IEditorServices } from '@jupyterlab/codeeditor';
+import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ToolbarButton } from '@jupyterlab/ui-components';
 import { Widget, PanelLayout } from '@lumino/widgets';
-import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
 import { EverywhereIcons } from './icons';
 
 const INPUT_PROMPT_CLASS = 'jp-InputPrompt';
@@ -113,47 +111,3 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     this._promptIndicator.executionCount = value;
   }
 }
-
-export namespace JENotebookContentFactory {
-  export interface IOptions extends Notebook.ContentFactory.IOptions {
-    app: JupyterFrontEnd;
-  }
-}
-
-export class JENotebookContentFactory extends Notebook.ContentFactory {
-  private _app: JupyterFrontEnd;
-
-  constructor(options: JENotebookContentFactory.IOptions) {
-    super(options);
-    this._app = options.app;
-  }
-
-  createInputPrompt(): JEInputPrompt {
-    return new JEInputPrompt(this._app);
-  }
-
-  createNotebook(options: Notebook.IOptions): Notebook {
-    return new Notebook(options);
-  }
-}
-
-/**
- * Plugin that provides the custom notebook factory with run buttons
- */
-export const notebookFactoryPlugin: JupyterFrontEndPlugin<NotebookPanel.IContentFactory> = {
-  id: 'jupytereverywhere:notebook-factory',
-  description: 'Provides notebook cell factory with input prompts',
-  provides: NotebookPanel.IContentFactory,
-  requires: [IEditorServices],
-  autoStart: true,
-  activate: (app: JupyterFrontEnd, editorServices: IEditorServices) => {
-    const editorFactory = editorServices.factoryService.newInlineEditor;
-
-    const factory = new JENotebookContentFactory({
-      editorFactory,
-      app
-    });
-
-    return factory;
-  }
-};
