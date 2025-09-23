@@ -30,7 +30,7 @@ import {
 import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
 import { singleDocumentMode } from './single-mode';
 import { notebookFactoryPlugin } from './notebook-factory';
-import { placeholderPlugin } from './placholders';
+import { placeholderPlugin } from './placeholders';
 
 /**
  * Generate a shareable URL for the currently active notebook.

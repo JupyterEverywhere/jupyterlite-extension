@@ -2,7 +2,7 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { MarkdownCell } from '@jupyterlab/cells';
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
-import { EMPTY_MARKDOWN_PLACEHOLDER, MarkdownCellWithCustomPlaceholder } from './placholders';
+import { EMPTY_MARKDOWN_PLACEHOLDER, MarkdownCellWithCustomPlaceholder } from './placeholders';
 import { JEInputPrompt } from './run-button';
 
 export namespace JENotebookContentFactory {
