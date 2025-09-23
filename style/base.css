@@ -359,7 +359,8 @@ consistent with code cells */
   }
 }
 
-.jp-Dialog .jp-Dialog-close-button {
+.jp-Dialog.je-LeaveDialog-container .jp-Dialog-close-button,
+.jp-Dialog-content.je-LeaveDialog-container .jp-Dialog-close-button {
   position: absolute;
   top: -16px;
   right: -8px;
