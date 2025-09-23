@@ -108,3 +108,53 @@
   font-size: calc(var(--je-scale) * 20px);
   line-height: 1.5;
 }
+
+/* Styling for the action buttons on each file tile. */
+.je-FileTile-box-hasActions {
+  position: relative;
+}
+
+.je-FileTile-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.je-FileTile-box-hasActions:hover .je-FileTile-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.je-FileTile-action {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid var(--je-slate-blue);
+  border-radius: var(--je-round-corners-filetiles) !important;
+  background: white;
+
+  color: var(--je-slate-blue);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: background 120ms ease, transform 60ms ease;
+}
+
+.je-FileTile-action:hover {
+  background: rgba(65, 44, 136, 0.08); /* a slightly faint tint */
+}
+
+.je-FileTile-action:active {
+  transform: translateY(1px);
+}
