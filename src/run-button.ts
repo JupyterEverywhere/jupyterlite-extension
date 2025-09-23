@@ -40,13 +40,16 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { ToolbarButton } from '@jupyterlab/ui-components';
 import { Widget, PanelLayout } from '@lumino/widgets';
-import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import { Notebook, NotebookPanel, NotebookActions } from '@jupyterlab/notebook';
 import { EverywhereIcons } from './icons';
+import { Cell, CodeCell, ICellModel } from '@jupyterlab/cells';
+import { Message } from '@lumino/messaging';
 
 const INPUT_PROMPT_CLASS = 'jp-InputPrompt';
 const INPUT_AREA_PROMPT_INDICATOR_CLASS = 'jp-InputArea-prompt-indicator';
 const INPUT_AREA_PROMPT_INDICATOR_EMPTY_CLASS = 'jp-InputArea-prompt-indicator-empty';
 const INPUT_AREA_PROMPT_RUN_CLASS = 'jp-InputArea-prompt-run';
+const INPUT_AREA_PROMPT_STOP_CLASS = 'jp-InputArea-prompt-stop';
 
 export interface IInputPromptIndicator extends Widget {
   executionCount: string | null;
@@ -84,6 +87,8 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
   private _customExecutionCount: string | null = null;
   private _promptIndicator: InputPromptIndicator;
   private _runButton: ToolbarButton;
+  private _stopButton: ToolbarButton;
+  private _ownerCell: CodeCell | null = null;
 
   constructor(private _app: JupyterFrontEnd) {
     super();
@@ -92,6 +97,7 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     const layout = (this.layout = new PanelLayout());
     this._promptIndicator = new InputPromptIndicator();
     layout.addWidget(this._promptIndicator);
+
     this._runButton = new ToolbarButton({
       icon: EverywhereIcons.runCell,
       onClick: () => {
@@ -102,6 +108,110 @@ export class JEInputPrompt extends Widget implements IInputPrompt {
     this._runButton.addClass(INPUT_AREA_PROMPT_RUN_CLASS);
     this._runButton.addClass('je-cell-run-button');
     layout.addWidget(this._runButton);
+
+    this._stopButton = new ToolbarButton({
+      icon: EverywhereIcons.stopCell,
+      onClick: async () => {
+        const panel = this._app.shell.currentWidget;
+        if (!(panel instanceof NotebookPanel)) {
+          return;
+        }
+        try {
+          const kernel = panel.sessionContext.session?.kernel;
+          if (kernel && typeof kernel.interrupt === 'function') {
+            await kernel.interrupt();
+          } else {
+            await panel.sessionContext.restartKernel();
+          }
+        } catch (err) {
+          console.warn('Failed to stop execution (interrupt/restart):', err);
+        }
+      },
+      tooltip: 'Stop running this cell'
+    });
+    this._stopButton.addClass(INPUT_AREA_PROMPT_STOP_CLASS);
+    this._stopButton.addClass('je-cell-stop-button');
+    layout.addWidget(this._stopButton);
+
+    this._applyPointerEvents(false);
+  }
+
+  /**
+   * Make sure the correct button is clickable; we disable pointer events for
+   * the hidden one to avoid the "wrong tooltip" and accidental clicks.
+   */
+  private _applyPointerEvents(isExecuting: boolean) {
+    const runEl = this._runButton.node;
+    const stopEl = this._stopButton.node;
+    if (isExecuting) {
+      runEl.style.pointerEvents = 'none';
+      stopEl.style.pointerEvents = 'auto';
+    } else {
+      runEl.style.pointerEvents = 'auto';
+      stopEl.style.pointerEvents = 'none';
+    }
+  }
+
+  protected onAfterAttach(msg: Message): void {
+    super.onAfterAttach(msg);
+
+    let w: Widget | null = this.parent;
+    while (w && !(w instanceof CodeCell)) {
+      w = w.parent;
+    }
+    if (w instanceof CodeCell) {
+      this._ownerCell = w;
+
+      NotebookActions.executionScheduled.connect(this._onExecutionScheduled, this);
+      NotebookActions.executed.connect(this._onExecuted, this);
+
+      this._setExecuting(false);
+    }
+  }
+
+  protected onBeforeDetach(msg: Message): void {
+    super.onBeforeDetach(msg);
+    if (this._ownerCell) {
+      NotebookActions.executionScheduled.disconnect(this._onExecutionScheduled, this);
+      NotebookActions.executed.disconnect(this._onExecuted, this);
+    }
+    this._ownerCell = null;
+  }
+
+  dispose(): void {
+    if (this._ownerCell) {
+      NotebookActions.executionScheduled.disconnect(this._onExecutionScheduled, this);
+      NotebookActions.executed.disconnect(this._onExecuted, this);
+      this._ownerCell = null;
+    }
+    super.dispose();
+  }
+
+  // Per-cell execution state handler
+  private _onExecutionScheduled(
+    _sender: unknown,
+    args: { notebook: Notebook; cell: Cell<ICellModel> }
+  ) {
+    if (this._ownerCell && args.cell === this._ownerCell) {
+      this._setExecuting(true);
+    }
+  }
+
+  private _onExecuted(
+    _sender: unknown,
+    args: { notebook: Notebook; cell: Cell<ICellModel>; success: boolean; error?: unknown }
+  ) {
+    if (this._ownerCell && args.cell === this._ownerCell) {
+      this._setExecuting(false);
+    }
+  }
+
+  private _setExecuting(flag: boolean) {
+    this.toggleClass('je-executing', flag);
+    if (this._ownerCell) {
+      this._ownerCell.toggleClass('je-executing', flag);
+    }
+    this._applyPointerEvents(flag);
   }
 
   get executionCount(): string | null {
