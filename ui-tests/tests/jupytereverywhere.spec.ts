@@ -587,7 +587,7 @@ test.describe('Leave confirmation', () => {
     const dialog = page.locator('.jp-Dialog');
     await expect(dialog).toBeVisible();
 
-    await dialog.getByRole('button', { name: 'Save and leave' }).click();
+    await dialog.getByRole('button', { name: 'Save and leave', exact: true }).click();
 
     const shareDialog = page.locator('.jp-Dialog-content');
     await expect(shareDialog).toBeVisible();
