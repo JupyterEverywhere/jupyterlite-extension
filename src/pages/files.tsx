@@ -175,6 +175,38 @@ function FilesApp(props: IFilesAppProps) {
     void refreshListing();
   }, [refreshListing]);
 
+  // Show the native "Leave site?" prompt when there is at least one uploaded (supported) file.
+  const hasAnyFileBeenUploaded = React.useMemo(() => {
+    if (!listing || listing.type !== 'directory') {
+      return false;
+    }
+    const items = listing.content as Contents.IModel[];
+    return items.some(f => {
+      if (f.type !== 'file') {
+        return false;
+      }
+      return isSupportedFileType({
+        name: f.name,
+        type: f.mimetype ?? '',
+        size: f.size ?? 0,
+        lastModified: Date.now()
+      } as File);
+    });
+  }, [listing]);
+
+  useEffect(() => {
+    if (!hasAnyFileBeenUploaded) {
+      return;
+    }
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasAnyFileBeenUploaded]);
+
   return (
     <div className="je-FilesApp">
       <FileUploader
