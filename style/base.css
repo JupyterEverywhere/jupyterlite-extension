@@ -366,10 +366,6 @@ consistent with code cells */
   transform: scale(calc(var(--je-scale) * 1.5));
 }
 
-.jp-Dialog .jp-Dialog-close-button svg path,
-.jp-Dialog .jp-Dialog-close-button svg polygon,
-.jp-Dialog .jp-Dialog-close-button svg circle,
 .jp-Dialog .jp-Dialog-close-button .jp-Icon {
-  filter: brightness(0) saturate(100%) invert(17%) sepia(69%) saturate(1773%) hue-rotate(236deg)
-    brightness(99%) contrast(99%); /* this is close enough to --je-slate-blue, with a loss of 0.1 */
+  --jp-inverse-layout-color3: var(--je-slate-blue);
 }
