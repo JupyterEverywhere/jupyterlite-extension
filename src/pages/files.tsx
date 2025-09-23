@@ -334,7 +334,7 @@ function FilesApp(props: IFilesAppProps) {
                             void downloadFile(f);
                           }}
                         >
-                          🠟
+                          ⬇
                         </button>
                       </div>
                       <fileIcon.react />
