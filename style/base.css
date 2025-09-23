@@ -208,6 +208,11 @@ consistent with code cells */
   min-height: var(--je-cell-height);
 }
 
+.jp-mod-focused .cm-placeholder {
+  /* Hide placeholder when cell is clicked */
+  display: none;
+}
+
 .jp-MarkdownCell .jp-RenderedHTMLCommon,
 .jp-MarkdownCell .jp-InputArea-editor {
   min-height: 32px;
