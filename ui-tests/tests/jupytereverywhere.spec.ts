@@ -726,6 +726,32 @@ test.describe('Kernel commands should use memory terminology', () => {
   });
 });
 
+test.describe('Placeholders in cells', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
+  });
+  test('Code cell editor placeholder', async ({ page }) => {
+    await runCommand(page, 'notebook:enter-command-mode');
+
+    const cell = page.locator('.jp-CodeCell').first();
+    expect(await cell.screenshot()).toMatchSnapshot('code-editor-placeholder.png');
+  });
+  test('Markdown cell editor placeholder', async ({ page }) => {
+    await runCommand(page, 'notebook:change-cell-to-markdown');
+    await runCommand(page, 'notebook:run-cell');
+
+    const cell = page.locator('.jp-MarkdownCell').first();
+    expect(await cell.screenshot()).toMatchSnapshot('markdown-editor-placeholder.png');
+  });
+  test('Rendered Markdown cell placeholder', async ({ page }) => {
+    await runCommand(page, 'notebook:change-cell-to-markdown');
+    await runCommand(page, 'notebook:run-cell');
+
+    const cell = page.locator('.jp-MarkdownCell').first();
+    expect(await cell.screenshot()).toMatchSnapshot('rendered-markdown-placeholder.png');
+  });
+});
+
 test.describe('Per cell run buttons', () => {
   test('Clicking the run button executes code and shows output', async ({ page }) => {
     await page.waitForSelector('.jp-NotebookPanel');
