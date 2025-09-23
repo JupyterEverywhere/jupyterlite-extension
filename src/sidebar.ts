@@ -90,14 +90,20 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
               const result = await showDialog({
                 title: LEAVE_CONFIRMATION_TITLE,
                 body: new LeaveConfirmation(),
+                hasClose: true,
                 buttons: [
-                  Dialog.cancelButton({ label: 'Cancel' }),
-                  Dialog.okButton({ label: 'Yes' })
+                  Dialog.cancelButton({ label: "Don't save and leave" }),
+                  Dialog.okButton({ label: 'Save and leave' })
                 ],
-                defaultButton: 0
+                defaultButton: 1
               });
 
-              if (result.button.label === 'Yes') {
+              if (result.button.label === "Don't save and leave") {
+                window.location.href = '/index.html';
+                return;
+              }
+
+              if (result.button.label === 'Save and leave') {
                 try {
                   await app.commands.execute(Commands.shareNotebookCommand);
                 } catch (error) {
