@@ -63,6 +63,7 @@
       "@jupyterlab/apputils-extension:state",
       "@jupyterlab/debugger-extension",
       "@jupyterlab/application-extension:property-inspector",
+      "@jupyterlab/launcher",
 
       "@jupyterlab/statusbar-extension",
       "@jupyterlab/notebook-extension:kernel-status",
@@ -81,7 +82,14 @@
       "@jupyterlab/fileeditor-extension:language-server",
       "@jupyterlite/application-extension:lsp-connection-manager",
 
-      "@jupyterlab/filebrowser-extension:widget",
+      "@jupyterlab/apputils-extension:splash",
+      "@jupyterlab/celltags-extension",
+      "@jupyterlab/pluginmanager-extension",
+
+      "@jupyterlab/fileeditor-extension",
+      "@jupyterlab/tooltip-extension:files",
+      "@jupyterlab/filebrowser-extension",
+      "@jupyterlab/toc-extension",
 
       "@jupyterlab/notebook-extension:factory",
 
