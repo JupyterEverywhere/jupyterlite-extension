@@ -738,6 +738,7 @@ test.describe('Placeholders in cells', () => {
   });
   test('Markdown cell editor placeholder', async ({ page }) => {
     await runCommand(page, 'notebook:change-cell-to-markdown');
+    await runCommand(page, 'notebook:enter-command-mode');
 
     const cell = page.locator('.jp-MarkdownCell').first();
     expect(await cell.screenshot()).toMatchSnapshot('markdown-editor-placeholder.png');
