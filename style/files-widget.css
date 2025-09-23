@@ -138,21 +138,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   border: 2px solid var(--je-slate-blue);
   border-radius: var(--je-round-corners-filetiles) !important;
   background: white;
-
   color: var(--je-slate-blue);
   font-weight: 700;
   cursor: pointer;
   padding: 0;
   outline: none;
-  transition: background 120ms ease, transform 60ms ease;
+  transition:
+    background 120ms ease,
+    transform 60ms ease;
 }
 
 .je-FileTile-action:hover {
-  background: rgba(65, 44, 136, 0.08); /* a slightly faint tint */
+  background: rgb(65 44 136 / 8%); /* a slightly faint tint */
 }
 
 .je-FileTile-action:active {
