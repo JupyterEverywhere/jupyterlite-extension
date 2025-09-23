@@ -23,8 +23,8 @@ index f0f7c02..59878c6 100644
      <link
        id="jupyter-lite-main"
        rel="preload"
--      href="../build/lab/bundle.js?_=6a5e607"
-+      href="../../build/lab/bundle.js?_=6a5e607"
+-      href="../build/lab/bundle.js?_=903283c"
++      href="../../build/lab/bundle.js?_=903283c"
        main="index"
        as="script"
      />
@@ -49,8 +49,8 @@ index f0f7c02..59878c6 100644
            return;
          }
          await import(
--          '../config-utils.js?_=6a5e607'
-+          '../../config-utils.js?_=6a5e607'
+-          '../config-utils.js?_=903283c'
++          '../../config-utils.js?_=903283c'
          );
        }.call(this));
      </script>
