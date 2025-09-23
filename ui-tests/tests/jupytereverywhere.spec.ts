@@ -345,6 +345,27 @@ test.describe('Files', () => {
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
   });
+
+  test('Hovering a file tile shows close and download actions', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const tile = page.locator('.je-FileTile', {
+      has: page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+    });
+    await tile.waitFor();
+
+    // Hover to reveal the actions
+    await tile.hover();
+    await expect(tile.locator('.je-FileTile-action--close')).toBeVisible();
+    await expect(tile.locator('.je-FileTile-action--download')).toBeVisible();
+
+    expect(await tile.screenshot()).toMatchSnapshot('file-tile-actions-visible.png');
+  });
+
 });
 
 test('Should remove View Only banner when the Create Copy button is clicked', async ({ page }) => {
