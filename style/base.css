@@ -352,8 +352,11 @@ consistent with code cells */
   order: 2;
 }
 
-.jp-Dialog .jp-Dialog-header {
-  padding-right: 28px;
+/* we reserve space for the close button */
+@supports selector(:has(*)) {
+  .jp-Dialog-content:has(> .je-LeaveDialog.jp-Dialog-body) > .jp-Dialog-header {
+    padding-right: 28px;
+  }
 }
 
 .jp-Dialog .jp-Dialog-close-button {
