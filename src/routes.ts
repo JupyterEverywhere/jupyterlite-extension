@@ -1,14 +1,15 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ILiteRouter } from '@jupyterlite/application';
 import { Commands } from './commands';
+import { ILabShell } from '@jupyterlab/application';
 
 const ROUTE_FILES_CMD = Commands.routeFiles;
 
 const routesPlugin: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:routes',
   autoStart: true,
-  optional: [ILiteRouter],
-  activate: (app: JupyterFrontEnd, router: ILiteRouter | null) => {
+  optional: [ILiteRouter, ILabShell],
+  activate: (app: JupyterFrontEnd, router: ILiteRouter | null, _labShell?: ILabShell | null) => {
     if (!router) {
       return;
     }
@@ -24,21 +25,60 @@ const routesPlugin: JupyterFrontEndPlugin<void> = {
     const base = router.base.replace(/\/+$/, '');
     const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    const patterns = [/^\/files(?:\/.*)?$/, new RegExp(`^${esc(base)}\\/files(?:\\/.*)?$`)];
-    patterns.forEach(pattern => router.register({ command: ROUTE_FILES_CMD, pattern }));
+    // 1. Support direct files/ paths, as the redirect page lands there first.
+    const filesPathPatterns = [
+      /^\/files(?:\/.*)?$/,
+      new RegExp(`^${esc(base)}\\/files(?:\\/.*)?$`)
+    ];
+    filesPathPatterns.forEach(pattern => router.register({ command: ROUTE_FILES_CMD, pattern }));
 
-    // TODO: this won't work until we have a lab/files/index.html to land on.
-    // Even if we do, then the extensions will fail to load due to invalid JSON.
-    // Handle direct loads (e.g. if a user were to open /lab/files/ in a new tab)
-    // const here = window.location.pathname + window.location.search + window.location.hash;
-    // if (typeof (router as any).route === 'function') {
-    //   (router as any).route(here);
-    // } else {
-    //     // Fallback: if URL matches our patterns, run the command.
-    //     if (patterns.some(p => p.test(here))) {
-    //     void app.commands.execute(Commands.openFiles);
-    //   }
-    // }
+    // 2. Support /lab/index.html?tab=files (or ?tab=notebook). We register a
+    // router handler that just inspects the query string.
+    router.register({
+      command: ROUTE_FILES_CMD,
+      pattern: new RegExp(`^${esc(base)}\\/?(?:index\\.html)?\\?[^#]*\\btab=files\\b(?:[&#].*)?$`)
+    });
+    router.register({
+      command: ROUTE_FILES_CMD,
+      pattern: /^\/?(?:index\.html)?\?[^#]*\btab=files\b(?:[&#].*)?$/
+    });
+
+    void app.restored.then(() => {
+      const search = window.location.search || '';
+      const params = new URLSearchParams(search);
+      const tab = params.get('tab');
+
+      if (tab === 'files') {
+        void app.commands.execute(ROUTE_FILES_CMD).then(() => {
+          // Drop ?tab so it doesn't linger.
+          const url = new URL(window.location.href);
+          url.searchParams.delete('tab');
+          window.history.replaceState({}, '', url.toString());
+        });
+        return;
+      }
+
+      if (tab === 'notebook') {
+        const tryActivate = async () => {
+          const id = document.querySelector('.jp-NotebookPanel')?.id;
+          if (id) {
+            app.shell.activateById(id);
+          }
+          const url = new URL(window.location.href);
+          url.searchParams.delete('tab');
+          window.history.replaceState({}, '', url.toString());
+        };
+        tryActivate();
+      }
+    });
+
+    const here = window.location.pathname + window.location.search + window.location.hash;
+
+    if (filesPathPatterns.some(p => p.test(here))) {
+      void app.restored.then(() => {
+        void app.commands.execute(Commands.openFiles);
+      });
+    }
   }
 };
 

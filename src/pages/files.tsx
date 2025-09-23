@@ -244,6 +244,15 @@ function FilesApp(props: IFilesAppProps) {
   );
 }
 
+function pushTabOnce(nextUrl: string, tab: 'files' | 'notebook') {
+  const url = new URL(nextUrl, window.location.origin);
+  const here = window.location.pathname + window.location.search + window.location.hash;
+  url.searchParams.set('tab', tab);
+  if (here !== url.pathname + url.search + url.hash) {
+    window.history.pushState({}, '', url.toString());
+  }
+}
+
 class Files extends ReactWidget {
   constructor(private _contentsManager: Contents.IManager) {
     super();
@@ -284,19 +293,22 @@ export const files: JupyterFrontEndPlugin<void> = {
 
     let widget = createWidget();
 
-    const base = router?.base.replace(/\/$/, '');
+    const base = (router?.base || '').replace(/\/$/, '');
 
     app.shell.add(
       new SidebarIcon({
         label: 'Files',
         icon: EverywhereIcons.folderSidebar,
         execute: () => {
-          const next = `${base}/lab/files/`;
-          const here = window.location.pathname + window.location.search + window.location.hash;
-          if (here !== next) {
-            window.history.pushState({}, '', next);
-          }
+          const next = `${base}/lab/index.html`;
+          pushTabOnce(next, 'files');
           void app.commands.execute(Commands.openFiles);
+
+          // Immediately drop the tab param so it doesn't linger.
+          const url = new URL(window.location.href);
+          url.searchParams.delete('tab');
+          window.history.replaceState({}, '', url.toString());
+
           return undefined;
         }
       }),

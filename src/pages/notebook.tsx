@@ -51,9 +51,21 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     router?: ILiteRouter | null
   ) => {
     const { commands, shell, serviceManager } = app;
+    const dropTabParam = (expected?: string) => {
+      const url = new URL(window.location.href);
+      if (!expected || url.searchParams.get('tab') === expected) {
+        url.searchParams.delete('tab');
+        window.history.replaceState({}, '', url.toString());
+      }
+    };
     const { contents } = serviceManager;
 
     const params = new URLSearchParams(window.location.search);
+
+    // Are we landing on the Files tab directly? In this case, we won't
+    // auto-create a new notebook or activate the notebook sidebar.
+    const onFilesRoute = /\/lab\/files(?:\/|$)/.test(window.location.pathname);
+
     let notebookId = params.get('notebook');
     const uploadedNotebookId = params.get('uploaded-notebook');
 
@@ -213,7 +225,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       void loadSharedNotebook(notebookId);
     } else if (uploadedNotebookId) {
       void openUploadedNotebook(uploadedNotebookId);
-    } else {
+    } else if (!onFilesRoute) {
       void createNewNotebook();
     }
 
@@ -237,22 +249,42 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         const base = (router?.base || '').replace(/\/$/, '');
         const next = `${base}/lab/index.html`;
         const here = window.location.pathname + window.location.search + window.location.hash;
-        if (here !== next) {
-          window.history.pushState({}, '', next);
+        const url = new URL(next, window.location.origin);
+        url.searchParams.set('tab', 'notebook');
+        const target = url.pathname + url.search + url.hash;
+        if (here !== target) {
+          window.history.pushState({}, '', url.toString());
         }
 
         if (readonlyTracker.currentWidget) {
-          return shell.activateById(readonlyTracker.currentWidget.id);
+          const id = readonlyTracker.currentWidget.id;
+          shell.activateById(id);
+          dropTabParam('notebook');
+          return;
         }
         if (tracker.currentWidget) {
-          return shell.activateById(tracker.currentWidget.id);
+          const id = tracker.currentWidget.id;
+          shell.activateById(id);
+          dropTabParam('notebook');
+          return;
         }
+        dropTabParam('notebook');
+
+        // If we don't have a notebook yet (likely we started on /lab/files/) -> create one now.
+        void (async () => {
+          await app.commands.execute('notebook:create-new', { kernelName: 'python' });
+          if (tracker.currentWidget) {
+            shell.activateById(tracker.currentWidget.id);
+          }
+        })();
       }
     });
     shell.add(sidebarItem, 'left', { rank: 100 });
 
-    app.shell.activateById(sidebarItem.id);
-    app.restored.then(() => app.shell.activateById(sidebarItem.id));
+    if (!onFilesRoute) {
+      app.shell.activateById(sidebarItem.id);
+      app.restored.then(() => app.shell.activateById(sidebarItem.id));
+    }
 
     for (const toolbarName of ['Notebook', 'ViewOnlyNotebook']) {
       toolbarRegistry.addFactory(
@@ -310,6 +342,16 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       if (/\/lab\/$/.test(url.pathname)) {
         url.pathname = url.pathname.replace(/\/lab\/$/, '/lab/index.html');
         window.history.replaceState({}, '', url.toString());
+      }
+
+      const after = new URL(window.location.href);
+      if (after.searchParams.get('tab') === 'notebook') {
+        const id = document.querySelector('.jp-NotebookPanel')?.id;
+        if (id) {
+          app.shell.activateById(id);
+          after.searchParams.delete('tab');
+          window.history.replaceState({}, '', after.toString());
+        }
       }
     });
   }
