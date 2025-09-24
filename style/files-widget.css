@@ -116,8 +116,10 @@
 }
 
 /* Styling for the action buttons on each file tile. */
+
 .je-FileTile-box-hasActions {
   position: relative;
+  isolation: isolate;
 }
 
 .je-FileTile-actions {
@@ -129,6 +131,7 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease;
+  z-index: 2;
 }
 
 .je-FileTile-box-hasActions:hover .je-FileTile-actions {
