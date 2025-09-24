@@ -9,7 +9,7 @@ import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { LabIcon } from '@jupyterlab/ui-components';
+import { LabIcon, closeIcon, downloadIcon } from '@jupyterlab/ui-components';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -176,6 +176,86 @@ function FilesApp(props: IFilesAppProps) {
     void refreshListing();
   }, [refreshListing]);
 
+  const downloadFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      try {
+        const fetched = await props.contentsManager.get(model.path, { content: true });
+        if (fetched.type !== 'file') {
+          return;
+        }
+
+        const fmt = (fetched.format ?? 'text') as 'text' | 'base64';
+        const mime = fetched.mimetype ?? inferMimeFromName(model.name);
+
+        let blob: Blob;
+        if (fmt === 'base64') {
+          const b64 = String(fetched.content ?? '');
+          const bytes = atob(b64);
+          const buf = new Uint8Array(bytes.length);
+          for (let i = 0; i < bytes.length; i++) {
+            buf[i] = bytes.charCodeAt(i);
+          }
+          blob = new Blob([buf], { type: mime });
+        } else {
+          blob = new Blob([String(fetched.content ?? '')], { type: mime || 'text/plain' });
+        }
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = model.name;
+        document.body.appendChild(a);
+        a.click();
+        requestAnimationFrame(() => {
+          URL.revokeObjectURL(a.href);
+          a.remove();
+        });
+      } catch (err) {
+        await showErrorMessage(
+          'Download failed',
+          `Could not download ${model.name}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    },
+    [props.contentsManager]
+  );
+
+  const deleteFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      try {
+        await props.contentsManager.delete(model.path);
+        await refreshListing();
+      } catch (err) {
+        await showErrorMessage(
+          'Delete failed',
+          `Could not delete ${model.name}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    },
+    [props.contentsManager, refreshListing]
+  );
+
+  /**
+   * Infer the MIME type from a file name.
+   * @param name - file name
+   * @returns the MIME type inferred from the file extension, or an empty string if unknown.
+   */
+  function inferMimeFromName(name: string): string {
+    const ext = name.split('.').pop()?.toLowerCase() ?? '';
+    if (ext === 'png') {
+      return 'image/png';
+    }
+    if (ext === 'jpg' || ext === 'jpeg') {
+      return 'image/jpeg';
+    }
+    if (ext === 'csv') {
+      return 'text/csv';
+    }
+    if (ext === 'tsv') {
+      return 'text/tab-separated-values';
+    }
+    return '';
+  }
+
   return (
     <div className="je-FilesApp">
       <FileUploader
@@ -230,7 +310,34 @@ function FilesApp(props: IFilesAppProps) {
                 const fileIcon = getFileIcon(f.name, f.mimetype ?? '');
                 return (
                   <div className="je-FileTile" key={f.path}>
-                    <div className="je-FileTile-box">
+                    <div className="je-FileTile-box je-FileTile-box-hasActions">
+                      <div className="je-FileTile-actions">
+                        {/* Delete (X) button */}
+                        <button
+                          className="je-FileTile-action je-FileTile-action--close"
+                          aria-label={`Delete ${f.name}`}
+                          title="Delete"
+                          onClick={e => {
+                            e.stopPropagation();
+                            void deleteFile(f);
+                          }}
+                        >
+                          <closeIcon.react tag="span" />
+                        </button>
+
+                        {/* Download (↓) button */}
+                        <button
+                          className="je-FileTile-action je-FileTile-action--download"
+                          aria-label={`Download ${f.name}`}
+                          title="Download"
+                          onClick={e => {
+                            e.stopPropagation();
+                            void downloadFile(f);
+                          }}
+                        >
+                          <downloadIcon.react tag="span" />
+                        </button>
+                      </div>
                       <fileIcon.react />
                     </div>
                     <div className="je-FileTile-label">{f.name}</div>

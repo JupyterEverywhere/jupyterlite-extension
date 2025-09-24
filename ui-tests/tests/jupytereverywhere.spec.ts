@@ -345,6 +345,63 @@ test.describe('Files', () => {
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
   });
+
+  test('Hovering a file tile shows close and download actions', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const tile = page.locator('.je-FileTile', {
+      has: page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+    });
+    await tile.waitFor();
+
+    // Hover to reveal the actions
+    await tile.hover();
+    await expect(tile.locator('.je-FileTile-action--close')).toBeVisible();
+    await expect(tile.locator('.je-FileTile-action--download')).toBeVisible();
+
+    expect(await tile.screenshot()).toMatchSnapshot('file-tile-actions-visible.png');
+  });
+
+  test('Clicking the X (close) action deletes the file tile', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const label = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await label.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: label });
+    await tile.hover();
+    await tile.locator('.je-FileTile-action--close').click();
+
+    await expect(label).toHaveCount(0);
+  });
+
+  test('Clicking the ⭳ (download) action downloads the file', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    await page.setInputFiles('input[type="file"]', csvPath);
+
+    const label = page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' });
+    await label.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: label });
+    await tile.hover();
+    const downloadPromise = page.waitForEvent('download');
+    await tile.locator('.je-FileTile-action--download').click();
+    const download = await downloadPromise;
+
+    const filePath = await download.path();
+    expect(filePath).not.toBeNull();
+  });
 });
 
 test('Should remove View Only banner when the Create Copy button is clicked', async ({ page }) => {
@@ -565,7 +622,7 @@ test.describe('Leave confirmation', () => {
     const dialog = page.locator('.jp-Dialog');
     await expect(dialog).toBeVisible();
 
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await dialog.locator('.jp-Dialog-close-button').click();
 
     await expect(page.locator('.jp-NotebookPanel')).toBeVisible();
     await expect(dialog).toHaveCount(0);
@@ -587,7 +644,7 @@ test.describe('Leave confirmation', () => {
     const dialog = page.locator('.jp-Dialog');
     await expect(dialog).toBeVisible();
 
-    await dialog.getByRole('button', { name: 'Yes' }).click();
+    await dialog.getByRole('button', { name: 'Save and leave', exact: true }).click();
 
     const shareDialog = page.locator('.jp-Dialog-content');
     await expect(shareDialog).toBeVisible();

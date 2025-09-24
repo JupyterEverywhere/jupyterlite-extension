@@ -1,10 +1,14 @@
 import { TabBar, Widget } from '@lumino/widgets';
 import { ILabShell, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { Dialog, showDialog } from '@jupyterlab/apputils';
+import { Dialog } from '@jupyterlab/apputils';
 
 import { SidebarIcon } from './ui-components/SidebarIcon';
 import { EverywhereIcons } from './icons';
-import { LEAVE_CONFIRMATION_TITLE, LeaveConfirmation } from './ui-components/LeaveConfirmation';
+import {
+  LEAVE_CONFIRMATION_TITLE,
+  LeaveConfirmation,
+  LeaveDialog
+} from './ui-components/LeaveConfirmation';
 import { Commands } from './commands';
 
 import { INotebookTracker } from '@jupyterlab/notebook';
@@ -87,17 +91,32 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
               }
 
               // Non-empty regular notebook -> confirm and optionally save/share
-              const result = await showDialog({
+              const dialog = new LeaveDialog({
                 title: LEAVE_CONFIRMATION_TITLE,
                 body: new LeaveConfirmation(),
+                hasClose: true,
                 buttons: [
-                  Dialog.cancelButton({ label: 'Cancel' }),
-                  Dialog.okButton({ label: 'Yes' })
+                  Dialog.createButton({
+                    label: "Don't save and leave",
+                    accept: true,
+                    actions: ['leave-nosave']
+                  }),
+                  Dialog.okButton({
+                    label: 'Save and leave',
+                    actions: ['leave-save']
+                  })
                 ],
-                defaultButton: 0
+                defaultButton: 1
               });
 
-              if (result.button.label === 'Yes') {
+              const result = await dialog.launch();
+              const actions = result.button.actions ?? [];
+
+              if (actions.includes('leave-nosave')) {
+                window.location.href = '/index.html';
+                return;
+              }
+              if (actions.includes('leave-save')) {
                 try {
                   await app.commands.execute(Commands.shareNotebookCommand);
                 } catch (error) {

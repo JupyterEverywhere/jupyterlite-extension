@@ -1,4 +1,4 @@
-import { ReactWidget } from '@jupyterlab/apputils';
+import { Dialog, ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 
 export const LEAVE_CONFIRMATION_TITLE =
@@ -24,5 +24,22 @@ export class LeaveConfirmation extends ReactWidget {
         </div>
       </>
     );
+  }
+}
+
+/**
+ * A dialog with a "close" button in the top-right corner, currently here
+ * because we only use hasClose in the leave confirmation dialog.
+ */
+export class LeaveDialog extends Dialog<void> {
+  constructor(
+    options: Partial<Dialog.IOptions<void>> & Pick<Dialog.IOptions<void>, 'title' | 'body'>
+  ) {
+    const normalized: Partial<Dialog.IOptions<void>> = {
+      host: document.body,
+      ...options
+    };
+    super(normalized);
+    this.addClass('je-LeaveDialog-container');
   }
 }
