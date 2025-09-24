@@ -33,7 +33,12 @@ const PYTHON_TEST_NOTEBOOK: JSONObject = {
       execution_count: null,
       id: '55eb9a2d-401d-4abd-b0eb-373ded5b408d',
       outputs: [],
-      metadata: {},
+      metadata: {
+        sharedId: 'some-random-alphanumeric-id',
+        readableId: 'python-test-notebook',
+        sharedName: 'Notebook_1980-10-30_00-10-20',
+        lastShared: '2024-06-20T00:10:20.123Z'
+      },
       source: [`# This is a test notebook`]
     }
   ],
@@ -315,6 +320,28 @@ test.describe('Download', () => {
 
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
+  });
+
+  test('Notebook downloaded as IPyNB should not have sharing-specific metadata', async ({
+    page,
+    context
+  }) => {
+    await mockTokenRoute(page);
+    await mockShareNotebookResponse(page, 'test-download-metadata-notebook');
+
+    const ipynbDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-notebook');
+    const ipynbPath = await (await ipynbDownload).path();
+    expect(ipynbPath).not.toBeNull();
+
+    const content = await fs.promises.readFile(ipynbPath!, { encoding: 'utf-8' });
+    const notebook = JSON.parse(content) as JSONObject;
+    const metadata = notebook['metadata'] as JSONObject | undefined;
+    expect(metadata).toBeDefined();
+    expect(metadata).not.toHaveProperty('sharedId');
+    expect(metadata).not.toHaveProperty('readableId');
+    expect(metadata).not.toHaveProperty('sharedName');
+    expect(metadata).not.toHaveProperty('lastShared');
   });
 });
 
