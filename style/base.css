@@ -210,7 +210,7 @@ consistent with code cells */
 
 .jp-mod-focused .cm-placeholder {
   /* Hide placeholder when cell is clicked */
-  display: none;
+  visibility: hidden;
 }
 
 .cm-editor .cm-placeholder {
