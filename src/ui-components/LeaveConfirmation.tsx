@@ -35,10 +35,10 @@ export class LeaveDialog extends Dialog<void> {
   constructor(
     options: Partial<Dialog.IOptions<void>> & Pick<Dialog.IOptions<void>, 'title' | 'body'>
   ) {
-    const normalized: Dialog.IOptions<void> = {
+    const normalized: Partial<Dialog.IOptions<void>> = {
       host: document.body,
       ...options
-    } as Dialog.IOptions<void>;
+    };
     super(normalized);
     this.addClass('je-LeaveDialog-container');
   }
