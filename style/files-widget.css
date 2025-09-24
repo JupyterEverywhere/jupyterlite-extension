@@ -179,3 +179,7 @@
   width: 100%;
   height: 100%;
 }
+
+.je-FileTile-actions svg > path {
+  --jp-inverse-layout-color3: var(--je-slate-blue) !important;
+}
