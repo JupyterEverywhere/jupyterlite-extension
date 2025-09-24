@@ -8,7 +8,7 @@ import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { LabIcon } from '@jupyterlab/ui-components';
+import { LabIcon, closeIcon, downloadIcon } from '@jupyterlab/ui-components';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -321,7 +321,7 @@ function FilesApp(props: IFilesAppProps) {
                             void deleteFile(f);
                           }}
                         >
-                          ×
+                          <closeIcon.react tag="span" />
                         </button>
 
                         {/* Download (↓) button */}
@@ -334,7 +334,7 @@ function FilesApp(props: IFilesAppProps) {
                             void downloadFile(f);
                           }}
                         >
-                          ⬇
+                          <downloadIcon.react tag="span" />
                         </button>
                       </div>
                       <fileIcon.react />
