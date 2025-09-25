@@ -1,4 +1,4 @@
+geopandas
 jupyterlite==0.7.0a4
 jupyterlite-pyodide-kernel==0.7.0a1
 jupyterlite-xeus==4.2.0
-geopandas
