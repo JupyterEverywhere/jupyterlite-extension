@@ -74,7 +74,7 @@ const routesPlugin: JupyterFrontEndPlugin<void> = {
       }
     });
 
-    const here = window.location.pathname + window.location.search + window.location.hash;
+    const here = window.location.href;
 
     if (filesPathPatterns.some(p => p.test(here))) {
       void app.restored.then(() => {
