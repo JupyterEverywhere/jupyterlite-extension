@@ -40,7 +40,8 @@ export const competitions: JupyterFrontEndPlugin<void> = {
         label: 'Competition',
         icon: EverywhereIcons.competition,
         execute: () => {
-          app.commands.execute(Commands.openCompetitions);
+          void app.commands.execute(Commands.openCompetitions);
+          return;
         }
       }),
       'left',

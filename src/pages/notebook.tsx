@@ -1,4 +1,5 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { INotebookTracker, INotebookWidgetFactory } from '@jupyterlab/notebook';
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
@@ -41,16 +42,26 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     IToolbarWidgetRegistry,
     INotebookWidgetFactory
   ],
+  optional: [ILiteRouter],
   activate: (
     app: JupyterFrontEnd,
     tracker: INotebookTracker,
     readonlyTracker: IViewOnlyNotebookTracker,
-    toolbarRegistry: IToolbarWidgetRegistry
+    toolbarRegistry: IToolbarWidgetRegistry,
+    router?: ILiteRouter | null
   ) => {
     const { commands, shell, serviceManager } = app;
     const { contents } = serviceManager;
 
     const params = new URLSearchParams(window.location.search);
+
+    // Are we landing on the Files tab directly? In this case, we won't
+    // auto-create a new notebook or activate the notebook sidebar.
+    const nowUrl = new URL(window.location.href);
+    const onFilesPath = /\/lab\/files(?:\/|$)/.test(nowUrl.pathname);
+    const onFilesTab = nowUrl.searchParams.get('tab') === 'files';
+    const onFilesIntent = onFilesPath || onFilesTab;
+
     let notebookId = params.get('notebook');
     const uploadedNotebookId = params.get('uploaded-notebook');
 
@@ -210,7 +221,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       void loadSharedNotebook(notebookId);
     } else if (uploadedNotebookId) {
       void openUploadedNotebook(uploadedNotebookId);
-    } else {
+    } else if (!onFilesIntent) {
       void createNewNotebook();
     }
 
@@ -230,19 +241,35 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     const sidebarItem = new SidebarIcon({
       label: 'Notebook',
       icon: EverywhereIcons.notebook,
+      pathName: `${(router?.base || '').replace(/\/$/, '')}/lab/index.html`,
       execute: () => {
         if (readonlyTracker.currentWidget) {
-          return shell.activateById(readonlyTracker.currentWidget.id);
+          const id = readonlyTracker.currentWidget.id;
+          shell.activateById(id);
+          return SidebarIcon.delegateNavigation;
         }
         if (tracker.currentWidget) {
-          return shell.activateById(tracker.currentWidget.id);
+          const id = tracker.currentWidget.id;
+          shell.activateById(id);
+          return SidebarIcon.delegateNavigation;
         }
+
+        // If we don't have a notebook yet (likely we started on /lab/files/) -> create one now.
+        void (async () => {
+          await app.commands.execute('notebook:create-new', { kernelName: 'python' });
+          if (tracker.currentWidget) {
+            shell.activateById(tracker.currentWidget.id);
+          }
+        })();
+        return SidebarIcon.delegateNavigation;
       }
     });
     shell.add(sidebarItem, 'left', { rank: 100 });
 
-    app.shell.activateById(sidebarItem.id);
-    app.restored.then(() => app.shell.activateById(sidebarItem.id));
+    if (!onFilesIntent) {
+      app.shell.activateById(sidebarItem.id);
+      app.restored.then(() => app.shell.activateById(sidebarItem.id));
+    }
 
     for (const toolbarName of ['Notebook', 'ViewOnlyNotebook']) {
       toolbarRegistry.addFactory(
@@ -293,5 +320,33 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         () => new KernelSwitcherDropdownButton(commands, tracker)
       );
     }
+
+    // Canonicalise the URL if we are directly at /lab/.
+    void app.restored.then(() => {
+      const url = new URL(window.location.href);
+      if (/\/lab\/$/.test(url.pathname)) {
+        url.pathname = url.pathname.replace(/\/lab\/$/, '/lab/index.html');
+        window.history.replaceState({}, '', url.toString());
+      }
+
+      const after = new URL(window.location.href);
+      if (after.searchParams.get('tab') === 'notebook') {
+        const id = document.querySelector('.jp-NotebookPanel')?.id;
+        if (id) {
+          app.shell.activateById(id);
+          after.searchParams.delete('tab');
+          const base = (router?.base || '').replace(/\/$/, '');
+          const canonical = new URL(`${base}/lab/index.html`, window.location.origin);
+          canonical.hash = after.hash;
+          // Keep any other non-tab params off; Notebook page doesn't need them
+          if (
+            after.pathname + after.search + after.hash !==
+            canonical.pathname + canonical.search + canonical.hash
+          ) {
+            window.history.replaceState(null, 'Notebook', canonical.toString());
+          }
+        }
+      }
+    });
   }
 };

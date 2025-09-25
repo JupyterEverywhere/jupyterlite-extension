@@ -345,7 +345,15 @@ test.describe('Download', () => {
   });
 });
 
+// We take a screenshot of the full files page, to
+// see that the sidebar shows "Files" as active.
 test.describe('Files', () => {
+  test('Should load Files page directly', async ({ page }) => {
+    await page.goto('lab/files/');
+    expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot('files-full.png');
+    await expect(page).toHaveURL(/\/lab\/files\/$/);
+  });
+
   test('Should upload two files and display their thumbnails', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 

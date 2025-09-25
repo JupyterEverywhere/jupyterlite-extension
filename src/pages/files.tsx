@@ -1,4 +1,5 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
@@ -365,7 +366,12 @@ export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
   requires: [IContentsManager],
-  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager) => {
+  optional: [ILiteRouter],
+  activate: (
+    app: JupyterFrontEnd,
+    contentsManager: Contents.IManager,
+    router: ILiteRouter | null
+  ) => {
     const createWidget = () => {
       const content = new Files(contentsManager);
       const widget = new MainAreaWidget({ content });
@@ -385,18 +391,40 @@ export const files: JupyterFrontEndPlugin<void> = {
 
     let widget = createWidget();
 
-    app.shell.add(
-      new SidebarIcon({
-        label: 'Files',
-        icon: EverywhereIcons.folderSidebar,
-        execute: () => {
-          void app.commands.execute(Commands.openFiles);
-          return undefined;
+    const base = (router?.base || '').replace(/\/$/, '');
+    const filesPath = `${base}/lab/files/`;
+
+    // Show the Files widget; return false-y so SidebarIcon does the URL swap.
+    const filesSidebar = new SidebarIcon({
+      label: 'Files',
+      icon: EverywhereIcons.folderSidebar,
+      pathName: filesPath,
+      execute: () => {
+        void app.commands.execute(Commands.openFiles);
+        return SidebarIcon.delegateNavigation;
+      }
+    });
+    app.shell.add(filesSidebar, 'left', { rank: 200 });
+
+    // If we landed with a "files" intent, highlight Files in the sidebar.
+    void app.restored.then(() => {
+      const url = new URL(window.location.href);
+      const pathIsFiles = /\/lab\/files(?:\/|$)/.test(url.pathname);
+      const tabIsFiles = url.searchParams.get('tab') === 'files';
+      if (pathIsFiles || tabIsFiles) {
+        const desired = new URL(filesPath, window.location.origin);
+        desired.hash = url.hash;
+        window.history.replaceState(null, 'Files', desired.toString());
+
+        if (widget.isDisposed) {
+          widget = createWidget();
         }
-      }),
-      'left',
-      { rank: 200 }
-    );
+        if (!widget.isAttached) {
+          app.shell.add(widget, 'main');
+        }
+        app.shell.activateById(filesSidebar.id);
+      }
+    });
 
     app.commands.addCommand(Commands.openFiles, {
       label: 'Open Files',
