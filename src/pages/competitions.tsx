@@ -1,5 +1,4 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
-import { ILiteRouter } from '@jupyterlite/application';
 import { MainAreaWidget, ReactWidget } from '@jupyterlab/apputils';
 import { Commands } from '../commands';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
@@ -19,8 +18,7 @@ export class Competitions extends ReactWidget {
 export const competitions: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:competitions',
   autoStart: true,
-  optional: [ILiteRouter],
-  activate: (app: JupyterFrontEnd, router?: ILiteRouter | null) => {
+  activate: (app: JupyterFrontEnd) => {
     const newWidget = () => {
       const content = new Competitions();
       const widget = new MainAreaWidget({ content });
