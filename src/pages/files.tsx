@@ -351,15 +351,6 @@ function FilesApp(props: IFilesAppProps) {
   );
 }
 
-function pushTabOnce(nextUrl: string, tab: 'files' | 'notebook') {
-  const url = new URL(nextUrl, window.location.origin);
-  const here = window.location.pathname + window.location.search + window.location.hash;
-  url.searchParams.set('tab', tab);
-  if (here !== url.pathname + url.search + url.hash) {
-    window.history.pushState({}, '', url.toString());
-  }
-}
-
 class Files extends ReactWidget {
   constructor(private _contentsManager: Contents.IManager) {
     super();
@@ -401,19 +392,23 @@ export const files: JupyterFrontEndPlugin<void> = {
     let widget = createWidget();
 
     const base = (router?.base || '').replace(/\/$/, '');
+    const filesPath = `${base}/lab/files/`;
 
     const filesSidebar = new SidebarIcon({
       label: 'Files',
       icon: EverywhereIcons.folderSidebar,
       execute: () => {
-        const next = `${base}/lab/index.html`;
-        pushTabOnce(next, 'files');
-        void app.commands.execute(Commands.openFiles);
+        // 1. Flip URL to /lab/files/ if needed
+        const target = new URL(filesPath, window.location.origin);
+        target.hash = window.location.hash;
+        const here = window.location.pathname + window.location.search + window.location.hash;
+        const there = target.pathname + target.search + target.hash;
+        if (here !== there) {
+          window.history.pushState(null, 'Files', target.toString());
+        }
 
-        // Immediately drop the tab param so it doesn't linger.
-        const url = new URL(window.location.href);
-        url.searchParams.delete('tab');
-        window.history.replaceState({}, '', url.toString());
+        // 2. Show the Files widget
+        void app.commands.execute(Commands.openFiles);
 
         return undefined;
       }
@@ -426,6 +421,14 @@ export const files: JupyterFrontEndPlugin<void> = {
       const pathIsFiles = /\/lab\/files(?:\/|$)/.test(url.pathname);
       const tabIsFiles = url.searchParams.get('tab') === 'files';
       if (pathIsFiles || tabIsFiles) {
+        const desired = new URL(filesPath, window.location.origin);
+        desired.hash = url.hash;
+        const current = url.pathname + url.search + url.hash;
+        const final = desired.pathname + desired.search + desired.hash;
+        if (current !== final) {
+          window.history.replaceState(null, 'Files', desired.toString());
+        }
+
         if (widget.isDisposed) {
           widget = createWidget();
         }

@@ -245,11 +245,11 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         const base = (router?.base || '').replace(/\/$/, '');
         const next = `${base}/lab/index.html`;
         const here = window.location.pathname + window.location.search + window.location.hash;
-        const url = new URL(next, window.location.origin);
-        url.searchParams.set('tab', 'notebook');
-        const target = url.pathname + url.search + url.hash;
+        const targetURL = new URL(next, window.location.origin);
+        targetURL.hash = window.location.hash;
+        const target = targetURL.pathname + targetURL.search + targetURL.hash;
         if (here !== target) {
-          window.history.pushState({}, '', url.toString());
+          window.history.pushState(null, 'Notebook', targetURL.toString());
         }
 
         if (readonlyTracker.currentWidget) {
@@ -343,7 +343,16 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         if (id) {
           app.shell.activateById(id);
           after.searchParams.delete('tab');
-          window.history.replaceState({}, '', after.toString());
+          const base = (router?.base || '').replace(/\/$/, '');
+          const canonical = new URL(`${base}/lab/index.html`, window.location.origin);
+          canonical.hash = after.hash;
+          // Keep any other non-tab params off; Notebook page doesn't need them
+          if (
+            after.pathname + after.search + after.hash !==
+            canonical.pathname + canonical.search + canonical.hash
+          ) {
+            window.history.replaceState(null, 'Notebook', canonical.toString());
+          }
         }
       }
     });
