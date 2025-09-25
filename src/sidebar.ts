@@ -44,7 +44,7 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
           : null;
         if (newWidget && newWidget instanceof SidebarIcon) {
           const cancel = newWidget.execute();
-          if (cancel) {
+          if (cancel === true) {
             console.log('Attempting to revert to:', oldWidget?.label);
             if (args.previousTitle) {
               const previousIndex = sidebar.titles.indexOf(oldWidget);
