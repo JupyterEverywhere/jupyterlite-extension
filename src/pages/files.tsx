@@ -401,10 +401,10 @@ export const files: JupyterFrontEndPlugin<void> = {
         // 1. Flip URL to /lab/files/ if needed
         const target = new URL(filesPath, window.location.origin);
         target.hash = window.location.hash;
-        const here = window.location.pathname + window.location.search + window.location.hash;
-        const there = target.pathname + target.search + target.hash;
+        const here = window.location.href;
+        const there = target.href;
         if (here !== there) {
-          window.history.pushState(null, 'Files', target.toString());
+          window.history.pushState(null, 'Files', target.href);
         }
 
         // 2. Show the Files widget
