@@ -354,15 +354,16 @@ test.describe('Files', () => {
     await expect(page).toHaveURL(/\/lab\/files\/$/);
   });
 
-  test('Should upload two files and display their thumbnails', async ({ page }) => {
+  test('Should upload three files and display their thumbnails', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
     await page.locator('.je-FileTile').first().click(); // the first tile will always be the "add new" one
 
     const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
     const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    const webpPath = path.resolve(__dirname, '../test-files/c-flower.webp');
 
-    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath, webpPath]);
 
     // Wait some time for thumbnails to appear as the files
     // are being uploaded to the contents manager
@@ -372,6 +373,9 @@ test.describe('Files', () => {
     await page
       .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
       .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
+      .waitFor({ state: 'visible' });
 
     expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
       'uploaded-files-grid.png'
@@ -379,6 +383,7 @@ test.describe('Files', () => {
 
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'c-flower.webp' })).toBeVisible();
   });
 
   test('Hovering a file tile shows close and download actions', async ({ page }) => {
