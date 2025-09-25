@@ -50,10 +50,9 @@ const routesPlugin: JupyterFrontEndPlugin<void> = {
 
       if (tab === 'files') {
         void app.commands.execute(ROUTE_FILES_CMD).then(() => {
-          // Drop ?tab so it doesn't linger.
-          const url = new URL(window.location.href);
-          url.searchParams.delete('tab');
-          window.history.replaceState({}, '', url.toString());
+          const filesURL = new URL(`${base.replace(/\/$/, '')}/lab/files/`, window.location.origin);
+          filesURL.hash = window.location.hash;
+          window.history.replaceState(null, 'Files', filesURL.toString());
         });
         return;
       }
@@ -64,9 +63,12 @@ const routesPlugin: JupyterFrontEndPlugin<void> = {
           if (id) {
             app.shell.activateById(id);
           }
-          const url = new URL(window.location.href);
-          url.searchParams.delete('tab');
-          window.history.replaceState({}, '', url.toString());
+          const nbURL = new URL(
+            `${base.replace(/\/$/, '')}/lab/index.html`,
+            window.location.origin
+          );
+          nbURL.hash = window.location.hash;
+          window.history.replaceState(null, 'Notebook', nbURL.toString());
         };
         tryActivate();
       }
