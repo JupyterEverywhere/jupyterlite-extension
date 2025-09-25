@@ -64,7 +64,10 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
     // Are we landing on the Files tab directly? In this case, we won't
     // auto-create a new notebook or activate the notebook sidebar.
-    const onFilesRoute = /\/lab\/files(?:\/|$)/.test(window.location.pathname);
+    const nowUrl = new URL(window.location.href);
+    const onFilesPath = /\/lab\/files(?:\/|$)/.test(nowUrl.pathname);
+    const onFilesTab = nowUrl.searchParams.get('tab') === 'files';
+    const onFilesIntent = onFilesPath || onFilesTab;
 
     let notebookId = params.get('notebook');
     const uploadedNotebookId = params.get('uploaded-notebook');
@@ -225,7 +228,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       void loadSharedNotebook(notebookId);
     } else if (uploadedNotebookId) {
       void openUploadedNotebook(uploadedNotebookId);
-    } else if (!onFilesRoute) {
+    } else if (!onFilesIntent) {
       void createNewNotebook();
     }
 
@@ -281,7 +284,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     });
     shell.add(sidebarItem, 'left', { rank: 100 });
 
-    if (!onFilesRoute) {
+    if (!onFilesIntent) {
       app.shell.activateById(sidebarItem.id);
       app.restored.then(() => app.shell.activateById(sidebarItem.id));
     }

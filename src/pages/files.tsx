@@ -402,26 +402,39 @@ export const files: JupyterFrontEndPlugin<void> = {
 
     const base = (router?.base || '').replace(/\/$/, '');
 
-    app.shell.add(
-      new SidebarIcon({
-        label: 'Files',
-        icon: EverywhereIcons.folderSidebar,
-        execute: () => {
-          const next = `${base}/lab/index.html`;
-          pushTabOnce(next, 'files');
-          void app.commands.execute(Commands.openFiles);
+    const filesSidebar = new SidebarIcon({
+      label: 'Files',
+      icon: EverywhereIcons.folderSidebar,
+      execute: () => {
+        const next = `${base}/lab/index.html`;
+        pushTabOnce(next, 'files');
+        void app.commands.execute(Commands.openFiles);
 
-          // Immediately drop the tab param so it doesn't linger.
-          const url = new URL(window.location.href);
-          url.searchParams.delete('tab');
-          window.history.replaceState({}, '', url.toString());
+        // Immediately drop the tab param so it doesn't linger.
+        const url = new URL(window.location.href);
+        url.searchParams.delete('tab');
+        window.history.replaceState({}, '', url.toString());
 
-          return undefined;
+        return undefined;
+      }
+    });
+    app.shell.add(filesSidebar, 'left', { rank: 200 });
+
+    // If we landed with a "files" intent, highlight Files in the sidebar.
+    void app.restored.then(() => {
+      const url = new URL(window.location.href);
+      const pathIsFiles = /\/lab\/files(?:\/|$)/.test(url.pathname);
+      const tabIsFiles = url.searchParams.get('tab') === 'files';
+      if (pathIsFiles || tabIsFiles) {
+        if (widget.isDisposed) {
+          widget = createWidget();
         }
-      }),
-      'left',
-      { rank: 200 }
-    );
+        if (!widget.isAttached) {
+          app.shell.add(widget, 'main');
+        }
+        app.shell.activateById(filesSidebar.id);
+      }
+    });
 
     app.commands.addCommand(Commands.openFiles, {
       label: 'Open Files',
