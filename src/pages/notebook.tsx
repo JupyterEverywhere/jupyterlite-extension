@@ -241,26 +241,17 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     const sidebarItem = new SidebarIcon({
       label: 'Notebook',
       icon: EverywhereIcons.notebook,
+      pathName: `${(router?.base || '').replace(/\/$/, '')}/lab/index.html`,
       execute: () => {
-        const base = (router?.base || '').replace(/\/$/, '');
-        const next = `${base}/lab/index.html`;
-        const here = window.location.href;
-        const targetURL = new URL(next, window.location.origin);
-        targetURL.hash = window.location.hash;
-        const target = targetURL.pathname + targetURL.search + targetURL.hash;
-        if (here !== target) {
-          window.history.pushState(null, 'Notebook', targetURL.toString());
-        }
-
         if (readonlyTracker.currentWidget) {
           const id = readonlyTracker.currentWidget.id;
           shell.activateById(id);
-          return;
+          return false;
         }
         if (tracker.currentWidget) {
           const id = tracker.currentWidget.id;
           shell.activateById(id);
-          return;
+          return false;
         }
 
         // If we don't have a notebook yet (likely we started on /lab/files/) -> create one now.
@@ -270,6 +261,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
             shell.activateById(tracker.currentWidget.id);
           }
         })();
+        return false;
       }
     });
     shell.add(sidebarItem, 'left', { rank: 100 });

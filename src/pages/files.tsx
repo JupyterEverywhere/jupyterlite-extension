@@ -394,23 +394,14 @@ export const files: JupyterFrontEndPlugin<void> = {
     const base = (router?.base || '').replace(/\/$/, '');
     const filesPath = `${base}/lab/files/`;
 
+    // Show the Files widget; return false-y so SidebarIcon does the URL swap.
     const filesSidebar = new SidebarIcon({
       label: 'Files',
       icon: EverywhereIcons.folderSidebar,
+      pathName: filesPath,
       execute: () => {
-        // 1. Flip URL to /lab/files/ if needed
-        const target = new URL(filesPath, window.location.origin);
-        target.hash = window.location.hash;
-        const here = window.location.href;
-        const there = target.href;
-        if (here !== there) {
-          window.history.pushState(null, 'Files', target.href);
-        }
-
-        // 2. Show the Files widget
         void app.commands.execute(Commands.openFiles);
-
-        return undefined;
+        return false;
       }
     });
     app.shell.add(filesSidebar, 'left', { rank: 200 });
@@ -423,11 +414,7 @@ export const files: JupyterFrontEndPlugin<void> = {
       if (pathIsFiles || tabIsFiles) {
         const desired = new URL(filesPath, window.location.origin);
         desired.hash = url.hash;
-        const current = url.pathname + url.search + url.hash;
-        const final = desired.pathname + desired.search + desired.hash;
-        if (current !== final) {
-          window.history.replaceState(null, 'Files', desired.toString());
-        }
+        window.history.replaceState(null, 'Files', desired.toString());
 
         if (widget.isDisposed) {
           widget = createWidget();

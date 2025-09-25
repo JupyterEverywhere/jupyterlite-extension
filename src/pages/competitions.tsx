@@ -41,6 +41,7 @@ export const competitions: JupyterFrontEndPlugin<void> = {
         icon: EverywhereIcons.competition,
         execute: () => {
           app.commands.execute(Commands.openCompetitions);
+          return false;
         }
       }),
       'left',
