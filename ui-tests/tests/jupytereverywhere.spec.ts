@@ -324,6 +324,7 @@ test.describe('Files', () => {
   test('Should load Files page directly', async ({ page }) => {
     await page.goto('lab/files/');
     expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot('files-full.png');
+    await expect(page).toHaveURL(/\/lab\/files\/$/);
   });
 
   test('Should upload two files and display their thumbnails', async ({ page }) => {
