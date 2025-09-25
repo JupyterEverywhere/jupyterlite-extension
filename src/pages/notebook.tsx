@@ -51,13 +51,6 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     router?: ILiteRouter | null
   ) => {
     const { commands, shell, serviceManager } = app;
-    const dropTabParam = (expected?: string) => {
-      const url = new URL(window.location.href);
-      if (!expected || url.searchParams.get('tab') === expected) {
-        url.searchParams.delete('tab');
-        window.history.replaceState({}, '', url.toString());
-      }
-    };
     const { contents } = serviceManager;
 
     const params = new URLSearchParams(window.location.search);
@@ -262,16 +255,13 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         if (readonlyTracker.currentWidget) {
           const id = readonlyTracker.currentWidget.id;
           shell.activateById(id);
-          dropTabParam('notebook');
           return;
         }
         if (tracker.currentWidget) {
           const id = tracker.currentWidget.id;
           shell.activateById(id);
-          dropTabParam('notebook');
           return;
         }
-        dropTabParam('notebook');
 
         // If we don't have a notebook yet (likely we started on /lab/files/) -> create one now.
         void (async () => {
