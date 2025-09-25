@@ -246,12 +246,12 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         if (readonlyTracker.currentWidget) {
           const id = readonlyTracker.currentWidget.id;
           shell.activateById(id);
-          return false;
+          return SidebarIcon.delegateNavigation;
         }
         if (tracker.currentWidget) {
           const id = tracker.currentWidget.id;
           shell.activateById(id);
-          return false;
+          return SidebarIcon.delegateNavigation;
         }
 
         // If we don't have a notebook yet (likely we started on /lab/files/) -> create one now.
@@ -261,7 +261,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
             shell.activateById(tracker.currentWidget.id);
           }
         })();
-        return false;
+        return SidebarIcon.delegateNavigation;
       }
     });
     shell.add(sidebarItem, 'left', { rank: 100 });

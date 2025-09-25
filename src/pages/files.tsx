@@ -401,7 +401,7 @@ export const files: JupyterFrontEndPlugin<void> = {
       pathName: filesPath,
       execute: () => {
         void app.commands.execute(Commands.openFiles);
-        return false;
+        return SidebarIcon.delegateNavigation;
       }
     });
     app.shell.add(filesSidebar, 'left', { rank: 200 });

@@ -8,11 +8,13 @@ import { StackedPanel } from '@lumino/widgets';
  * StackedPanel is just temporary as it gives 0-width layout.
  */
 export class SidebarIcon extends StackedPanel {
+  // A return token that we use to signal whether we should let the SidebarIcon handle navigation or not
+  static readonly delegateNavigation = Symbol('delegateNavigation');
   constructor(
     private _options: {
       label: string;
       icon: LabIcon;
-      execute: () => boolean | void;
+      execute: () => boolean | void | symbol;
       pathName?: string;
     }
   ) {
@@ -23,7 +25,7 @@ export class SidebarIcon extends StackedPanel {
   }
   execute() {
     const ret = this._options.execute();
-    if (!ret && this._options.pathName) {
+    if (ret === SidebarIcon.delegateNavigation && this._options.pathName) {
       const target = new URL(this._options.pathName, window.location.origin);
       const here = window.location.href;
       const there = target.href;

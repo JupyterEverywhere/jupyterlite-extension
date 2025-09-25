@@ -129,7 +129,7 @@ export const helpPlugin: JupyterFrontEndPlugin<void> = {
         icon: EverywhereIcons.help,
         execute: () => {
           app.commands.execute(Commands.openHelp);
-          return false;
+          return SidebarIcon.delegateNavigation;
         }
       }),
       'left',
