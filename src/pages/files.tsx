@@ -13,7 +13,7 @@ import { LabIcon, closeIcon, downloadIcon } from '@jupyterlab/ui-components';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
- * 1. Image files (PNG, JPEG/JPG) (binary)
+ * 1. Image files (PNG, JPEG/JPG, WEBP) (binary)
  * 2. CSV/TSV files (text)
  * @param fileName - the name of the file to determine the icon for.
  * @param fileType - the MIME type of the file to determine the icon for.
@@ -21,7 +21,7 @@ import { LabIcon, closeIcon, downloadIcon } from '@jupyterlab/ui-components';
  */
 const getFileIcon = (fileName: string, fileType: string): LabIcon => {
   const extension = fileName.split('.').pop()?.toLowerCase() || '';
-  if (fileType.startsWith('image/') || ['png', 'jpg', 'jpeg'].includes(extension)) {
+  if (fileType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
     return EverywhereIcons.imageIcon;
   }
   if (
@@ -36,14 +36,20 @@ const getFileIcon = (fileName: string, fileType: string): LabIcon => {
 };
 
 /**
- * Checks if the file type is supported (PNG, JPG/JPEG, or CSV/TSV).
+ * Checks if the file type is supported (PNG, JPG/JPEG, WEBP, or CSV/TSV).
  * @param file - The file to check
  * @returns True if the file type is supported, false otherwise.
  */
 const isSupportedFileType = (file: File): boolean => {
-  const supportedMimeTypes = ['image/png', 'image/jpeg', 'text/csv', 'text/tab-separated-values'];
+  const supportedMimeTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/webp',
+    'text/csv',
+    'text/tab-separated-values'
+  ];
   const extension = file.name.split('.').pop()?.toLowerCase() || '';
-  const supportedExtensions = ['png', 'jpg', 'jpeg', 'csv', 'tsv'];
+  const supportedExtensions = ['png', 'jpg', 'jpeg', 'webp', 'csv', 'tsv'];
   return supportedMimeTypes.includes(file.type) || supportedExtensions.includes(extension);
 };
 
@@ -77,7 +83,7 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
       if (supportedFiles.length === 0) {
         await showErrorMessage(
           'Unsupported file type',
-          'Please upload only PNG, JPG/JPEG, or CSV/TSV files.'
+          'Please upload only PNG, JPG/JPEG, WEBP, or CSV/TSV files.'
         );
         return;
       }
@@ -137,7 +143,7 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
       multiple
       onChange={handleInputChange}
       style={{ display: 'none' }}
-      accept=".png,.jpg,.jpeg,.csv,.tsv,image/png,image/jpeg,text/csv,text/tab-separated-values"
+      accept=".png,.jpg,.jpeg,.webp,.csv,.tsv,image/png,image/jpeg,image/webp,text/csv,text/tab-separated-values"
     />
   );
 });
@@ -246,6 +252,9 @@ function FilesApp(props: IFilesAppProps) {
     }
     if (ext === 'jpg' || ext === 'jpeg') {
       return 'image/jpeg';
+    }
+    if (ext === 'webp') {
+      return 'image/webp';
     }
     if (ext === 'csv') {
       return 'text/csv';
