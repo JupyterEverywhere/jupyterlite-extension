@@ -1,4 +1,5 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
@@ -8,7 +9,7 @@ import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { LabIcon } from '@jupyterlab/ui-components';
+import { LabIcon, closeIcon, downloadIcon } from '@jupyterlab/ui-components';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -207,6 +208,86 @@ function FilesApp(props: IFilesAppProps) {
     return () => window.removeEventListener('beforeunload', handler);
   }, [hasAnyFileBeenUploaded]);
 
+  const downloadFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      try {
+        const fetched = await props.contentsManager.get(model.path, { content: true });
+        if (fetched.type !== 'file') {
+          return;
+        }
+
+        const fmt = (fetched.format ?? 'text') as 'text' | 'base64';
+        const mime = fetched.mimetype ?? inferMimeFromName(model.name);
+
+        let blob: Blob;
+        if (fmt === 'base64') {
+          const b64 = String(fetched.content ?? '');
+          const bytes = atob(b64);
+          const buf = new Uint8Array(bytes.length);
+          for (let i = 0; i < bytes.length; i++) {
+            buf[i] = bytes.charCodeAt(i);
+          }
+          blob = new Blob([buf], { type: mime });
+        } else {
+          blob = new Blob([String(fetched.content ?? '')], { type: mime || 'text/plain' });
+        }
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = model.name;
+        document.body.appendChild(a);
+        a.click();
+        requestAnimationFrame(() => {
+          URL.revokeObjectURL(a.href);
+          a.remove();
+        });
+      } catch (err) {
+        await showErrorMessage(
+          'Download failed',
+          `Could not download ${model.name}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    },
+    [props.contentsManager]
+  );
+
+  const deleteFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      try {
+        await props.contentsManager.delete(model.path);
+        await refreshListing();
+      } catch (err) {
+        await showErrorMessage(
+          'Delete failed',
+          `Could not delete ${model.name}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    },
+    [props.contentsManager, refreshListing]
+  );
+
+  /**
+   * Infer the MIME type from a file name.
+   * @param name - file name
+   * @returns the MIME type inferred from the file extension, or an empty string if unknown.
+   */
+  function inferMimeFromName(name: string): string {
+    const ext = name.split('.').pop()?.toLowerCase() ?? '';
+    if (ext === 'png') {
+      return 'image/png';
+    }
+    if (ext === 'jpg' || ext === 'jpeg') {
+      return 'image/jpeg';
+    }
+    if (ext === 'csv') {
+      return 'text/csv';
+    }
+    if (ext === 'tsv') {
+      return 'text/tab-separated-values';
+    }
+    return '';
+  }
+
   return (
     <div className="je-FilesApp">
       <FileUploader
@@ -261,7 +342,34 @@ function FilesApp(props: IFilesAppProps) {
                 const fileIcon = getFileIcon(f.name, f.mimetype ?? '');
                 return (
                   <div className="je-FileTile" key={f.path}>
-                    <div className="je-FileTile-box">
+                    <div className="je-FileTile-box je-FileTile-box-hasActions">
+                      <div className="je-FileTile-actions">
+                        {/* Delete (X) button */}
+                        <button
+                          className="je-FileTile-action je-FileTile-action--close"
+                          aria-label={`Delete ${f.name}`}
+                          title="Delete"
+                          onClick={e => {
+                            e.stopPropagation();
+                            void deleteFile(f);
+                          }}
+                        >
+                          <closeIcon.react tag="span" />
+                        </button>
+
+                        {/* Download (↓) button */}
+                        <button
+                          className="je-FileTile-action je-FileTile-action--download"
+                          aria-label={`Download ${f.name}`}
+                          title="Download"
+                          onClick={e => {
+                            e.stopPropagation();
+                            void downloadFile(f);
+                          }}
+                        >
+                          <downloadIcon.react tag="span" />
+                        </button>
+                      </div>
                       <fileIcon.react />
                     </div>
                     <div className="je-FileTile-label">{f.name}</div>
@@ -290,7 +398,12 @@ export const files: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:files',
   autoStart: true,
   requires: [IContentsManager],
-  activate: (app: JupyterFrontEnd, contentsManager: Contents.IManager) => {
+  optional: [ILiteRouter],
+  activate: (
+    app: JupyterFrontEnd,
+    contentsManager: Contents.IManager,
+    router: ILiteRouter | null
+  ) => {
     const createWidget = () => {
       const content = new Files(contentsManager);
       const widget = new MainAreaWidget({ content });
@@ -310,18 +423,40 @@ export const files: JupyterFrontEndPlugin<void> = {
 
     let widget = createWidget();
 
-    app.shell.add(
-      new SidebarIcon({
-        label: 'Files',
-        icon: EverywhereIcons.folderSidebar,
-        execute: () => {
-          void app.commands.execute(Commands.openFiles);
-          return undefined;
+    const base = (router?.base || '').replace(/\/$/, '');
+    const filesPath = `${base}/lab/files/`;
+
+    // Show the Files widget; return false-y so SidebarIcon does the URL swap.
+    const filesSidebar = new SidebarIcon({
+      label: 'Files',
+      icon: EverywhereIcons.folderSidebar,
+      pathName: filesPath,
+      execute: () => {
+        void app.commands.execute(Commands.openFiles);
+        return SidebarIcon.delegateNavigation;
+      }
+    });
+    app.shell.add(filesSidebar, 'left', { rank: 200 });
+
+    // If we landed with a "files" intent, highlight Files in the sidebar.
+    void app.restored.then(() => {
+      const url = new URL(window.location.href);
+      const pathIsFiles = /\/lab\/files(?:\/|$)/.test(url.pathname);
+      const tabIsFiles = url.searchParams.get('tab') === 'files';
+      if (pathIsFiles || tabIsFiles) {
+        const desired = new URL(filesPath, window.location.origin);
+        desired.hash = url.hash;
+        window.history.replaceState(null, 'Files', desired.toString());
+
+        if (widget.isDisposed) {
+          widget = createWidget();
         }
-      }),
-      'left',
-      { rank: 200 }
-    );
+        if (!widget.isAttached) {
+          app.shell.add(widget, 'main');
+        }
+        app.shell.activateById(filesSidebar.id);
+      }
+    });
 
     app.commands.addCommand(Commands.openFiles, {
       label: 'Open Files',

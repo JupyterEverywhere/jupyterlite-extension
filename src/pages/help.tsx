@@ -128,7 +128,8 @@ export const helpPlugin: JupyterFrontEndPlugin<void> = {
         label: 'Help Centre',
         icon: EverywhereIcons.help,
         execute: () => {
-          app.commands.execute(Commands.openHelp);
+          void app.commands.execute(Commands.openHelp);
+          return;
         }
       }),
       'left',

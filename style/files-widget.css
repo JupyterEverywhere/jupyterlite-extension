@@ -71,6 +71,12 @@
   height: 48px;
 }
 
+.je-FileTile-actions svg {
+  width: 16px;
+  height: 16px;
+  display: block; /* there is a baseline offset inside the button which I am not sure of */
+}
+
 .je-FileTile-label {
   font-size: calc(var(--je-scale) * 20px);
   font-weight: 500;
@@ -107,4 +113,73 @@
   border-radius: var(--je-round-corners);
   font-size: calc(var(--je-scale) * 20px);
   line-height: 1.5;
+}
+
+/* Styling for the action buttons on each file tile. */
+
+.je-FileTile-box-hasActions {
+  position: relative;
+  isolation: isolate;
+}
+
+.je-FileTile-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 2;
+}
+
+.je-FileTile-box-hasActions:hover .je-FileTile-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.je-FileTile-action {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--je-slate-blue);
+  border-radius: var(--je-round-corners-filetiles) !important;
+  background: white;
+  color: var(--je-slate-blue);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition:
+    background 120ms ease,
+    transform 60ms ease;
+
+  /* center inline SVG, there is a baseline offset inside the button which I am not sure of */
+  line-height: 0;
+  box-sizing: border-box;
+}
+
+.je-FileTile-action:hover {
+  background: rgb(65 44 136 / 8%); /* a slightly faint tint */
+}
+
+.je-FileTile-action:active {
+  transform: translateY(1px);
+}
+
+.je-FileTile-action > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.je-FileTile-actions svg > path {
+  --jp-inverse-layout-color3: var(--je-slate-blue) !important;
 }

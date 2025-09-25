@@ -51,7 +51,22 @@
       },
       "@jupyterlab/notebook-extension:tracker": {
         "autoStartDefaultKernel": true,
-        "windowingMode": "none"
+        "windowingMode": "none",
+        "codeCellConfig": {
+          "lineNumbers": false,
+          "lineWrap": false,
+          "placeholder": "This is a code cell. Add code here"
+        },
+        "markdownCellConfig": {
+          "lineNumbers": false,
+          "matchBrackets": false,
+          "placeholder": "This is a text cell. Add text here"
+        },
+        "rawCellConfig": {
+          "lineNumbers": false,
+          "matchBrackets": false,
+          "placeholder": "This is a raw cell. Add text here"
+        }
       },
       "@jupyterlab/application-extension:context-menu": {
         "disabled": true

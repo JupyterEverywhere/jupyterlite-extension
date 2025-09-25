@@ -16,6 +16,7 @@ import fastForwardSvg from '../style/icons/fast-forward.svg';
 
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
+import routesPlugin from './routes';
 import { Commands } from './commands';
 // import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
@@ -29,7 +30,8 @@ import {
 
 import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
 import { singleDocumentMode } from './single-mode';
-import { notebookFactoryPlugin } from './run-button';
+import { notebookFactoryPlugin } from './notebook-factory';
+import { placeholderPlugin } from './placeholders';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -596,8 +598,10 @@ export default [
   plugin,
   notebookPlugin,
   files,
+  routesPlugin,
   // competitions,
   customSidebar,
   // helpPlugin,
-  singleDocumentMode
+  singleDocumentMode,
+  placeholderPlugin
 ];
