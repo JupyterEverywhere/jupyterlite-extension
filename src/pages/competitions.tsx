@@ -1,4 +1,5 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
+import { ILiteRouter } from '@jupyterlite/application';
 import { MainAreaWidget, ReactWidget } from '@jupyterlab/apputils';
 import { Commands } from '../commands';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
@@ -18,7 +19,8 @@ export class Competitions extends ReactWidget {
 export const competitions: JupyterFrontEndPlugin<void> = {
   id: 'jupytereverywhere:competitions',
   autoStart: true,
-  activate: (app: JupyterFrontEnd) => {
+  optional: [ILiteRouter],
+  activate: (app: JupyterFrontEnd, router?: ILiteRouter | null) => {
     const newWidget = () => {
       const content = new Competitions();
       const widget = new MainAreaWidget({ content });
@@ -40,8 +42,8 @@ export const competitions: JupyterFrontEndPlugin<void> = {
         label: 'Competition',
         icon: EverywhereIcons.competition,
         execute: () => {
-          app.commands.execute(Commands.openCompetitions);
-          return SidebarIcon.delegateNavigation;
+          void app.commands.execute(Commands.openCompetitions);
+          return;
         }
       }),
       'left',
