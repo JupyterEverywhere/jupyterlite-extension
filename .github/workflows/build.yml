@@ -74,7 +74,7 @@ jobs:
           mode: ${{ matrix.mode }}
 
   deploy:
-    name: Deploy to GitHub Pages and Netlify
+    name: Deploy to GitHub Pages
     needs: build-app
     if: github.ref == 'refs/heads/main'
     permissions:

@@ -33,7 +33,12 @@ const PYTHON_TEST_NOTEBOOK: JSONObject = {
       execution_count: null,
       id: '55eb9a2d-401d-4abd-b0eb-373ded5b408d',
       outputs: [],
-      metadata: {},
+      metadata: {
+        sharedId: 'some-random-alphanumeric-id',
+        readableId: 'python-test-notebook',
+        sharedName: 'Notebook_1980-10-30_00-10-20',
+        lastShared: '2024-06-20T00:10:20.123Z'
+      },
       source: [`# This is a test notebook`]
     }
   ],
@@ -316,6 +321,28 @@ test.describe('Download', () => {
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
   });
+
+  test('Notebook downloaded as IPyNB should not have sharing-specific metadata', async ({
+    page,
+    context
+  }) => {
+    await mockTokenRoute(page);
+    await mockShareNotebookResponse(page, 'test-download-metadata-notebook');
+
+    const ipynbDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-notebook');
+    const ipynbPath = await (await ipynbDownload).path();
+    expect(ipynbPath).not.toBeNull();
+
+    const content = await fs.promises.readFile(ipynbPath!, { encoding: 'utf-8' });
+    const notebook = JSON.parse(content) as JSONObject;
+    const metadata = notebook['metadata'] as JSONObject | undefined;
+    expect(metadata).toBeDefined();
+    expect(metadata).not.toHaveProperty('sharedId');
+    expect(metadata).not.toHaveProperty('readableId');
+    expect(metadata).not.toHaveProperty('sharedName');
+    expect(metadata).not.toHaveProperty('lastShared');
+  });
 });
 
 // We take a screenshot of the full files page, to
@@ -327,15 +354,16 @@ test.describe('Files', () => {
     await expect(page).toHaveURL(/\/lab\/files\/$/);
   });
 
-  test('Should upload two files and display their thumbnails', async ({ page }) => {
+  test('Should upload three files and display their thumbnails', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
     await page.locator('.je-FileTile').first().click(); // the first tile will always be the "add new" one
 
     const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
     const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    const webpPath = path.resolve(__dirname, '../test-files/c-flower.webp');
 
-    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath, webpPath]);
 
     // Wait some time for thumbnails to appear as the files
     // are being uploaded to the contents manager
@@ -345,6 +373,9 @@ test.describe('Files', () => {
     await page
       .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
       .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
+      .waitFor({ state: 'visible' });
 
     expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
       'uploaded-files-grid.png'
@@ -352,6 +383,7 @@ test.describe('Files', () => {
 
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'c-flower.webp' })).toBeVisible();
   });
 
   test('Hovering a file tile shows close and download actions', async ({ page }) => {

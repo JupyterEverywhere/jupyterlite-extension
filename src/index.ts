@@ -192,7 +192,37 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(Commands.downloadNotebookCommand, {
       label: 'Download as a notebook',
       execute: args => {
-        // Execute the built-in download command
+        // Clear all sharing-specific metadata before download
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+
+        if (!panel) {
+          console.warn('No active notebook to download');
+          return;
+        }
+
+        const content = panel.context.model.toJSON() as INotebookContent;
+
+        // Remove sharing-specific metadata
+        const purgedMetadata = { ...content.metadata };
+        delete purgedMetadata.isSharedNotebook;
+        delete purgedMetadata.sharedId;
+        delete purgedMetadata.readableId;
+        delete purgedMetadata.sharedName;
+        delete purgedMetadata.lastShared;
+
+        // Ensure that we preserve kernelspec metadata if present
+        const kernelSpec = content.metadata?.kernelspec;
+        if (kernelSpec) {
+          purgedMetadata.kernelspec = kernelSpec;
+        }
+
+        const cleanedContent: INotebookContent = {
+          ...content,
+          metadata: purgedMetadata
+        };
+        panel.context.model.fromJSON(cleanedContent);
+
+        // Execute the built-in download command with the cleaned model
         return commands.execute('docmanager:download');
       }
     });
@@ -427,7 +457,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           delete purgedMetadata.sharedName;
           delete purgedMetadata.lastShared;
 
-          // Ensure that we preserve kernelspec metadata
+          // Ensure that we preserve kernelspec metadata if present
           const kernelSpec = originalContent.metadata?.kernelspec;
 
           // Remove cell-level editable=false; as the notebook has
