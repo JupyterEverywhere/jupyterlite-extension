@@ -4,7 +4,7 @@ import { MarkdownCell } from '@jupyterlab/cells';
 import { EditorExtensionRegistry, IEditorExtensionRegistry } from '@jupyterlab/codemirror';
 import { MimeModel } from '@jupyterlab/rendermime';
 
-export const EMPTY_MARKDOWN_PLACEHOLDER = 'This is a text cell. Double-click to edit';
+export const EMPTY_MARKDOWN_PLACEHOLDER = 'This is a text cell. Double-click to edit.';
 
 export const placeholderPlugin: JupyterFrontEndPlugin<void> = {
   id: '@jupyter-everywhere/codemirror-extension:placeholder',
