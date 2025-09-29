@@ -149,11 +149,11 @@ async function handleNotebookSharing(
       await notebookPanel.context.save();
 
       try {
-        const newReadable =
+        const notebookID =
           (notebookContent.metadata?.readableId as string | undefined) ??
           (notebookContent.metadata?.sharedId as string | undefined);
-        if (newReadable) {
-          setNotebookParamInUrl(newReadable);
+        if (notebookID) {
+          setNotebookParamInUrl(notebookID);
         }
       } catch (e) {
         console.warn('Failed to update URL with shareable notebook ID:', e);
