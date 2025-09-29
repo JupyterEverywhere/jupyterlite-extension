@@ -44,6 +44,19 @@ function generateShareURL(notebookID: string): string {
   return `${baseUrl}?notebook=${notebookID}`;
 }
 
+/**
+ * Sets or updates the 'notebook' query parameter in the current URL to the given notebookID.
+ * If the parameter already exists with the same value, no change is made.
+ * @param notebookID - The ID of the notebook to set in the URL.
+ */
+function setNotebookParamInUrl(notebookID: string): void {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get('notebook') !== notebookID) {
+    url.searchParams.set('notebook', notebookID);
+    window.history.replaceState({}, '', url.toString());
+  }
+}
+
 const manuallySharing = new WeakSet<NotebookPanel | ViewOnlyNotebookPanel>();
 
 /**
@@ -134,6 +147,17 @@ async function handleNotebookSharing(
 
       notebookPanel.context.model.fromJSON(notebookContent);
       await notebookPanel.context.save();
+
+      try {
+        const notebookID =
+          (notebookContent.metadata?.readableId as string | undefined) ??
+          (notebookContent.metadata?.sharedId as string | undefined);
+        if (notebookID) {
+          setNotebookParamInUrl(notebookID);
+        }
+      } catch (e) {
+        console.warn('Failed to update URL with shareable notebook ID:', e);
+      }
     }
 
     if (manual) {
