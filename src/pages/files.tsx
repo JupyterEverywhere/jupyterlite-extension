@@ -208,6 +208,7 @@ function FilesApp(props: IFilesAppProps) {
 
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
+      return true;
     };
 
     window.addEventListener('beforeunload', handler);
