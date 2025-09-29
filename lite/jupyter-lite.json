@@ -78,6 +78,7 @@
       "@jupyterlab/apputils-extension:state",
       "@jupyterlab/debugger-extension",
       "@jupyterlab/application-extension:property-inspector",
+      "@jupyterlab/apputils-extension:sessionDialogs",
       "@jupyterlab/launcher",
 
       "@jupyterlab/statusbar-extension",

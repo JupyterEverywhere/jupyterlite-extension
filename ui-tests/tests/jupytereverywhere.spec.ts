@@ -801,7 +801,7 @@ test.describe('Title of the pages should be "Jupyter Everywhere"', () => {
 
 test.describe('Kernel commands should use memory terminology', () => {
   test('Restart memory command', async ({ page }) => {
-    const promise = runCommand(page, 'jupytereverywhere:restart-memory');
+    const promise = runCommand(page, 'notebook:restart-kernel');
     const dialog = page.locator('.jp-Dialog-content');
 
     await expect(dialog).toBeVisible();

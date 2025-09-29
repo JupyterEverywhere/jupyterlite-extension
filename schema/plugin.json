@@ -58,7 +58,7 @@
       },
       {
         "name": "restart",
-        "command": "jupytereverywhere:restart-memory",
+        "command": "notebook:restart-kernel",
         "caption": "Restart notebook",
         "label": ""
       },
