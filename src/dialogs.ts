@@ -8,7 +8,7 @@ import {
 } from '@jupyterlab/apputils';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 
-class CustomSessionContextDialogs extends SessionContextDialogs {
+class JESessionContextDialogs extends SessionContextDialogs {
   async restart(sessionContext: ISessionContext): Promise<boolean> {
     const result = await showDialog({
       title: 'Would you like to restart the notebook’s memory?',
@@ -33,7 +33,7 @@ export const sessionDialogs: JupyterFrontEndPlugin<ISessionContextDialogs> = {
   optional: [ITranslator],
   autoStart: true,
   activate: async (app: JupyterFrontEnd, translator: ITranslator | null) => {
-    return new CustomSessionContextDialogs({
+    return new JESessionContextDialogs({
       translator: translator ?? nullTranslator
     });
   }
