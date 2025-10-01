@@ -63,7 +63,7 @@
   cursor: pointer;
 }
 
-.je-FileTile-box-addNew:hover {
+.je-FileTile-box:hover {
   background: rgb(65 44 136 / 8%);
 }
 
@@ -120,21 +120,8 @@
   position: relative;
 }
 
-/* When the dropdown is opened, we raise the z-index of the tile to ensure
-that the dropdown is not clipped by neighbouring tiles. */
-.je-FileTile:has(.je-FileMenu-dropdown) {
-  z-index: 1000;
-  position: relative;
-}
-
-.je-FileMenu {
+.je-FileTile-action {
   position: absolute;
-  top: 2px;
-  right: 6px;
-  z-index: 2;
-}
-
-.je-FileMenu-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
