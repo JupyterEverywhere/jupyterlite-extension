@@ -63,10 +63,6 @@
   cursor: pointer;
 }
 
-.je-FileTile-box:hover {
-  background: rgb(65 44 136 / 8%);
-}
-
 .je-FileTile-box svg {
   width: 48px;
   height: 48px;
