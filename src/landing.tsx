@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { handleNotebookUpload } from './upload';
 
 import jeOctopus from '../style/icons/landing/je-octopus.svg';
-import octopusOutline from '../style/icons/landing/je-octopus-outline.svg';
+
 import jupyterEverywhereText from '../style/icons/landing/jupytereverywhere-text.svg';
 
 import pythonLogo from '../style/icons/landing/python.svg';
@@ -155,7 +155,7 @@ function LandingPage(): JSX.Element {
 
       <footer className="je-footer">
         <div className="je-footer-brand">
-          <img src={octopusOutline} className="je-footer-logo" alt="Jupyter Everywhere Logo" />
+          <img src={jeOctopus} className="je-footer-logo" alt="Jupyter Everywhere Logo" />
           <img src={jupyterEverywhereText} className="je-footer-text" alt="Jupyter Everywhere" />
         </div>
 
