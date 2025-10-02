@@ -61,11 +61,11 @@ export const customSidebar: JupyterFrontEndPlugin<void> = {
       },
       this
     );
-    // Add Jupyter Everywhere icon
+    // Add Jupyter Everywhere Octopus icon
     shell.add(
       new SidebarIcon({
         label: 'Jupyter Everywhere',
-        icon: EverywhereIcons.logo,
+        icon: EverywhereIcons.octopus,
         execute: () => {
           void (async () => {
             const readOnlyNotebookPanel = readonlyTracker.currentWidget;
