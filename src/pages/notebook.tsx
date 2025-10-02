@@ -53,7 +53,6 @@ async function patchPyodideHttp(sessionContext: ISessionContext): Promise<void> 
   await kernel.requestExecute({
     allow_stdin: false,
     code: [
-      // probably with some version pins?
       '%pip install -y pyodide-http requests',
       'import pyodide_http',
       'pyodide_http.patch_all()'
