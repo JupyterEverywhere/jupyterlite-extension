@@ -105,6 +105,7 @@
       "@jupyterlab/fileeditor-extension",
       "@jupyterlab/tooltip-extension:files",
       "@jupyterlab/filebrowser-extension",
+      "@jupyterlab/notebook-extension:open-with-no-kernel",
       "@jupyterlab/toc-extension",
 
       "@jupyterlab/notebook-extension:factory",
