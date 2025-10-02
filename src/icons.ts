@@ -20,6 +20,7 @@ import linkSvg from '../style/icons/link.svg';
 import competitionSvg from '../style/icons/competition.svg';
 import notebookSvg from '../style/icons/notebook.svg';
 import logoSvg from '../style/icons/logo.svg';
+import octopusSvg from '../style/icons/je-octopus.svg';
 import runSvg from '../style/icons/run.svg';
 import runCellSvg from '../style/icons/run-cell.svg';
 import refreshSvg from '../style/icons/refresh.svg';
@@ -89,6 +90,10 @@ export namespace EverywhereIcons {
   export const logo = new LabIcon({
     name: 'everywhere:logo',
     svgstr: logoSvg
+  });
+  export const octopus = new LabIcon({
+    name: 'everywhere:octopus',
+    svgstr: octopusSvg
   });
   export const runCell = new LabIcon({
     name: 'everywhere:run-cell',
