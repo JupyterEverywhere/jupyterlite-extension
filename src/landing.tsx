@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import { handleNotebookUpload } from './upload';
 
-import jeOctopus from '../style/icons/landing/je-octopus.svg';
+import jeOctopus from '../style/icons/je-octopus.svg';
 
 import jupyterEverywhereText from '../style/icons/landing/jupytereverywhere-text.svg';
 
