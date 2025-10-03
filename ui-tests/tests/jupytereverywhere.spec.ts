@@ -400,8 +400,8 @@ test.describe('Files', () => {
 
     // Hover to reveal the actions
     await tile.hover();
-    await expect(tile.locator('.je-FileTile-action--close')).toBeVisible();
-    await expect(tile.locator('.je-FileTile-action--download')).toBeVisible();
+    await expect(tile.locator('.je-FileTile-delete')).toBeVisible();
+    await expect(tile.locator('.je-FileTile-download')).toBeVisible();
 
     expect(await tile.screenshot()).toMatchSnapshot('file-tile-actions-visible.png');
   });
@@ -418,7 +418,7 @@ test.describe('Files', () => {
 
     const tile = page.locator('.je-FileTile', { has: label });
     await tile.hover();
-    await tile.locator('.je-FileTile-action--close').click();
+    await tile.locator('.je-FileTile-delete').click();
 
     await expect(label).toHaveCount(0);
   });
@@ -436,7 +436,7 @@ test.describe('Files', () => {
     const tile = page.locator('.je-FileTile', { has: label });
     await tile.hover();
     const downloadPromise = page.waitForEvent('download');
-    await tile.locator('.je-FileTile-action--download').click();
+    await tile.locator('.je-FileTile-download').click();
     const download = await downloadPromise;
 
     const filePath = await download.path();

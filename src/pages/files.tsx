@@ -353,33 +353,31 @@ function FilesApp(props: IFilesAppProps) {
                 return (
                   <div className="je-FileTile" key={f.path}>
                     <div className="je-FileTile-box je-FileTile-box-hasActions">
-                      <div className="je-FileTile-actions">
-                        {/* Delete (X) button */}
-                        <button
-                          className="je-FileTile-action je-FileTile-action--close"
-                          aria-label={`Delete ${f.name}`}
-                          title="Delete"
-                          onClick={e => {
-                            e.stopPropagation();
-                            void deleteFile(f);
-                          }}
-                        >
-                          <closeIcon.react tag="span" />
-                        </button>
+                      {/* Delete (X) button */}
+                      <button
+                        className="je-FileTile-action je-FileTile-delete"
+                        aria-label={`Delete ${f.name}`}
+                        title="Delete"
+                        onClick={e => {
+                          e.stopPropagation();
+                          void deleteFile(f);
+                        }}
+                      >
+                        <closeIcon.react tag="span" />
+                      </button>
+                      {/* Download (↓) button */}
+                      <button
+                        className="je-FileTile-action je-FileTile-download"
+                        aria-label={`Download ${f.name}`}
+                        title="Download"
+                        onClick={e => {
+                          e.stopPropagation();
+                          void downloadFile(f);
+                        }}
+                      >
+                        <downloadIcon.react tag="span" />
+                      </button>
 
-                        {/* Download (↓) button */}
-                        <button
-                          className="je-FileTile-action je-FileTile-action--download"
-                          aria-label={`Download ${f.name}`}
-                          title="Download"
-                          onClick={e => {
-                            e.stopPropagation();
-                            void downloadFile(f);
-                          }}
-                        >
-                          <downloadIcon.react tag="span" />
-                        </button>
-                      </div>
                       <fileIcon.react />
                     </div>
                     <div className="je-FileTile-label">{f.name}</div>
