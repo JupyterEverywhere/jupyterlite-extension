@@ -1,0 +1,143 @@
+# Frontend PR Environment
+# Manages PR test environments by triggering infrastructure repository workflows
+
+name: PR Environment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+env:
+  INFRA_REPO: infrastructure
+
+jobs:
+  # Parse backend version from PR description
+  parse-backend-version:
+    name: Parse Backend Version
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    outputs:
+      backend_version: ${{ steps.parse.outputs.backend_version }}
+
+    steps:
+      - name: Parse PR description for backend version
+        id: parse
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Look for "Backend version: <version>" in PR description
+          BACKEND_VERSION=$(echo "$PR_BODY" | grep -i "^Backend version:" | head -n1 | sed 's/^Backend version:[[:space:]]*//' | tr -d '\r\n')
+          BACKEND_VERSION=${BACKEND_VERSION:-latest}
+          echo "Detected backend version: $BACKEND_VERSION"
+          echo "backend_version=$BACKEND_VERSION" >> "$GITHUB_OUTPUT"
+
+  # Deploy or update PR environment
+  deploy:
+    name: Deploy Environment
+    needs: parse-backend-version
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate GitHub App token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.PR_APP_ID }}
+          private-key: ${{ secrets.PR_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ env.INFRA_REPO }}
+
+      - name: Trigger infrastructure deployment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            const frontendRepoUrl = '${{ github.event.pull_request.head.repo.clone_url }}';
+
+            const response = await github.rest.repos.createDispatchEvent({
+              owner: '${{ github.repository_owner }}',
+              repo: '${{ env.INFRA_REPO }}',
+              event_type: 'frontend-pr-deploy',
+              client_payload: {
+                pr_number: '${{ github.event.pull_request.number }}',
+                frontend_ref: '${{ github.event.pull_request.head.sha }}',
+                sharing_service_tag: '${{ needs.parse-backend-version.outputs.backend_version }}',
+                frontend_repo: frontendRepoUrl,
+                build_from_source: 'true'
+              }
+            });
+
+            console.log('Infrastructure deployment triggered successfully');
+            console.log('PR Number:', '${{ github.event.pull_request.number }}');
+            console.log('Frontend Ref:', '${{ github.event.pull_request.head.sha }}');
+            console.log('Frontend Repo:', frontendRepoUrl);
+            console.log('Backend Version:', '${{ needs.parse-backend-version.outputs.backend_version }}');
+
+      - name: Post deployment comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.pull_request.number }},
+              body: `## 🚀 PR Environment Deployment Started\n\n` +
+                `Infrastructure deployment has been triggered.\n\n` +
+                `**Backend Version:** \`${{ needs.parse-backend-version.outputs.backend_version }}\`\n\n` +
+                `**Frontend Ref:** \`${{ github.event.pull_request.head.sha }}\`\n\n` +
+                `You can monitor the deployment progress in the [infrastructure repository](https://github.com/${{ github.repository_owner }}/${{ env.INFRA_REPO }}/actions).\n\n` +
+                `---\n` +
+                `_Deployment initiated at ${new Date().toISOString()}_`
+            });
+
+  # Destroy PR environment when PR is closed
+  destroy:
+    name: Destroy Environment
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate GitHub App token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.PR_APP_ID }}
+          private-key: ${{ secrets.PR_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ env.INFRA_REPO }}
+
+      - name: Trigger infrastructure cleanup
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            const response = await github.rest.repos.createDispatchEvent({
+              owner: '${{ github.repository_owner }}',
+              repo: '${{ env.INFRA_REPO }}',
+              event_type: 'frontend-pr-destroy',
+              client_payload: {
+                pr_number: '${{ github.event.pull_request.number }}'
+              }
+            });
+
+            console.log('Infrastructure cleanup triggered successfully');
+            console.log('PR Number:', '${{ github.event.pull_request.number }}');
+
+      - name: Post cleanup comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.pull_request.number }},
+              body: `## 🗑️ PR Environment Cleanup Started\n\n` +
+                `Infrastructure cleanup has been triggered.\n\n` +
+                `Your test environment will be destroyed shortly.\n\n` +
+                `You can monitor the cleanup progress in the [infrastructure repository](https://github.com/${{ github.repository_owner }}/${{ env.INFRA_REPO }}/actions).\n\n` +
+                `---\n` +
+                `_Cleanup initiated at ${new Date().toISOString()}_`
+            });
