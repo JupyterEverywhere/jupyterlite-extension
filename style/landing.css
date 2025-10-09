@@ -280,6 +280,7 @@ body {
   line-height: 1.2;
   display: block;
   margin: 0 0 60px;
+  text-align: center;
 }
 
 .je-testimonial > figure:last-of-type {
