@@ -124,17 +124,24 @@ function LandingPage(): JSX.Element {
 
       {/* Testimonial section */}
       <section className="je-testimonial">
-        <blockquote>
-          “An effective tool to use in the classroom to teach data science and coding” - Jared Bryan
-        </blockquote>
+        <figure>
+          <blockquote>
+            “An effective tool to use in the classroom to teach data science and coding”
+          </blockquote>
+          <figcaption> - Jared Bryan</figcaption>
+        </figure>
 
-        <blockquote>
-          “I am so excited to use this in the classroom!” - Jennifer Cotellino
-        </blockquote>
+        <figure>
+          <blockquote>“I am so excited to use this in the classroom!”</blockquote>
+          <figcaption> - Jennifer Cotellino</figcaption>
+        </figure>
 
-        <blockquote>
-          “I like the shareability. So easy to share a notebook and open anywhere” - Evan Fryer
-        </blockquote>
+        <figure>
+          <blockquote>
+            “I like the shareability. So easy to share a notebook and open anywhere”
+          </blockquote>
+          <figcaption> - Evan Fryer</figcaption>
+        </figure>
       </section>
 
       <section className="je-about">
