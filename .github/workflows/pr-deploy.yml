@@ -16,6 +16,8 @@ jobs:
     name: Parse Backend Version
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       backend_version: ${{ steps.parse.outputs.backend_version }}
 
@@ -37,6 +39,9 @@ jobs:
     needs: parse-backend-version
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Generate GitHub App token
@@ -97,6 +102,9 @@ jobs:
     name: Destroy Environment
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Generate GitHub App token
