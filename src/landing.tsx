@@ -16,12 +16,6 @@ import codeSymbol from '../style/icons/landing/code.svg';
 import shareIcon from '../style/icons/landing/share.svg';
 import jupyterLogo from '../style/icons/landing/jupyter.svg';
 
-import testimonialAvatar from '../style/icons/landing/testimonial.svg';
-
-// TODO: get SVGs for these logos
-import courseKataLogo from '../static/coursekata.png';
-import skewTheScriptLogo from '../static/skewthescript.jpeg';
-
 // TODO: find a better way to handle these imports
 import '../style/landing.css';
 import '../style/base.css';
@@ -130,10 +124,16 @@ function LandingPage(): JSX.Element {
 
       {/* Testimonial section */}
       <section className="je-testimonial">
-        <img src={testimonialAvatar} alt="User avatar" className="je-avatar" />
         <blockquote>
-          “This application makes it so much easier for us to focus on the lesson and not on
-          technical issues. I have already recommended it to others.”
+          “An effective tool to use in the classroom to teach data science and coding” - Jared Bryan
+        </blockquote>
+
+        <blockquote>
+          “I am so excited to use this in the classroom!” - Jennifer Cotellino
+        </blockquote>
+
+        <blockquote>
+          “I like the shareability. So easy to share a notebook and open anywhere” - Evan Fryer
         </blockquote>
       </section>
 
@@ -146,11 +146,6 @@ function LandingPage(): JSX.Element {
           and statistics easily, fostering deeper engagement and understanding in these essential
           fields.
         </p>
-      </section>
-
-      <section className="je-partner-logos">
-        <img src={courseKataLogo} alt="CourseKata logo" />
-        <img src={skewTheScriptLogo} alt="Skew The Script logo" />
       </section>
 
       <footer className="je-footer">
