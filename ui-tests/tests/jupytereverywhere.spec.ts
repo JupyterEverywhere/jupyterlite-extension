@@ -212,7 +212,7 @@ test.describe('General', () => {
     expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('files.png');
   });
 
-  test.skip('Should open the help page', async ({ page }) => {
+  test('Should open the help page', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Help Centre').click();
     expect(await page.locator('#je-help').screenshot()).toMatchSnapshot('help.png');
   });

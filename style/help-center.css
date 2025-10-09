@@ -20,6 +20,20 @@
   font-size: calc(var(--je-scale) * 32px);
 }
 
+.je-Help h4 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 100%;
+}
+
+.je-Help ol {
+  list-style-type: lower-roman;
+}
+
+.je-Help ol > li::marker {
+  font-weight: bold;
+}
+
 .je-Help a {
   text-decoration: underline;
 }

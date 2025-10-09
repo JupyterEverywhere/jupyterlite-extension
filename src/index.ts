@@ -16,7 +16,7 @@ import routesPlugin from './routes';
 import { Commands } from './commands';
 // import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
-// import { helpPlugin } from './pages/help';
+import { helpPlugin } from './pages/help';
 import { generateDefaultNotebookName, isNotebookEmpty } from './notebook-utils';
 import {
   IViewOnlyNotebookTracker,
@@ -615,7 +615,7 @@ export default [
   routesPlugin,
   // competitions,
   customSidebar,
-  // helpPlugin,
+  helpPlugin,
   singleDocumentMode,
   placeholderPlugin,
   sessionDialogs
