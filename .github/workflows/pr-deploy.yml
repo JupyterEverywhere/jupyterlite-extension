@@ -10,6 +10,8 @@ on:
 env:
   INFRA_REPO: infrastructure
 
+permissions: {}
+
 jobs:
   # Parse backend version from PR description
   parse-backend-version:
