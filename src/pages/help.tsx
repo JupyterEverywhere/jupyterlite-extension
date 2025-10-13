@@ -89,7 +89,7 @@ export class HelpCentre extends ReactWidget {
           <a href="https://jupytereverywhere.freeflarum.com/">Community Forum</a>
           <br />
           Need to report something? Fill out{' '}
-          <a href="https://forms.gle/SAi65HfqhkSzygMr7">Google Form</a>
+          <a href="https://forms.gle/SAi65HfqhkSzygMr7">the Google Form</a>
           <br />
         </p>
       </div>
