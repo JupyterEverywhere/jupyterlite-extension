@@ -65,26 +65,26 @@ jobs:
         with:
           github-token: ${{ steps.generate-token.outputs.token }}
           script: |
-            const frontendRepoUrl = '$CLONE_URL';
+            const frontendRepoUrl = process.env.CLONE_URL;
 
             const response = await github.rest.repos.createDispatchEvent({
-              owner: '$GH_REPO_OWNER',
-              repo: '$INFRA_REPO',
+              owner: process.env.GH_REPO_OWNER,
+              repo: process.env.INFRA_REPO,
               event_type: 'frontend-pr-deploy',
               client_payload: {
-                pr_number: '$GH_EVENT_PULL_REQUEST_NUMBER',
-                frontend_ref: '$FRONTEND_REF',
-                sharing_service_tag: '$BACKEND_VERSION',
+                pr_number: process.env.GH_EVENT_PULL_REQUEST_NUMBER,
+                frontend_ref: process.env.FRONTEND_REF,
+                sharing_service_tag: process.env.BACKEND_VERSION,
                 frontend_repo: frontendRepoUrl,
                 build_from_source: 'true'
               }
             });
 
             console.log('Infrastructure deployment triggered successfully');
-            console.log('PR Number:', '$GH_EVENT_PULL_REQUEST_NUMBER');
-            console.log('Frontend Ref:', '$FRONTEND_REF');
+            console.log('PR Number:', process.env.GH_EVENT_PULL_REQUEST_NUMBER);
+            console.log('Frontend Ref:', process.env.FRONTEND_REF);
             console.log('Frontend Repo:', frontendRepoUrl);
-            console.log('Backend Version:', '$BACKEND_VERSION');
+            console.log('Backend Version:', process.env.BACKEND_VERSION);
 
       - name: Post deployment comment
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
@@ -99,12 +99,12 @@ jobs:
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: $GH_EVENT_PULL_REQUEST_NUMBER,
+              issue_number: parseInt(process.env.GH_EVENT_PULL_REQUEST_NUMBER, 10),
               body: `## 🚀 PR Environment Deployment Started\n\n` +
                 `Infrastructure deployment has been triggered.\n\n` +
-                `**Backend Version:** \`${BACKEND_VERSION}\`\n\n` +
-                `**Frontend Ref:** \`${FRONTEND_REF}\`\n\n` +
-                `You can monitor the deployment progress in the [infrastructure repository](https://github.com/${GH_REPO_OWNER}/${INFRA_REPO}/actions).\n\n` +
+                `**Backend Version:** \`${process.env.BACKEND_VERSION}\`\n\n` +
+                `**Frontend Ref:** \`${process.env.FRONTEND_REF}\`\n\n` +
+                `You can monitor the deployment progress in the [infrastructure repository](https://github.com/${process.env.GH_REPO_OWNER}/${process.env.INFRA_REPO}/actions).\n\n` +
                 `---\n` +
                 `_Deployment initiated at ${new Date().toISOString()}_`
             });
@@ -130,20 +130,24 @@ jobs:
 
       - name: Trigger infrastructure cleanup
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          GH_REPO_OWNER: ${{ github.repository_owner }}
+          INFRA_REPO: ${{ env.INFRA_REPO }}
+          GH_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
         with:
           github-token: ${{ steps.generate-token.outputs.token }}
           script: |
             const response = await github.rest.repos.createDispatchEvent({
-              owner: '${{ github.repository_owner }}',
-              repo: '${{ env.INFRA_REPO }}',
+              owner: process.env.GH_REPO_OWNER,
+              repo: process.env.INFRA_REPO,
               event_type: 'frontend-pr-destroy',
               client_payload: {
-                pr_number: '${{ github.event.pull_request.number }}'
+                pr_number: process.env.GH_EVENT_PULL_REQUEST_NUMBER
               }
             });
 
             console.log('Infrastructure cleanup triggered successfully');
-            console.log('PR Number:', '${{ github.event.pull_request.number }}');
+            console.log('PR Number:', process.env.GH_EVENT_PULL_REQUEST_NUMBER);
 
       - name: Post cleanup comment
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
@@ -156,11 +160,11 @@ jobs:
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: $GH_EVENT_PULL_REQUEST_NUMBER,
+              issue_number: parseInt(process.env.GH_EVENT_PULL_REQUEST_NUMBER, 10),
               body: `## 🗑️ PR Environment Cleanup Started\n\n` +
                 `Infrastructure cleanup has been triggered.\n\n` +
                 `Your test environment will be destroyed shortly.\n\n` +
-                `You can monitor the cleanup progress in the [infrastructure repository](https://github.com/${GH_REPO_OWNER}/${INFRA_REPO}/actions).\n\n` +
+                `You can monitor the cleanup progress in the [infrastructure repository](https://github.com/${process.env.GH_REPO_OWNER}/${process.env.INFRA_REPO}/actions).\n\n` +
                 `---\n` +
                 `_Cleanup initiated at ${new Date().toISOString()}_`
             });
