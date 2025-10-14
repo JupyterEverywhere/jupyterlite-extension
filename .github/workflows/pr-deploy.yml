@@ -33,8 +33,8 @@ jobs:
     outputs:
       backend_version: ${{ steps.parse.outputs.backend_version }}
       pr_number: ${{ steps.get-pr.outputs.pr_number }}
-      pr_sha: ${{ steps.get-pr.outputs.pr_sha }}
-      pr_clone_url: ${{ steps.get-pr.outputs.pr_clone_url }}
+      pr_sha: ${{ github.event.workflow_run.head_sha }}
+      pr_clone_url: ${{ github.event.workflow_run.head_repository.html_url }}
 
     steps:
       - name: Get PR information
@@ -44,12 +44,13 @@ jobs:
           GIT_REPO: ${{ github.repository }}
           GIT_HEAD: ${{ github.event.workflow_run.head_branch }}
         run: |
-          # Get PR information
+          # Get PR number and body. We can't use github.event.workflow_run.pull_requests
+          # because it's empty for PRs from forks. Instead, we look up the PR by branch name.
           PR_DATA=$(gh pr list \
             --repo "$GIT_REPO" \
             --state open \
             --head "$GIT_HEAD" \
-            --json number,headRefOid,headRepository,body \
+            --json number,body \
             --limit 1)
 
           # Check if PR exists
@@ -57,20 +58,14 @@ jobs:
             echo "No open PR found for this branch - this may be a push to main"
             {
               echo "pr_number="
-              echo "pr_sha="
-              echo "pr_clone_url="
               echo "pr_body="
             } >> $GITHUB_OUTPUT
           else
             # Extract PR information
             PR_NUMBER=$(echo "$PR_DATA" | jq -r '.[0].number')
-            PR_SHA=$(echo "$PR_DATA" | jq -r '.[0].headRefOid')
-            PR_CLONE_URL=$(echo "$PR_DATA" | jq -r '.[0].headRepository.url // ""')
             PR_BODY=$(echo "$PR_DATA" | jq -r '.[0].body // ""')
             {
               echo "pr_number=$PR_NUMBER"
-              echo "pr_sha=$PR_SHA"
-              echo "pr_clone_url=$PR_CLONE_URL"
               echo "pr_body<<EOF"
               echo "$PR_BODY"
               echo "EOF"
