@@ -41,12 +41,14 @@ jobs:
         id: get-pr
         env:
           GH_TOKEN: ${{ github.token }}
+          GIT_REPO: ${{ github.repository }}
+          GIT_HEAD: ${{ github.event.workflow_run.head_branch }}
         run: |
           # Get PR information
           PR_DATA=$(gh pr list \
-            --repo "${{ github.repository }}" \
+            --repo "$GIT_REPO" \
             --state open \
-            --head "${{ github.event.workflow_run.head_branch }}" \
+            --head "$GIT_HEAD" \
             --json number,headRefOid,headRepository,body \
             --limit 1)
 
