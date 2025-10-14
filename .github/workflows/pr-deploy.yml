@@ -148,16 +148,73 @@ jobs:
           INFRA_REPO: ${{ env.INFRA_REPO }}
         with:
           script: |
+            const prNumber = parseInt(process.env.GH_EVENT_PULL_REQUEST_NUMBER, 10);
+            const deploymentMarker = '<!-- pr-deployment-comment -->';
+
+            // Fetch all comments on the PR
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber
+            });
+
+            // Find all deployment comments (those containing our marker)
+            const deploymentComments = comments.data.filter(comment =>
+              comment.body && comment.body.includes(deploymentMarker)
+            );
+
+            // Build deployment history from previous comments
+            let deploymentHistory = [];
+            for (const comment of deploymentComments) {
+              // Extract timestamp and details from previous comments
+              const timestampMatch = comment.body.match(/_Deployment initiated at (.+)_/);
+              const backendMatch = comment.body.match(/\*\*Backend Version:\*\* `(.+)`/);
+              const frontendMatch = comment.body.match(/\*\*Frontend Ref:\*\* `(.+)`/);
+
+              if (timestampMatch) {
+                deploymentHistory.push({
+                  timestamp: timestampMatch[1],
+                  backend: backendMatch ? backendMatch[1] : 'unknown',
+                  frontend: frontendMatch ? frontendMatch[1].substring(0, 7) : 'unknown'
+                });
+              }
+            }
+
+            // Delete all previous deployment comments
+            for (const comment of deploymentComments) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: comment.id
+              });
+            }
+
+            // Build history section if we have previous deployments
+            let historySection = '';
+            if (deploymentHistory.length > 0) {
+              historySection = '\n\n<details>\n<summary>📜 Previous Deployments</summary>\n\n';
+              historySection += '| Timestamp | Backend | Frontend |\n';
+              historySection += '|-----------|---------|----------|\n';
+              // Show up to 10 most recent deployments
+              for (const deploy of deploymentHistory.slice(-10)) {
+                historySection += `| ${deploy.timestamp} | \`${deploy.backend}\` | \`${deploy.frontend}\` |\n`;
+              }
+              historySection += '\n</details>';
+            }
+
+            // Create new deployment comment
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: parseInt(process.env.GH_EVENT_PULL_REQUEST_NUMBER, 10),
-              body: `## 🚀 PR Environment Deployment Started\n\n` +
+              issue_number: prNumber,
+              body: `${deploymentMarker}\n` +
+                `## 🚀 PR Environment Deployment Started\n\n` +
                 `Infrastructure deployment has been triggered after all checks passed.\n\n` +
                 `**Backend Version:** \`${process.env.BACKEND_VERSION}\`\n\n` +
                 `**Frontend Ref:** \`${process.env.FRONTEND_REF}\`\n\n` +
-                `You can monitor the deployment progress in the [infrastructure repository](https://github.com/${process.env.GH_REPO_OWNER}/${process.env.INFRA_REPO}/actions).\n\n` +
-                `---\n` +
+                `You can monitor the deployment progress in the [infrastructure repository](https://github.com/${process.env.GH_REPO_OWNER}/${process.env.INFRA_REPO}/actions).` +
+                historySection +
+                `\n\n---\n` +
                 `_Deployment initiated at ${new Date().toISOString()}_`
             });
 
