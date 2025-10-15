@@ -116,8 +116,14 @@
   position: relative;
 }
 
-.je-FileTile-action {
+.je-FileMenu {
   position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+}
+
+.je-FileMenu-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
