@@ -55,9 +55,6 @@ function LandingPage(): JSX.Element {
           <h1>
             <span className="je-brand je-welcome">Welcome to</span>
             <span className="je-brand">Jupyter Everywhere</span>
-            <span className="je-brand" style={{ color: 'black' }}>
-              Beta
-            </span>
           </h1>
 
           <div className="je-buttons">
@@ -170,8 +167,8 @@ function LandingPage(): JSX.Element {
 
           <div className="je-footer-section">
             <h4>Follow us</h4>
-            <a href="https://github.com/Skew-The-Script">GitHub</a>
-            <a href="https://www.youtube.com/@skewthescript">YouTube</a>
+            <a href="https://github.com/JupyterEverywhere">GitHub</a>
+            <a href="https://www.youtube.com/@jupytereverywhere">YouTube</a>
           </div>
         </div>
       </footer>
