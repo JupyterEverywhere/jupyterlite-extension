@@ -110,7 +110,7 @@ export namespace EverywhereIcons {
     svgstr: downloadCaretSvg
   });
   export const kernelCaret = new LabIcon({
-    name: 'everywhere:kernel-caret',
+    name: 'everywhere:kernelcaret',
     svgstr: kernelCaretSvg
   });
   export const dropdownTriangle = new LabIcon({
