@@ -11,8 +11,8 @@ export async function showUploadConflictDialog(fileNames: string[]): Promise<voi
   if (fileNames.length === 1) {
     body = `A file named "${fileNames[0]}" already exists. Please choose a different file to upload, or rename the file before uploading.`;
   } else {
-    const fileList = fileNames.map(name => `• ${name}`).join('\n');
-    body = `The following files already exist:\n\n${fileList}\n\nPlease choose different files to upload, or rename the files before uploading.`;
+    const fileList = fileNames.map(name => `"${name}"`).join(', ');
+    body = `The following files already exist: ${fileList}. Please choose different files to upload, or rename the files before uploading.`;
   }
 
   await showDialog({
