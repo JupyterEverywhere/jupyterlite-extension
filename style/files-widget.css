@@ -120,7 +120,7 @@
   position: absolute;
   top: 2px;
   right: 6px;
-  z-index: 2;
+  z-index: 100;
 }
 
 .je-FileMenu-trigger {
@@ -136,6 +136,8 @@
   outline: none;
   border-radius: var(--je-round-corners-filetiles);
   transition: background 120ms ease;
+  position: relative;
+  z-index: 100;
 }
 
 .je-FileMenu-trigger:hover {
@@ -170,7 +172,7 @@
   box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
   min-width: 120px;
   overflow: hidden;
-  z-index: 3;
+  z-index: 9999;
 }
 
 .je-FileMenu-item {

@@ -10,6 +10,7 @@ import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
+import { createPortal } from 'react-dom';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -161,6 +162,7 @@ interface IFileMenuProps {
 
 function FileMenu(props: IFileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const triggerId = useId();
@@ -168,12 +170,69 @@ function FileMenu(props: IFileMenuProps) {
 
   // We'll close the menu when clicking outside the component.
   useEffect(() => {
+    if (!isOpen || !triggerRef.current) {
+      return;
+    }
+
+    const updatePosition = () => {
+      if (!triggerRef.current) {
+        return;
+      }
+
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const dropdownWidth = 120;
+      const dropdownHeight = 90;
+      const padding = 8;
+
+      const spaceAbove = triggerRect.top;
+      const spaceBelow = window.innerHeight - triggerRect.bottom;
+      const spaceRight = window.innerWidth - triggerRect.right;
+
+      let top = 0;
+      let left = 0;
+
+      // We prefer positioning above and to the right (with the ellipsis at bottom-left of the dropdown).
+      // This needs to fit in the viewport; otherwise, we try below/right, above/left, below/left.
+      // FIXME: Right now this is pretty unreadable; gotta clean it up later.
+      if (spaceAbove >= dropdownHeight + padding && spaceRight >= dropdownWidth) {
+        top = triggerRect.top - dropdownHeight - 4;
+        left = triggerRect.left;
+      } else if (spaceBelow >= dropdownHeight + padding && spaceRight >= dropdownWidth) {
+        top = triggerRect.bottom + 4;
+        left = triggerRect.left;
+      } else if (spaceAbove >= dropdownHeight + padding) {
+        top = triggerRect.top - dropdownHeight - 4;
+        left = triggerRect.right - dropdownWidth;
+      } else {
+        top = triggerRect.bottom + 4;
+        left = triggerRect.right - dropdownWidth;
+      }
+
+      setPosition({ top, left });
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!isOpen) {
       return;
     }
 
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -244,6 +303,7 @@ function FileMenu(props: IFileMenuProps) {
   return (
     <div className="je-FileMenu" ref={menuRef}>
       <button
+        ref={triggerRef}
         className="je-FileMenu-trigger"
         id={triggerId}
         aria-label={`Options for ${props.model.name}`}
