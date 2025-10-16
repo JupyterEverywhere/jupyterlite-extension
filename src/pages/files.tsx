@@ -164,6 +164,7 @@ function FileMenu(props: IFileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const triggerId = useId();
+  const menuItemsRef = useRef<HTMLButtonElement[]>([]);
 
   // We'll close the menu when clicking outside the component.
   useEffect(() => {
@@ -182,9 +183,28 @@ function FileMenu(props: IFileMenuProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setIsOpen(false);
+        return;
+      }
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const activeElement = document.activeElement;
+        const currentIndex = menuItemsRef.current.findIndex(item => item === activeElement);
+
+        let nextIndex: number;
+        if (e.key === 'ArrowDown') {
+          nextIndex = currentIndex < menuItemsRef.current.length - 1 ? currentIndex + 1 : 0;
+        } else {
+          nextIndex = currentIndex > 0 ? currentIndex - 1 : menuItemsRef.current.length - 1;
+        }
+
+        menuItemsRef.current[nextIndex]?.focus();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
+
+    // Focus the first menu item when the menu opens.
+    menuItemsRef.current[0]?.focus();
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -224,10 +244,20 @@ function FileMenu(props: IFileMenuProps) {
       </button>
       {isOpen && (
         <div className="je-FileMenu-dropdown" id={menuId} role="menu" aria-labelledby={triggerId}>
-          <button className="je-FileMenu-item" onClick={handleDownload} role="menuitem">
+          <button
+            ref={el => el && (menuItemsRef.current[0] = el)}
+            className="je-FileMenu-item"
+            onClick={handleDownload}
+            role="menuitem"
+          >
             Download
           </button>
-          <button className="je-FileMenu-item" onClick={handleDelete} role="menuitem">
+          <button
+            ref={el => el && (menuItemsRef.current[1] = el)}
+            className="je-FileMenu-item"
+            onClick={handleDelete}
+            role="menuitem"
+          >
             Delete
           </button>
         </div>
