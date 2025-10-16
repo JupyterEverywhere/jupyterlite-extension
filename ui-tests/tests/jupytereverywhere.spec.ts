@@ -408,7 +408,6 @@ test.describe('Files', () => {
     await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Download' })).toBeVisible();
     await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Delete' })).toBeVisible();
 
-    // doesn't work/// add a temporary opaque background for the screenshot
     await page.addStyleTag({
       content: '.je-FileMenu-dropdown { box-shadow: none !important; }'
     });
