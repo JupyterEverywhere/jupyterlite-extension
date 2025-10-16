@@ -405,6 +405,7 @@ test.describe('Files', () => {
     // Check that the dropdown menu is visible
     const dropdown = page.locator('.je-FileMenu-dropdown');
     await expect(dropdown).toBeVisible();
+    await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Rename' })).toBeVisible();
     await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Download' })).toBeVisible();
     await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Delete' })).toBeVisible();
 
@@ -460,6 +461,218 @@ test.describe('Files', () => {
 
     const filePath = await download.path();
     expect(filePath).not.toBeNull();
+  });
+
+  test('Should rename a file successfully', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const oldLabel = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await oldLabel.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: oldLabel });
+
+    // Click ellipsis to open menu
+    await tile.locator('.je-FileMenu-trigger').click();
+
+    // Click Rename button and fill in new name
+
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    const input = page.locator('#je-rename-input');
+    await input.fill('renamed-image');
+
+    // Click the button in the rename dialog
+    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+
+    const newLabel = page.locator('.je-FileTile-label', { hasText: 'renamed-image.jpg' });
+    await expect(newLabel).toBeVisible();
+    await expect(oldLabel).toHaveCount(0);
+  });
+
+  test('Should raise an error when renaming a file to an existing file name', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    // Upload two files
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/d-leiria.jpg');
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'd-leiria.jpg' })
+      .waitFor({ state: 'visible' });
+
+    // Try to rename first file to second file's name
+    const firstTile = page.locator('.je-FileTile', {
+      has: page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+    });
+
+    await firstTile.locator('.je-FileMenu-trigger').click();
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    const input = page.locator('#je-rename-input');
+    await input.fill('d-leiria.jpg');
+
+    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+
+    // Check that the error dialog appears
+    const errorDialog = page.locator('.jp-Dialog-content');
+    await expect(errorDialog).toBeVisible();
+    await expect(errorDialog).toContainText('File exists');
+
+    expect(await errorDialog.screenshot()).toMatchSnapshot('rename-conflict-error.png');
+  });
+
+  test('Should show error when renaming with invalid characters', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const label = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await label.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: label });
+
+    await tile.locator('.je-FileMenu-trigger').click();
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    const input = page.locator('#je-rename-input');
+    await input.fill('invalid/name');
+
+    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+
+    // Check that the error dialog appears
+    const errorDialog = page.locator('.jp-Dialog-content');
+    await expect(errorDialog).toBeVisible();
+    await expect(errorDialog).toContainText('Invalid name');
+    await expect(errorDialog).toContainText('cannot contain');
+  });
+
+  test('Should prevent changing file extension', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const label = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await label.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: label });
+
+    await tile.locator('.je-FileMenu-trigger').click();
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    const input = page.locator('#je-rename-input');
+    await input.fill('changed-extension.png');
+
+    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+
+    // Check that error dialog appears
+    const errorDialog = page.locator('.jp-Dialog-content');
+    await expect(errorDialog).toBeVisible();
+    await expect(errorDialog).toContainText('Cannot change file extension');
+    await expect(errorDialog).toContainText('Jupyter Everywhere does not support');
+  });
+
+  test('Should show conflict dialog with multiple files when uploading files with existing names', async ({
+    page
+  }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    // Upload two files
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
+      .waitFor({ state: 'visible' });
+
+    // Try to upload the same files again
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    // Check that conflict dialog appears with multiple files listed
+    const dialog = page.locator('.jp-Dialog-content');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText('Files already exist');
+    await expect(dialog).toContainText('a-image.jpg');
+    await expect(dialog).toContainText('b-dataset.csv');
+
+    expect(await dialog.screenshot()).toMatchSnapshot('upload-conflict-multiple-dialog.png');
+  });
+
+  test('Should upload non-conflicting files when some files have conflicts', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    // Upload first file
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible' });
+
+    // Try to upload the same file along with a new file
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    // First dialog: conflict notification
+    const conflictDialog = page.locator('.jp-Dialog-content');
+    await expect(conflictDialog).toBeVisible();
+    await conflictDialog.locator('button', { hasText: 'Close' }).click();
+
+    // Second dialog: asking about remaining files
+    const remainingDialog = page.locator('.jp-Dialog-content');
+    await expect(remainingDialog).toBeVisible();
+    await expect(remainingDialog).toContainText('Upload remaining files');
+    await remainingDialog.locator('button', { hasText: 'Upload' }).click();
+
+    // Check that the new file was uploaded
+    await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+  });
+
+  test('Should auto-append extension when renaming without extension', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const oldLabel = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await oldLabel.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: oldLabel });
+
+    await tile.locator('.je-FileMenu-trigger').click();
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    // Enter name without extension
+    const input = page.locator('#je-rename-input');
+    await input.fill('my-photo');
+
+    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+
+    // Check that extension was auto-appended
+    const newLabel = page.locator('.je-FileTile-label', { hasText: 'my-photo.jpg' });
+    await expect(newLabel).toBeVisible();
   });
 });
 
