@@ -10,6 +10,7 @@ import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
+import { openRenameDialog } from '../ui-components/rename-dialog';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -157,12 +158,13 @@ interface IFileMenuProps {
   model: Contents.IModel;
   onDownload: (model: Contents.IModel) => void;
   onDelete: (model: Contents.IModel) => void;
+  onRename: (model: Contents.IModel) => void;
 }
 
 function FileMenu(props: IFileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
   const triggerId = useId();
   const menuItemsRef = useRef<HTMLButtonElement[]>([]);
