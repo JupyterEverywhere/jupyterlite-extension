@@ -256,6 +256,7 @@ function FileMenu(props: IFileMenuProps) {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        triggerRef.current?.focus();
         setIsOpen(false);
         return;
       }
