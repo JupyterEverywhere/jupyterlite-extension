@@ -55,6 +55,21 @@ const isSupportedFileType = (file: File): boolean => {
 };
 
 /**
+ * A helper function to check if a file exists in the contents manager.
+ * @param contentsManager - The contents manager instance.
+ * @param path - The path to check.
+ * @returns True if the file exists, false otherwise.
+ */
+async function fileExists(contentsManager: Contents.IManager, path: string): Promise<boolean> {
+  try {
+    await contentsManager.get(path, { content: false });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
  * A React component for uploading files to the Jupyter Contents Manager.
  * It handles file selection, reading, thumbnail generation, and uploading.
  */
