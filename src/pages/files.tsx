@@ -1,6 +1,12 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
 import { ILiteRouter } from '@jupyterlite/application';
-import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
+import {
+  Dialog,
+  MainAreaWidget,
+  ReactWidget,
+  showDialog,
+  showErrorMessage
+} from '@jupyterlab/apputils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
 import { Commands } from '../commands';
@@ -11,6 +17,7 @@ import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
 import { openRenameDialog } from '../ui-components/rename-dialog';
+import { showUploadConflictDialog } from '../ui-components/upload-conflict';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -104,10 +111,54 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
         return;
       }
 
-      props.onUploadStart(supportedFiles.length);
+      // Check for conflicts before starting file uploads. We check all files first
+      // and allow the user to decide if they want to upload the non-conflicting files.
+      const conflictingFiles: string[] = [];
+      const filesToUpload: File[] = [];
+
+      for (const file of supportedFiles) {
+        const exists = await fileExists(props.contentsManager, file.name);
+
+        if (exists) {
+          conflictingFiles.push(file.name);
+        } else {
+          filesToUpload.push(file);
+        }
+      }
+
+      if (conflictingFiles.length > 0) {
+        await showUploadConflictDialog(conflictingFiles[0]);
+
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+
+        // If there are non-conflicting files after the dialog is dismissed
+        // by the user, ask if they want to upload them.
+        if (filesToUpload.length > 0) {
+          const result = await showDialog({
+            title: 'Upload remaining files',
+            body: `${conflictingFiles.length} file${conflictingFiles.length > 1 ? 's' : ''} could not be uploaded due to name conflicts. Would you like to upload the remaining ${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''}?`,
+            buttons: [Dialog.cancelButton(), Dialog.okButton({ label: 'Upload' })]
+          });
+
+          if (!result.button.accept) {
+            return;
+          }
+        } else {
+          // All files had conflicts, nothing to upload.
+          return;
+        }
+      }
+
+      if (filesToUpload.length === 0) {
+        return;
+      }
+
+      props.onUploadStart(filesToUpload.length);
 
       try {
-        for (const file of supportedFiles) {
+        for (const file of filesToUpload) {
           const content = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -132,6 +183,9 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
         }
       } finally {
         props.onUploadEnd();
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     },
     [props]
@@ -512,7 +566,6 @@ function FilesApp(props: IFilesAppProps) {
 
   /**
    * Rename handler: prompts for a new name and performs a contents rename.
-   * (Conflict handling to be added later.)
    */
   const renameFile = React.useCallback(
     async (model: Contents.IModel) => {
@@ -549,6 +602,16 @@ function FilesApp(props: IFilesAppProps) {
 
         const dirname = model.path.split('/').slice(0, -1).join('/');
         const newPath = (dirname ? `${dirname}/` : '') + finalName;
+
+        const exists = await fileExists(props.contentsManager, newPath);
+
+        if (exists && newPath !== oldPath) {
+          await showErrorMessage(
+            'File exists',
+            `A file named "${finalName}" already exists. Please choose a different name.`
+          );
+          continue;
+        }
 
         try {
           await props.contentsManager.rename(model.path, newPath);
