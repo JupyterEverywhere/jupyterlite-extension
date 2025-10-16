@@ -127,7 +127,7 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
       }
 
       if (conflictingFiles.length > 0) {
-        await showUploadConflictDialog(conflictingFiles[0]);
+        await showUploadConflictDialog(conflictingFiles);
 
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
