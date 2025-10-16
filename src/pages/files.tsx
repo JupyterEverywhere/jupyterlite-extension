@@ -7,6 +7,7 @@ import {
   showDialog,
   showErrorMessage
 } from '@jupyterlab/apputils';
+import { PathExt } from '@jupyterlab/coreutils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
 import { Commands } from '../commands';
@@ -28,7 +29,7 @@ import { showUploadConflictDialog } from '../ui-components/upload-conflict';
  * @returns A LabIcon representing the file type icon.
  */
 const getFileIcon = (fileName: string, fileType: string): LabIcon => {
-  const extension = fileName.split('.').pop()?.toLowerCase() || '';
+  const extension = PathExt.extname(fileName).toLowerCase().slice(1);
   if (fileType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
     return EverywhereIcons.imageIcon;
   }
@@ -56,7 +57,7 @@ const isSupportedFileType = (file: File): boolean => {
     'text/csv',
     'text/tab-separated-values'
   ];
-  const extension = file.name.split('.').pop()?.toLowerCase() || '';
+  const extension = PathExt.extname(file.name).toLowerCase().slice(1);
   const supportedExtensions = ['png', 'jpg', 'jpeg', 'webp', 'csv', 'tsv'];
   return supportedMimeTypes.includes(file.type) || supportedExtensions.includes(extension);
 };
@@ -545,7 +546,7 @@ function FilesApp(props: IFilesAppProps) {
    * @returns the MIME type inferred from the file extension, or an empty string if unknown.
    */
   function inferMimeFromName(name: string): string {
-    const ext = name.split('.').pop()?.toLowerCase() ?? '';
+    const ext = PathExt.extname(name).toLowerCase().slice(1);
     if (ext === 'png') {
       return 'image/png';
     }
@@ -598,8 +599,8 @@ function FilesApp(props: IFilesAppProps) {
           continue;
         }
 
-        const oldExt = oldName.includes('.') ? (oldName.split('.').pop() as string) : '';
-        const newExt = newName.includes('.') ? (newName.split('.').pop() as string) : '';
+        const oldExt = PathExt.extname(oldName);
+        const newExt = PathExt.extname(newName);
 
         if (oldExt && newExt && oldExt.toLowerCase() !== newExt.toLowerCase()) {
           await showErrorMessage(
@@ -609,10 +610,10 @@ function FilesApp(props: IFilesAppProps) {
           continue;
         }
 
-        const finalName = oldExt && !newName.includes('.') ? `${newName}.${oldExt}` : newName;
+        const finalName = oldExt && !newExt ? `${newName}${oldExt}` : newName;
 
-        const dirname = model.path.split('/').slice(0, -1).join('/');
-        const newPath = (dirname ? `${dirname}/` : '') + finalName;
+        const dirname = PathExt.dirname(model.path);
+        const newPath = dirname ? PathExt.join(dirname, finalName) : finalName;
 
         const exists = await fileExists(props.contentsManager, newPath);
 
