@@ -202,17 +202,21 @@ function FileMenu(props: IFileMenuProps) {
     <div className="je-FileMenu" ref={menuRef}>
       <button
         className="je-FileMenu-trigger"
+        id={triggerId}
         aria-label={`Options for ${props.model.name}`}
+        aria-haspopup="menu"
+        aria-controls={menuId}
+        aria-expanded={isOpen}
         onClick={handleMenuClick}
       >
         {isOpen ? <EverywhereIcons.dropdownTriangle.react /> : <EverywhereIcons.ellipsis.react />}
       </button>
       {isOpen && (
-        <div className="je-FileMenu-dropdown">
-          <button className="je-FileMenu-item" onClick={handleDownload}>
+        <div className="je-FileMenu-dropdown" id={menuId} role="menu" aria-labelledby={triggerId}>
+          <button className="je-FileMenu-item" onClick={handleDownload} role="menuitem">
             Download
           </button>
-          <button className="je-FileMenu-item" onClick={handleDelete}>
+          <button className="je-FileMenu-item" onClick={handleDelete} role="menuitem">
             Delete
           </button>
         </div>

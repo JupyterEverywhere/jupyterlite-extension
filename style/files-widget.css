@@ -228,7 +228,7 @@ for the border width of the dropdown itself. */
   border-radius: 0 0 calc(var(--je-round-corners) - 2px) calc(var(--je-round-corners) - 2px);
 }
 
-.je-FileMenu-item:hover {
+.je-FileMenu-item:hover, .je-FileMenu-item:focus {
   background: rgb(65 44 136 / 8%);
 }
 
