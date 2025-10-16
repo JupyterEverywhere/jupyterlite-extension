@@ -310,7 +310,7 @@ function FilesApp(props: IFilesAppProps) {
     window.addEventListener('resize', updateColumns);
 
     return () => window.removeEventListener('resize', updateColumns);
-  }, [listing]);
+  }, [listing?.content?.length]);
 
   const refreshListing = useCallback(async () => {
     try {

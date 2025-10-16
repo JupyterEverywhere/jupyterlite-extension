@@ -180,7 +180,7 @@ that the dropdown is not clipped by neighbouring tiles. */
   border-radius: var(--je-round-corners);
   box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
   min-width: 120px;
-  overflow: visible;
+  overflow: hidden;
   z-index: 3;
 }
 
@@ -219,18 +219,6 @@ that the dropdown is not clipped by neighbouring tiles. */
 .je-FileTile[data-col-left='true'] .je-FileMenu-dropdown {
   left: 0;
   right: auto;
-}
-
-/* The border radius is not being respected in the dropdown menu, so we work around this
-by applying the border radius to the first and last items. We subtract 2px to account
-for the border width of the dropdown itself. */
-
-.je-FileMenu-item:first-child {
-  border-radius: calc(var(--je-round-corners) - 2px) calc(var(--je-round-corners) - 2px) 0 0;
-}
-
-.je-FileMenu-item:last-child {
-  border-radius: 0 0 calc(var(--je-round-corners) - 2px) calc(var(--je-round-corners) - 2px);
 }
 
 .je-FileMenu-item:hover,
