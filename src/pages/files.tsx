@@ -464,6 +464,63 @@ function FilesApp(props: IFilesAppProps) {
     return '';
   }
 
+  /**
+   * Rename a file, with retries on failure. The user is repeatedly prompted
+   * until they either cancel or the rename succeeds. If the user enters the
+   * same name as the current name, or an empty name, the rename is cancelled.
+   * Failures also occur if the filename validation does not succeed.
+   *
+   * @param model - The file model to rename.
+   */
+  const renameFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      const oldName = model.name;
+      let attempt = oldName;
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const result = await openRenameDialog(attempt);
+
+        if (!result.button.accept) {
+          return;
+        }
+
+        const newName = (result.value?.newName ?? '').trim();
+        attempt = newName;
+
+        // If the name is unchanged or empty, this is a no-op, so we just return.
+        if (!newName || newName === oldName) {
+          return;
+        }
+
+        if (/[\\/]/.test(newName)) {
+          await showErrorMessage(
+            'Invalid name',
+            'File name cannot contain “/” or “\\”. Please choose a different name.'
+          );
+          continue;
+        }
+
+        const oldExt = oldName.includes('.') ? (oldName.split('.').pop() as string) : '';
+        const finalName = oldExt && !newName.includes('.') ? `${newName}.${oldExt}` : newName;
+
+        const dirname = model.path.split('/').slice(0, -1).join('/');
+        const newPath = (dirname ? `${dirname}/` : '') + finalName;
+
+        try {
+          await props.contentsManager.rename(model.path, newPath);
+          await refreshListing();
+          return;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          await showErrorMessage('Rename failed', `Could not rename “${oldName}”: ${msg}`);
+          continue;
+        }
+      }
+    },
+    [props.contentsManager, refreshListing]
+  );
+
   return (
     <div className="je-FilesApp">
       <FileUploader
@@ -536,7 +593,12 @@ function FilesApp(props: IFilesAppProps) {
                     data-col-left={isLeftColumn ? 'true' : 'false'}
                   >
                     <div className="je-FileTile-box je-FileTile-box-hasMenu">
-                      <FileMenu model={f} onDownload={downloadFile} onDelete={deleteFile} />
+                      <FileMenu
+                        model={f}
+                        onDownload={downloadFile}
+                        onDelete={deleteFile}
+                        onRename={renameFile}
+                      />
                       <fileIcon.react />
                     </div>
                     <div className="je-FileTile-label">{f.name}</div>
