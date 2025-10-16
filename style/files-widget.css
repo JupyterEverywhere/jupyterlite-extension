@@ -216,6 +216,11 @@ that the dropdown is not clipped by neighbouring tiles. */
   right: 0;
 }
 
+.je-FileTile[data-col-left='true'] .je-FileMenu-dropdown {
+  left: 0;
+  right: auto;
+}
+
 /* The border radius is not being respected in the dropdown menu, so we work around this
 by applying the border radius to the first and last items. We subtract 2px to account
 for the border width of the dropdown itself. */

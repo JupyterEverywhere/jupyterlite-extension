@@ -489,6 +489,7 @@ function FilesApp(props: IFilesAppProps) {
                 const row = Math.floor(totalIndex / gridColumns);
                 const col = totalIndex % gridColumns;
                 const isRightColumn = col === gridColumns - 1;
+                const isLeftColumn = col === 0;
 
                 return (
                   <div
@@ -496,6 +497,7 @@ function FilesApp(props: IFilesAppProps) {
                     key={f.path}
                     data-row={row}
                     data-col-right={isRightColumn ? 'true' : 'false'}
+                    data-col-left={isLeftColumn ? 'true' : 'false'}
                   >
                     <div className="je-FileTile-box je-FileTile-box-hasMenu">
                       <FileMenu model={f} onDownload={downloadFile} onDelete={deleteFile} />
