@@ -169,58 +169,6 @@ function FileMenu(props: IFileMenuProps) {
 
   // We'll close the menu when clicking outside the component.
   useEffect(() => {
-    if (!isOpen || !triggerRef.current) {
-      return;
-    }
-
-    const updatePosition = () => {
-      if (!triggerRef.current) {
-        return;
-      }
-
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const dropdownWidth = 120;
-      const dropdownHeight = 90;
-      const padding = 8;
-
-      const spaceAbove = triggerRect.top;
-      const spaceBelow = window.innerHeight - triggerRect.bottom;
-      const spaceRight = window.innerWidth - triggerRect.right;
-
-      let top = 0;
-      let left = 0;
-
-      // We prefer positioning above and to the right (with the ellipsis at bottom-left of the dropdown).
-      // This needs to fit in the viewport; otherwise, we try below/right, above/left, below/left.
-      // FIXME: Right now this is pretty unreadable; gotta clean it up later.
-      if (spaceAbove >= dropdownHeight + padding && spaceRight >= dropdownWidth) {
-        top = triggerRect.top - dropdownHeight - 4;
-        left = triggerRect.left;
-      } else if (spaceBelow >= dropdownHeight + padding && spaceRight >= dropdownWidth) {
-        top = triggerRect.bottom + 4;
-        left = triggerRect.left;
-      } else if (spaceAbove >= dropdownHeight + padding) {
-        top = triggerRect.top - dropdownHeight - 4;
-        left = triggerRect.right - dropdownWidth;
-      } else {
-        top = triggerRect.bottom + 4;
-        left = triggerRect.right - dropdownWidth;
-      }
-
-      setPosition({ top, left });
-    };
-
-    updatePosition();
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
-
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
     if (!isOpen) {
       return;
     }
