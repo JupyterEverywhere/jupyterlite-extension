@@ -162,6 +162,8 @@ interface IFileMenuProps {
 function FileMenu(props: IFileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+  const triggerId = useId();
 
   // We'll close the menu when clicking outside the component.
   useEffect(() => {
