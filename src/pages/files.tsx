@@ -566,6 +566,7 @@ function FilesApp(props: IFilesAppProps) {
 
   /**
    * Rename handler: prompts for a new name and performs a contents rename.
+   * We check for conflicts and prevent changing file extensions here.
    */
   const renameFile = React.useCallback(
     async (model: Contents.IModel) => {
@@ -598,6 +599,16 @@ function FilesApp(props: IFilesAppProps) {
         }
 
         const oldExt = oldName.includes('.') ? (oldName.split('.').pop() as string) : '';
+        const newExt = newName.includes('.') ? (newName.split('.').pop() as string) : '';
+
+        if (oldExt && newExt && oldExt.toLowerCase() !== newExt.toLowerCase()) {
+          await showErrorMessage(
+            'Cannot change file extension',
+            'Jupyter Everywhere does not support converting files from one format to another. To convert a file, please delete it and re-upload the converted version.'
+          );
+          continue;
+        }
+
         const finalName = oldExt && !newName.includes('.') ? `${newName}.${oldExt}` : newName;
 
         const dirname = model.path.split('/').slice(0, -1).join('/');
