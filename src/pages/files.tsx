@@ -214,6 +214,18 @@ function FileMenu(props: IFileMenuProps) {
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (!isOpen && menuRef.current) {
+      const fileTile = menuRef.current.closest('.je-FileTile');
+      if (fileTile) {
+        fileTile.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+      }
+    }
+
     setIsOpen(!isOpen);
   };
 
