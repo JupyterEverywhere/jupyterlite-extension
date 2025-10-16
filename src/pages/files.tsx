@@ -330,10 +330,41 @@ function FilesApp(props: IFilesAppProps) {
     return () => window.removeEventListener('resize', updateColumns);
   }, [listing?.content?.length]);
 
+  // Preserve file order across file renames.
+  const [orderMap, setOrderMap] = useState<Map<string, number>>(new Map());
+
   const refreshListing = useCallback(async () => {
     try {
       const dirListing = await props.contentsManager.get('', { content: true });
       setListing(dirListing);
+
+      if (dirListing.type === 'directory') {
+        const items = dirListing.content as Contents.IModel[];
+        setOrderMap(prev => {
+          const next = new Map(prev);
+
+          for (const key of Array.from(next.keys())) {
+            if (!items.some(i => i.path === key)) {
+              next.delete(key);
+            }
+          }
+
+          let max = -1;
+          for (const pos of next.values()) {
+            if (pos > max) {
+              max = pos;
+            }
+          }
+
+          items.forEach((it, idx) => {
+            if (!next.has(it.path)) {
+              next.set(it.path, ++max >= 0 ? max : idx);
+            }
+          });
+
+          return next;
+        });
+      }
     } catch (err) {
       await showErrorMessage(
         'Error loading files',
@@ -465,16 +496,13 @@ function FilesApp(props: IFilesAppProps) {
   }
 
   /**
-   * Rename a file, with retries on failure. The user is repeatedly prompted
-   * until they either cancel or the rename succeeds. If the user enters the
-   * same name as the current name, or an empty name, the rename is cancelled.
-   * Failures also occur if the filename validation does not succeed.
-   *
-   * @param model - The file model to rename.
+   * Rename handler: prompts for a new name and performs a contents rename.
+   * (Conflict handling to be added later.)
    */
   const renameFile = React.useCallback(
     async (model: Contents.IModel) => {
       const oldName = model.name;
+      const oldPath = model.path;
       let attempt = oldName;
 
       // eslint-disable-next-line no-constant-condition
@@ -488,7 +516,7 @@ function FilesApp(props: IFilesAppProps) {
         const newName = (result.value?.newName ?? '').trim();
         attempt = newName;
 
-        // If the name is unchanged or empty, this is a no-op, so we just return.
+        // No-op if unchanged or empty
         if (!newName || newName === oldName) {
           return;
         }
@@ -509,6 +537,17 @@ function FilesApp(props: IFilesAppProps) {
 
         try {
           await props.contentsManager.rename(model.path, newPath);
+
+          setOrderMap(prev => {
+            const next = new Map(prev);
+            const pos = next.get(oldPath);
+            if (typeof pos === 'number') {
+              next.delete(oldPath);
+              next.set(newPath, pos);
+            }
+            return next;
+          });
+
           await refreshListing();
           return;
         } catch (err) {
@@ -559,7 +598,21 @@ function FilesApp(props: IFilesAppProps) {
           {/* File thumbnails, and the rest of the tiles. */}
           {listing &&
             listing.type === 'directory' &&
-            (listing.content as Contents.IModel[])
+            [...(listing.content as Contents.IModel[])]
+              .sort((a, b) => {
+                const orderOfa = orderMap.get(a.path);
+                const orderOfb = orderMap.get(b.path);
+                if (orderOfa === null && orderOfb === null) {
+                  return 0;
+                }
+                if (orderOfa === null) {
+                  return 1;
+                }
+                if (orderOfb === null) {
+                  return -1;
+                }
+                return (orderOfa ?? 0) - (orderOfb ?? 0);
+              })
               .filter(f => {
                 return (
                   f.type === 'file' &&
