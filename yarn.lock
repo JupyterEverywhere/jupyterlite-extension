@@ -7051,6 +7051,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"filename-reserved-regex@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "filename-reserved-regex@npm:3.0.0"
+  checksum: 1803e19ce64d7cb88ee5a1bd3ce282470a5c263987269222426d889049fc857e302284fa71937de9582eba7a9f39539557d45e0562f2fa51cade8efc68c65dd9
+  languageName: node
+  linkType: hard
+
 "fill-range@npm:^7.1.1":
   version: 7.1.1
   resolution: "fill-range@npm:7.1.1"
@@ -8954,6 +8961,7 @@ __metadata:
     stylelint-csstree-validator: ^3.0.0
     stylelint-prettier: ^4.0.0
     typescript: 5.1.6
+    valid-filename: ^4.0.0
     yjs: ^13.5.0
   languageName: unknown
   linkType: soft
@@ -12208,6 +12216,15 @@ __metadata:
     "@types/istanbul-lib-coverage": ^2.0.1
     convert-source-map: ^2.0.0
   checksum: ded42cd535d92b7fd09a71c4c67fb067487ef5551cc227bfbf2a1f159a842e4e4acddaef20b955789b8d3b455b9779d036853f4a27ce15007f6364a4d30317ae
+  languageName: node
+  linkType: hard
+
+"valid-filename@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "valid-filename@npm:4.0.0"
+  dependencies:
+    filename-reserved-regex: ^3.0.0
+  checksum: 7486511751ade6ff9df254aec0aaad7c7461ff767e71e0bb2083f597d29c0e464919232594c53438b395e14166244dd8e69716cd661d8e7449ff0c916f9792cc
   languageName: node
   linkType: hard
 
