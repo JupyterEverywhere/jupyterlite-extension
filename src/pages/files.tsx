@@ -8,7 +8,7 @@ import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
 
 /**
