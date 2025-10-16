@@ -292,7 +292,25 @@ function FilesApp(props: IFilesAppProps) {
   const [uploadingCount, setUploadingCount] = useState(0);
   const fileUploaderRef = useRef<IFileUploaderRef>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const [gridColumns] = useState(1);
+  const [gridColumns, setGridColumns] = useState(1);
+
+  useEffect(() => {
+    if (!gridRef.current) {
+      return;
+    }
+
+    const updateColumns = () => {
+      const gridComputedStyle = window.getComputedStyle(gridRef.current!);
+      const gridTemplateColumns = gridComputedStyle.gridTemplateColumns;
+      const columns = gridTemplateColumns.split(' ').length;
+      setGridColumns(columns);
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+
+    return () => window.removeEventListener('resize', updateColumns);
+  }, [listing]);
 
   const refreshListing = useCallback(async () => {
     try {
