@@ -10,7 +10,6 @@ import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
-import { createPortal } from 'react-dom';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
