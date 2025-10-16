@@ -232,6 +232,12 @@ function FileMenu(props: IFileMenuProps) {
     setIsOpen(!isOpen);
   };
 
+  const handleRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    props.onRename(props.model);
+    setIsOpen(false);
+  };
+
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
     props.onDownload(props.model);
@@ -263,13 +269,21 @@ function FileMenu(props: IFileMenuProps) {
           <button
             ref={el => el && (menuItemsRef.current[0] = el)}
             className="je-FileMenu-item"
+            onClick={handleRename}
+            role="menuitem"
+          >
+            Rename
+          </button>
+          <button
+            ref={el => el && (menuItemsRef.current[1] = el)}
+            className="je-FileMenu-item"
             onClick={handleDownload}
             role="menuitem"
           >
             Download
           </button>
           <button
-            ref={el => el && (menuItemsRef.current[1] = el)}
+            ref={el => el && (menuItemsRef.current[2] = el)}
             className="je-FileMenu-item"
             onClick={handleDelete}
             role="menuitem"
