@@ -1,7 +1,7 @@
 {
   "jupyter.lab.shortcuts": [],
   "title": "jupytereverywhere",
-  "description": "jupytereverywhere settings.",
+  "description": "Settings for Jupyter Everywhere",
   "type": "object",
   "additionalProperties": false,
   "jupyter.lab.toolbars": {

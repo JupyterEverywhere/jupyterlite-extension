@@ -1,26 +1,26 @@
 # Integration Testing
 
-This folder contains the integration tests of the extension.
+This folder contains the integration tests for Jupyter Everywhere.
 
 They are defined using [Playwright](https://playwright.dev/docs/intro) test runner.
 
-The Playwright configuration is defined in [playwright.config.js](./playwright.config.js).
+The Playwright configuration is defined in [playwright.config.js](./playwright.config.js) file.
 
-The default configuration will produce video for failing tests and an HTML report.
+The default configuration will produce a video for failing tests and an HTML report.
 
-> There is a UI mode that you may like; see [that video](https://www.youtube.com/watch?v=jF0yA-JLQW0).
+There is a UI mode that you may like; see ["What's new in Playwright 1.32?"](https://www.youtube.com/watch?v=jF0yA-JLQW0).
 
 ## Writing tests
 
 The primary way to interact with application in tests should be by Playwright-supported
 actions on locators, such as `await page.locator('button').click()`.
 
-For Jupyter-specific actions the use of JupyterLab commands is encouraged,
-see the [list of JupyterLab commands](https://jupyterlab.readthedocs.io/en/stable/user/commands.html#commands-list).
+For Jupyter-specific actions, the use of JupyterLab commands is encouraged. You may see the
+[list of JupyterLab commands](https://jupyterlab.readthedocs.io/en/stable/user/commands.html#commands-list).
 
 ## Run the tests
 
-> All commands are assumed to be executed from the root directory
+All commands are assumed to be executed from the root directory.
 
 To run the tests, you need to:
 
@@ -30,7 +30,7 @@ To run the tests, you need to:
 pip install -e .
 ```
 
-2. Build JupyterLite application:
+2. Build the JupyterLite application:
 
 ```sh
 cd ./lite
@@ -55,6 +55,17 @@ cd ..
 cd ./ui-tests
 jlpm playwright test
 ```
+
+To run a specific portion of the tests, you may use tags to match regular expressions.
+For example, to run only the tests tagged with `sharing`:
+
+```sh
+cd ./ui-tests
+jlpm playwright test -g "sharing"
+```
+
+More options are available; see the [Playwright documentation](https://playwright.dev/docs/test-cli)
+and/or execute the `jlpm playwright test --help` command.
 
 Test results will be shown in the terminal. In case of any test failures, the test report
 will be opened in your browser at the end of the tests execution; see
