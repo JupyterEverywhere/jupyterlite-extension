@@ -312,14 +312,14 @@ test.describe('Sharing', () => {
     const cell = page.locator('.jp-Cell').last();
     await cell.getByRole('textbox').fill(code);
 
-    await page.waitForSelector('jp-KernelStatus-success');
+    await page.waitForSelector('.jp-KernelStatus-success');
 
     await Promise.all([
-      page.waitForSelector('jp-KernelStatus-spinner'),
+      page.waitForSelector('.jp-KernelStatus-spinner'),
       runCommand(page, 'notebook:run-cell')
     ]);
 
-    await page.waitForSelector('jp-KernelStatus-success');
+    await page.waitForSelector('.jp-KernelStatus-success');
 
     await mockShareNotebookServerFailure(page);
     await runCommand(page, 'jupytereverywhere:save-and-share');
@@ -641,7 +641,8 @@ test.describe('Landing page', () => {
     await page.setInputFiles('input[type="file"]', notebookPath);
 
     await expect(dialog).toBeVisible();
-    await expect(dialog.textContent).toContain('Only Python and R notebooks are supported');
+    const content = await dialog.textContent();
+    await expect(content).toContain('Only Python and R notebooks are supported');
     expect(await dialog.screenshot()).toMatchSnapshot('upload-error-dialog-not-supported.png');
   });
 
