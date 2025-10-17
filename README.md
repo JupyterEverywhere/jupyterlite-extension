@@ -23,15 +23,19 @@
 
 This extension requires `jupyterlab==4.5.0a3`, and additional dependencies listed in `lite/requirements.txt`.
 
-## Install
+## Getting started
 
-To install the extension, execute:
+### For end users
+
+No installation required! Simply visit [jupytereverywhere.github.io](https://jupytereverywhere.github.io/jupyterlite-extension/lab/index.html) to start using Jupyter Everywhere directly in your web browser.
+
+### For developers
+
+To install the extension for development purposes, execute:
 
 ```bash
 pip install jupytereverywhere
 ```
-
-## Uninstall
 
 To remove the extension, execute:
 
