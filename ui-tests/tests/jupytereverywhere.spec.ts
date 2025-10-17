@@ -308,7 +308,7 @@ test.describe('Sharing', () => {
     page
   }) => {
     await mockTokenRoute(page);
-    const code = 'for i in range(210**5): print("a" * 500)';
+    const code = 'for i in range(10**5): print("a" * 500)';
     const cell = page.locator('.jp-Cell').last();
     await cell.getByRole('textbox').fill(code);
 

@@ -312,7 +312,7 @@ export class SharingService {
       const sizeInMB = new Blob([body]).size / (1024 * 1024);
       if (sizeInMB > MAX_NOTEBOOK_SIZE_MB || response.status === CONTENT_TOO_LARGE) {
         throw new Error(
-          `The notebook appears to be too large for the backend to handle ({${sizeInMB.toFixed(2)} MB}). Details: ${response.status} ${response.statusText}`
+          `The notebook appears to be too large for the backend to handle (${sizeInMB.toFixed(2)} MB). Details: ${response.status} ${response.statusText}`
         );
       }
       throw new Error(`Server share request failed: ${response.status} ${response.statusText}`);
@@ -354,7 +354,7 @@ export class SharingService {
       const sizeInMB = new Blob([body]).size / (1024 * 1024);
       if (sizeInMB > MAX_NOTEBOOK_SIZE_MB || response.status === CONTENT_TOO_LARGE) {
         throw new Error(
-          `The notebook appears to be too large for the backend to handle ({${sizeInMB.toFixed(2)} MB}). Details: ${response.status} ${response.statusText}`
+          `The notebook appears to be too large for the backend to handle (${sizeInMB.toFixed(2)} MB). Details: ${response.status} ${response.statusText}`
         );
       }
       throw new Error(`Server update request failed: ${response.status} ${response.statusText}`);
