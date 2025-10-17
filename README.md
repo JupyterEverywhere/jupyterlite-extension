@@ -1,13 +1,13 @@
-# jupytereverywhere
+# The JupyterLite extension for Jupyter Everywhere
 
 [![Github Actions Status](https://github.com/JupyterEverywhere/jupyterlite-extension/workflows/Build/badge.svg)](https://github.com/JupyterEverywhere/jupyterlite-extension/actions/workflows/build.yml)
 [![Try](https://img.shields.io/badge/try-preview-yellow)](https://jupytereverywhere.github.io/jupyterlite-extension/lab/index.html)
 
-A Jupyter extension for k12 education
+Jupyter Everywhere is a JupyterLite application for K12 education, designed to provide a simplified and user-friendly interface for students and educators. This repository hosts the the JupyterLite extension that powers Jupyter Everywhere.
 
 ## Requirements
 
-- JupyterLab == 4.5.0a3
+This extension requires `jupyterlab==4.5.0a3`, and additional dependencies listed in `lite/requirements.txt`.
 
 ## Install
 
@@ -27,13 +27,14 @@ pip uninstall jupytereverywhere
 
 ## Contributing
 
+If you'd like to contribute to Jupyter Everywhere (thanks!), please read the following instructions to set up your development environment.
+
 ### Development install
 
-Note: You will need NodeJS to build the extension package.
+Note: You will need Node.js to build the extension package.
 
 The `jlpm` command is JupyterLab's pinned version of
-[yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
-`yarn` or `npm` in lieu of `jlpm` below.
+[yarn](https://yarnpkg.com/) that is installed with JupyterLab
 
 ```bash
 # Clone the repo to your local environment
@@ -42,7 +43,7 @@ The `jlpm` command is JupyterLab's pinned version of
 pip install -e "."
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
-# Rebuild extension Typescript source after making changes
+# Rebuild the extension TypeScript source after making changes
 jlpm build
 ```
 
@@ -65,13 +66,14 @@ jupyter lab build --minimize=False
 
 ### Linting
 
-To ensure the code follows the standard style and does not contain basic issues run:
+To ensure that the code follows the standard style and does not contain basic issues, run:
 
 ```bash
 jlpm lint
 ```
 
-You can have it run on relevant files automatically before each `git` commit by installing [`prek`](https://prek.j178.dev/):
+You can have it run on relevant files automatically before each `git` commit, by installing [`prek`](https://prek.j178.dev/),
+which will use the configuration provided in the `.pre-commit-config.yaml` file and install the necessary hooks:
 
 ```bash
 pip install prek
@@ -86,27 +88,14 @@ pip uninstall jupytereverywhere
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `jupytereverywhere` within that folder.
+folder is located. You can then remove the symlink named `jupytereverywhere` within that folder.
 
 ### Testing the extension
 
-#### Frontend tests
+This extension uses [Playwright](https://playwright.dev/docs/intro) for the integration (snapshot) tests.
 
-This extension is using [Jest](https://jestjs.io/) for JavaScript code testing.
+More information is provided within the [the `ui-tests/README.md` document](ui-tests/README.md).
 
-To execute them, execute:
+### Releases
 
-```sh
-jlpm
-jlpm test
-```
-
-#### Integration tests
-
-This extension uses [Playwright](https://playwright.dev/docs/intro) for the integration tests (aka user level tests).
-
-More information are provided within the [ui-tests](./ui-tests/README.md) README.
-
-### Packaging the extension
-
-See [RELEASE](RELEASE.md)
+See [RELEASE.md](RELEASE.md) for instructions on creating a new release of the extension and the bundled JupyterLite application.
