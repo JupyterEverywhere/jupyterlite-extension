@@ -593,7 +593,7 @@ function FilesApp(props: IFilesAppProps) {
           return;
         }
 
-        if (!isValidFilename(newName)) {
+        if (/[\\/]/.test(newName)) {
           await showErrorMessage(
             'Invalid name',
             'File name cannot contain invalid characters. Please choose a different name for your file.'
