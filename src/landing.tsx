@@ -16,9 +16,7 @@ import codeSymbol from '../style/icons/landing/code.svg';
 import shareIcon from '../style/icons/landing/share.svg';
 import jupyterLogo from '../style/icons/landing/jupyter.svg';
 
-// TODO: find a better way to handle these imports
 import '../style/landing.css';
-import '../style/base.css';
 
 /**
  * LandingPage component renders the landing page for Jupyter Everywhere.

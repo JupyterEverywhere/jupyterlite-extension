@@ -41,6 +41,15 @@ export function validateUUID(id: string): boolean {
 }
 
 /**
+ * Maximum notebook size we expect the backend to be able to handle.
+ */
+const MAX_NOTEBOOK_SIZE_MB = 10;
+/**
+ * HTTP status code for content too large.
+ */
+const CONTENT_TOO_LARGE = 413;
+
+/**
  * Validation helper for objects
  */
 export function hasRequiredKeys<T extends object, K extends keyof T>(
@@ -292,14 +301,21 @@ export class SharingService {
     const endpoint = new URL('notebooks', this.api_url);
 
     const token = await this.token;
+    const body = JSON.stringify(requestData);
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: await this.makeHeaders(token),
-      body: JSON.stringify(requestData)
+      body
     });
 
     if (!response.ok) {
-      throw new Error(`Sharing notebook failed: ${response.statusText}`);
+      const sizeInMB = new Blob([body]).size / (1000 * 1000);
+      if (sizeInMB > MAX_NOTEBOOK_SIZE_MB || response.status === CONTENT_TOO_LARGE) {
+        throw new Error(
+          `The notebook appears to be too large for the backend to handle (${sizeInMB.toFixed(2)} MB). Details: ${response.status} ${response.statusText}`
+        );
+      }
+      throw new Error(`Server share request failed: ${response.status} ${response.statusText}`);
     }
 
     const responseData = await response.json();
@@ -327,14 +343,21 @@ export class SharingService {
     const endpoint = new URL(`notebooks/${id}`, this.api_url);
 
     const token = await this.token;
+    const body = JSON.stringify(requestData);
     const response = await fetch(endpoint, {
       method: 'PUT',
       headers: await this.makeHeaders(token),
-      body: JSON.stringify(requestData)
+      body
     });
 
     if (!response.ok) {
-      throw new Error(`Updating notebook failed: ${response.statusText}`);
+      const sizeInMB = new Blob([body]).size / (1000 * 1000);
+      if (sizeInMB > MAX_NOTEBOOK_SIZE_MB || response.status === CONTENT_TOO_LARGE) {
+        throw new Error(
+          `The notebook appears to be too large for the backend to handle (${sizeInMB.toFixed(2)} MB). Details: ${response.status} ${response.statusText}`
+        );
+      }
+      throw new Error(`Server update request failed: ${response.status} ${response.statusText}`);
     }
 
     const responseData = await response.json();

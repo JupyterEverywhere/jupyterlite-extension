@@ -1,5 +1,6 @@
 import { UUID } from '@lumino/coreutils';
 import type { INotebookContent } from '@jupyterlab/nbformat';
+import { Dialog, showDialog, showErrorMessage } from '@jupyterlab/apputils';
 
 /**
  * Detects the language of the notebook from its metadata.
@@ -41,19 +42,37 @@ export async function handleNotebookUpload(file: File): Promise<void> {
     const lang = detectNotebookLanguage(parsed);
     console.log(`Detected notebook language: ${lang}`);
     if (!lang) {
-      alert('Only Python and R notebooks are supported. Please upload a valid notebook.');
+      await showErrorMessage(
+        'Please upload a valid notebook',
+        'Only Python and R notebooks are supported.'
+      );
       console.warn('Unsupported notebook language:', parsed);
       return;
     }
 
     const uploadId = UUID.uuid4();
-    localStorage.setItem(`uploaded-notebook:${uploadId}`, JSON.stringify(parsed));
+    const serialised = JSON.stringify(parsed);
+    localStorage.setItem(`uploaded-notebook:${uploadId}`, serialised);
 
     // We can now redirect to JupyterLite with this notebook.
     window.location.href = `lab/index.html?uploaded-notebook=${uploadId}`;
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    console.error('Failed to upload notebook:', errorMessage, err);
-    alert(`Failed to read this notebook: ${errorMessage}`);
+    if (err instanceof DOMException && err.name === 'QuotaExceededError') {
+      const result = await showDialog({
+        title: 'Failed to upload this notebook',
+        body: 'The local storage quota was exceeded.',
+        buttons: [
+          Dialog.okButton(),
+          Dialog.warnButton({ label: 'Clear local storage', actions: ['clear'] })
+        ]
+      });
+      if (result.button.actions.includes('clear')) {
+        localStorage.clear();
+      }
+    } else {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error('Failed to upload notebook:', errorMessage, err);
+      await showErrorMessage('Failed to upload this notebook', errorMessage);
+    }
   }
 }
