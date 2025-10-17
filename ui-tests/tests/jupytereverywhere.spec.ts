@@ -119,6 +119,8 @@ const CLOJURE_TEST_NOTEBOOK: JSONObject = {
   nbformat_minor: 5
 };
 
+const VERY_LONG_CODE = 'A'.repeat(10000000);
+
 const LARGE_TEST_NOTEBOOK: JSONObject = {
   cells: [
     {
@@ -127,7 +129,7 @@ const LARGE_TEST_NOTEBOOK: JSONObject = {
       id: 'large-test-cell',
       outputs: [],
       metadata: {},
-      source: ['A'.repeat(10000000)]
+      source: [VERY_LONG_CODE]
     }
   ],
   metadata: {
@@ -307,20 +309,14 @@ test.describe('Sharing', () => {
   test('Should display a nice error if notebook is too large and server is misbehaving', async ({
     page
   }) => {
-    test.setTimeout(240_000);
+    test.setTimeout(120_000);
     await mockTokenRoute(page);
 
     await page.waitForSelector('.jp-KernelStatus-success');
 
-    // Generate a notebook with large image in outputs
+    // Generate a large notebook
     const cell = page.locator('.jp-Cell').last();
-    await cell.getByRole('textbox').fill(LARGE_IMAGE_FAST_SCRIPT);
-    await Promise.all([
-      page.waitForSelector('.jp-KernelStatus-spinner'),
-      runCommand(page, 'notebook:run-cell')
-    ]);
-
-    await page.waitForSelector('.jp-KernelStatus-success');
+    await cell.getByRole('textbox').fill(VERY_LONG_CODE);
 
     await mockShareNotebookServerFailure(page);
     await runCommand(page, 'jupytereverywhere:save-and-share');
@@ -1302,63 +1298,3 @@ test.describe('Per cell run buttons', () => {
     await expect(runBtn).toBeVisible();
   });
 });
-
-const LARGE_IMAGE_FAST_SCRIPT = `
-import random, io, base64
-from IPython.display import display, HTML
-
-# Target notebook size ~11 MB (after base64)
-target_notebook_bytes = 11 * 1024 * 1024
-target_bmp_bytes = int(target_notebook_bytes * 3 / 4)  # ~8.25 MB
-
-channels = 3  # RGB
-header_size = 54
-
-# Compute side length
-pixel_bytes = target_bmp_bytes - header_size
-total_pixels = pixel_bytes // channels
-side = int(total_pixels ** 0.5)
-pixel_bytes = side * side * channels  # adjust exact pixel bytes
-
-# Random pixels in BGR order
-pixels = bytearray(random.getrandbits(8) for _ in range(pixel_bytes))
-
-# Rows must be multiple of 4 bytes
-row_bytes = side * 3
-padding = (4 - row_bytes % 4) % 4
-bmp_data = bytearray()
-for y in range(side):
-    start = y * row_bytes
-    end = start + row_bytes
-    bmp_data.extend(pixels[start:end])
-    bmp_data.extend(b'\x00' * padding)
-
-# BMP header
-file_size = 54 + len(bmp_data)
-bmp_header = bytearray([
-    0x42, 0x4D,
-    *file_size.to_bytes(4, 'little'),
-    0, 0, 0, 0,
-    54, 0, 0, 0,
-    40, 0, 0, 0,
-    *side.to_bytes(4, 'little'),
-    *side.to_bytes(4, 'little'),
-    1, 0,
-    24, 0,
-    0, 0, 0, 0,
-    *len(bmp_data).to_bytes(4, 'little'),
-    0x13, 0x0B, 0, 0,
-    0x13, 0x0B, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0
-])
-
-buf = io.BytesIO()
-buf.write(bmp_header)
-buf.write(bmp_data)
-buf.seek(0)
-
-b64 = base64.b64encode(buf.read()).decode('utf-8')
-data_uri = f'data:image/bmp;base64,{b64}'
-
-display(HTML(f'<img src="{data_uri}"/>'))`;
