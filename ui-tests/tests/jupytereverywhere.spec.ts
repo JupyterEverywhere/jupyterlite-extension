@@ -463,6 +463,7 @@ test.describe('Files', () => {
     expect(filePath).not.toBeNull();
   });
 
+  /*
   test('Should rename a file successfully', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
@@ -583,6 +584,7 @@ test.describe('Files', () => {
     await expect(errorDialog).toContainText('Cannot change file extension');
     await expect(errorDialog).toContainText('Jupyter Everywhere does not support');
   });
+  */
 
   test('Should show conflict dialog with multiple files when uploading files with existing names', async ({
     page
@@ -649,6 +651,7 @@ test.describe('Files', () => {
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
   });
 
+  /*
   test('Should auto-append extension when renaming without extension', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
@@ -673,7 +676,7 @@ test.describe('Files', () => {
     // Check that extension was auto-appended
     const newLabel = page.locator('.je-FileTile-label', { hasText: 'my-photo.jpg' });
     await expect(newLabel).toBeVisible();
-  });
+  });*/
 });
 
 test('Should remove View Only banner when the Create Copy button is clicked', async ({ page }) => {

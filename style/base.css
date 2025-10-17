@@ -389,14 +389,9 @@ consistent with code cells */
   --jp-inverse-layout-color3: var(--je-slate-blue);
 }
 
-.je-RenameDialog-label {
-  font-weight: 600;
-  font-size: calc(var(--je-scale) * 16px);
-  color: var(--je-slate-blue);
-}
-
-#je-rename-input {
-  width: 100%;
+input.je-FileTile-label {
+  width: 110%;
+  z-index: 1;
   box-sizing: border-box;
   padding: 8px 10px;
   border-radius: var(--je-dialog-round-corners);
@@ -411,11 +406,11 @@ consistent with code cells */
   background: #fff;
 }
 
-#je-rename-input:hover {
+input.je-FileTile-label:hover {
   border-color: color-mix(in srgb, var(--je-slate-blue) 40%, var(--je-border-color));
 }
 
-#je-rename-input:focus {
+input.je-FileTile-label:focus {
   border-color: var(--je-slate-blue);
   box-shadow: 0 0 0 3px rgb(65 44 136 / 15%);
   background: rgb(65 44 136 / 3%);
