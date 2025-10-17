@@ -693,16 +693,16 @@ function FilesApp(props: IFilesAppProps) {
               .sort((a, b) => {
                 const orderOfa = orderMap.get(a.path);
                 const orderOfb = orderMap.get(b.path);
-                if (orderOfa === null && orderOfb === null) {
+                if (orderOfa === undefined && orderOfb === undefined) {
                   return 0;
                 }
-                if (orderOfa === null) {
+                if (orderOfa === undefined) {
                   return 1;
                 }
-                if (orderOfb === null) {
+                if (orderOfb === undefined) {
                   return -1;
                 }
-                return (orderOfa ?? 0) - (orderOfb ?? 0);
+                return orderOfa - orderOfb;
               })
               .filter(f => {
                 return (
