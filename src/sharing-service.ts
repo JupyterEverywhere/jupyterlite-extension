@@ -315,7 +315,9 @@ export class SharingService {
           `The notebook appears to be too large for the backend to handle (${sizeInMB.toFixed(2)} MB). Details: ${response.status} ${response.statusText}`
         );
       }
-      throw new Error(`Server share request failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Server share request failed: ${response.status} ${response.statusText} ${sizeInMB}`
+      );
     }
 
     const responseData = await response.json();
