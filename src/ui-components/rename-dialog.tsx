@@ -1,5 +1,7 @@
 import { showDialog, Dialog } from '@jupyterlab/apputils';
 import { ReactWidget } from '@jupyterlab/apputils';
+import { PathExt } from '@jupyterlab/coreutils';
+import { Message } from '@lumino/messaging';
 import React from 'react';
 
 /**
@@ -15,6 +17,7 @@ export interface IRenameDialogValue {
  */
 class RenameDialogBody extends ReactWidget {
   private _value: string;
+  private _inputNode: HTMLInputElement | null = null;
 
   constructor(private _currentName: string) {
     super();
@@ -24,6 +27,15 @@ class RenameDialogBody extends ReactWidget {
 
   getValue(): IRenameDialogValue {
     return { newName: (this._value ?? '').trim() };
+  }
+
+  onAfterAttach(msg: Message): void {
+    super.onAfterAttach(msg);
+    if (this._inputNode) {
+      const ext = PathExt.extname(this._currentName);
+      const value = this._inputNode.value;
+      this._inputNode.setSelectionRange(0, value.length - ext.length);
+    }
   }
 
   protected render(): React.ReactElement {
@@ -36,10 +48,12 @@ class RenameDialogBody extends ReactWidget {
           id="je-rename-input"
           type="text"
           defaultValue={this._currentName}
+          ref={node => {
+            this._inputNode = node;
+          }}
           onChange={e => {
             this._value = (e.target as HTMLInputElement).value;
           }}
-          autoFocus
           style={{ width: '100%', marginTop: 8, padding: 6 }}
         />
       </div>
