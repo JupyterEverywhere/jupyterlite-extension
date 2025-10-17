@@ -166,6 +166,7 @@
         "**/*.d.ts",
         "**/__tests__",
         "ui-tests/tests/jupytereverywhere.spec.ts",
+        "babel.config.js",
         "jest.config.js",
         "style/index.js",
         "ui-tests/playwright.config.js"
