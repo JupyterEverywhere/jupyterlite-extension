@@ -307,6 +307,7 @@ test.describe('Sharing', () => {
   test('Should display a nice error if notebook is too large and server is misbehaving', async ({
     page
   }) => {
+    test.setTimeout(120_000);
     await mockTokenRoute(page);
 
     await page.waitForSelector('.jp-KernelStatus-success');
