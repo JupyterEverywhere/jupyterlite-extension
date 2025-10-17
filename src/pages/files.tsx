@@ -760,29 +760,6 @@ function FileTile(props: {
     [props.contentsManager, props.onRename]
   );
 
-  const renameMaybeSubmit = React.useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!isRenaming) {
-        return;
-      }
-      if (e.key === 'Enter') {
-        isRenaming.resolve(e.currentTarget.value);
-      } else if (e.key === 'Escape') {
-        isRenaming.reject(e);
-      }
-    },
-    [isRenaming]
-  );
-  const renameSubmit = React.useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      if (!isRenaming) {
-        return;
-      }
-      isRenaming.resolve(e.currentTarget.value);
-    },
-    [isRenaming]
-  );
-
   const { file, gridColumns, gridIndex } = props;
   const fileIcon = getFileIcon(file.name, file.mimetype ?? '');
   // The "add new" tile sits at the zeroth index, so we offset by 1.
@@ -813,21 +790,66 @@ function FileTile(props: {
         <fileIcon.react />
       </div>
       {isRenaming ? (
-        <input
-          className="je-FileTile-label"
-          defaultValue={file.name}
-          onKeyDown={renameMaybeSubmit}
-          onBlur={renameSubmit}
-          onFocus={e => {
-            const ext = PathExt.extname(file.name);
-            const value = e.target.value;
-            e.target.setSelectionRange(0, value.length - ext.length);
-          }}
-          autoFocus={true}
-        />
+        <EditableFileLabel delegate={isRenaming} name={file.name} />
       ) : (
         <div className="je-FileTile-label">{file.name}</div>
       )}
+    </div>
+  );
+}
+
+function EditableFileLabel(props: { name: string; delegate: PromiseDelegate<string> }) {
+  const { delegate, name } = props;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  const renameMaybeSubmit = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter') {
+        delegate.resolve(e.currentTarget.textContent!);
+      } else if (e.key === 'Escape') {
+        delegate.reject(e);
+      }
+    },
+    [delegate]
+  );
+  const renameSubmit = React.useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      delegate.resolve(e.currentTarget.textContent!);
+    },
+    [delegate]
+  );
+
+  return (
+    <div
+      contentEditable={true}
+      className="je-FileTile-label je-FileTile-label-rename"
+      onKeyDown={renameMaybeSubmit}
+      onBlur={renameSubmit}
+      onFocus={e => {
+        const ext = PathExt.extname(name);
+        const value = e.target.textContent!;
+
+        const selection = window.getSelection();
+        if (!selection) {
+          return;
+        }
+        const range = document.createRange();
+
+        const textNode = e.target.firstChild!;
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, value.length - ext.length);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }}
+      tabIndex={0}
+      ref={ref}
+      role="textbox"
+    >
+      {name}
     </div>
   );
 }

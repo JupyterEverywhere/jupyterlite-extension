@@ -389,7 +389,7 @@ consistent with code cells */
   --jp-inverse-layout-color3: var(--je-slate-blue);
 }
 
-input.je-FileTile-label {
+.je-FileTile-label-rename {
   width: 110%;
   z-index: 1;
   box-sizing: border-box;
@@ -406,11 +406,11 @@ input.je-FileTile-label {
   background: #fff;
 }
 
-input.je-FileTile-label:hover {
+.je-FileTile-label-rename:hover {
   border-color: color-mix(in srgb, var(--je-slate-blue) 40%, var(--je-border-color));
 }
 
-input.je-FileTile-label:focus {
+.je-FileTile-label-rename:focus {
   border-color: var(--je-slate-blue);
   box-shadow: 0 0 0 3px rgb(65 44 136 / 15%);
   background: rgb(65 44 136 / 3%);
