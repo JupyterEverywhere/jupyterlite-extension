@@ -644,6 +644,8 @@ function FilesApp(props: IFilesAppProps) {
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           await showErrorMessage('Rename failed', `Could not rename “${oldName}”: ${msg}`);
+          // The loop will continue to allow the user to try again; the user may click the
+          // "Cancel" button to exit at any point on the "Rename file" dialog.
           continue;
         }
       }
