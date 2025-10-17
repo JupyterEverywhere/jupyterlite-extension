@@ -16,7 +16,6 @@ import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
-import isValidFilename from 'valid-filename';
 import { LabIcon } from '@jupyterlab/ui-components';
 import { openRenameDialog } from '../ui-components/rename-dialog';
 import { showUploadConflictDialog } from '../ui-components/upload-conflict';
