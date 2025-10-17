@@ -132,3 +132,12 @@ More information is provided within the [the `ui-tests/README.md` document](ui-t
 ### Releases
 
 See [RELEASE.md](RELEASE.md) for instructions on creating a new release of the extension and the bundled JupyterLite application.
+
+## Acknowledgments
+
+Jupyter Everywhere is built on the powerful foundation of [the Jupyter ecosystem](https://jupyter.org/), particularly, [JupyterLite](https://jupyterlite.readthedocs.io/), [JupyterLab](https://jupyterlab.readthedocs.io/), the [Pyodide](https://pyodide.org/) and the [Xeus](https://github.com/jupyter-xeus/xeus) projects, and the broader scientific Python community. We're grateful to the maintainers and contributors of these projects who make educational computing accessible to everyone.
+
+Work on Jupyter Everywhere has been made possible by the generous support of:
+
+- [Skew The Script](https://skewthescript.org/), for supporting educational technology initiatives in the K-12 space
+- [CourseKata](https://coursekata.org/), for advancing data science education through open source software
