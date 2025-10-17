@@ -18,6 +18,21 @@
 
 ---
 
+## Key features
+
+- **In-browser computing**: runs entirely in web browsers using WebAssembly; no installation required on any device or operating system
+- **Multi-language support**: built-in Python (via [Pyodide](https://pyodide.org/)) and R (via [xeus-r](https://github.com/jupyter-xeus/xeus-r)) kernel support
+- **Multi-device access**: access, create copies of, and edit notebooks from any device right in your web browser (all major browsers are supported)
+
+- **K12-focused design**: educational terminology and simplified interface for newcomers to programming and notebooks with a classroom-friendly, accessible design
+- **Single-document interface**: simplified workspace focused on one notebook at a time, reducing distractions and complexity offered by traditional Jupyter
+- **Instant sharing**: one-click notebook sharing with permanent links, eliminating the need for user accounts
+- **View-only sharing**: share read-only notebooks, that can be copied for editing
+- **Flexible export options**: download notebooks as `.ipynb` files or as PDF documents
+- **Auto-save functionality**: automatic cloud synchronisation with manual save reminders
+
+- **Data files**: need to work with files in your notebooks? Upload and download data files within the application via a simple grid view
+- **Pre-installed packages**: popular data science and visualisation libraries such as `numpy`, `pandas`, `matplotlib`, and `seaborn`, and R packages like `ggplot2` and `dplyr` are ready to use
 
 ## Requirements
 
