@@ -11,8 +11,8 @@ git push vX.Y.Z
 ```
 
 3. Create a new release on GitHub, using the tag created in the previous step. This will trigger the `.github/workflows/cd.yml`
-workflow, which will build the extension, install it, install JupyterLite, build the JupyterLite static assets, and create
-a tarball with the resulting files. The tarball will be attached to the GitHub Release.
+   workflow, which will build the extension, install it, install JupyterLite, build the JupyterLite static assets, and create
+   a tarball with the resulting files. The tarball will be attached to the GitHub Release.
 
 4. You may verify that the attached tarball contains the expected files, and proceed to deploy it with the sharing service
-in [the `jupytereverywhere/infrastructure` repository](https://github.com/JupyterEverywhere/infrastructure).
+   in [the `jupytereverywhere/infrastructure` repository](https://github.com/JupyterEverywhere/infrastructure).
