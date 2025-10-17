@@ -119,6 +119,34 @@ const CLOJURE_TEST_NOTEBOOK: JSONObject = {
   nbformat_minor: 5
 };
 
+const LARGE_TEST_NOTEBOOK: JSONObject = {
+  cells: [
+    {
+      cell_type: 'code',
+      execution_count: null,
+      id: 'large-test-cell',
+      outputs: [],
+      metadata: {},
+      source: ['A'.repeat(10000000)]
+    }
+  ],
+  metadata: {
+    kernelspec: {
+      display_name: 'R (xr)',
+      language: 'R',
+      name: 'xr'
+    },
+    language_info: {
+      codemirror_mode: 'r',
+      file_extension: '.r',
+      mimetype: 'text/x-r-source',
+      name: 'R'
+    }
+  },
+  nbformat: 4,
+  nbformat_minor: 5
+};
+
 async function mockTokenRoute(page: Page) {
   await page.route('**/api/v1/auth/issue', async route => {
     const json = { token: 'test-token' };
@@ -145,6 +173,18 @@ async function mockShareNotebookResponse(page: Page, notebookId: string) {
       notebook: { id: notebookId, readable_id: null }
     };
     await route.fulfill({ json });
+  });
+}
+
+async function mockShareNotebookTooLarge(page: Page) {
+  await page.route('**/api/v1/notebooks', async route => {
+    await route.fulfill({ status: 413, body: 'This is too large' });
+  });
+}
+
+async function mockShareNotebookServerFailure(page: Page) {
+  await page.route('**/api/v1/notebooks', async route => {
+    await route.fulfill({ status: 500 });
   });
 }
 
@@ -254,6 +294,39 @@ test.describe('Sharing', () => {
     const dialog = page.locator('.jp-Dialog-content');
     await expect(dialog).toBeVisible();
     expect(await dialog.screenshot()).toMatchSnapshot('share-dialog.png');
+  });
+
+  test('Should display a nice error if notebook server rejects as too large', async ({ page }) => {
+    await mockTokenRoute(page);
+    await mockShareNotebookTooLarge(page);
+    await runCommand(page, 'jupytereverywhere:save-and-share');
+    const dialog = page.locator('.jp-Dialog-content');
+    expect(await dialog.screenshot()).toMatchSnapshot('share-dialog-failed-server-413.png');
+  });
+
+  test('Should display a nice error if notebook is too large and server is misbehaving', async ({
+    page
+  }) => {
+    await mockTokenRoute(page);
+    const code = 'for i in range(210**5): print("a" * 500)';
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(code);
+
+    await page.waitForSelector('jp-KernelStatus-success');
+
+    await Promise.all([
+      page.waitForSelector('jp-KernelStatus-spinner'),
+      runCommand(page, 'notebook:run-cell')
+    ]);
+
+    await page.waitForSelector('jp-KernelStatus-success');
+
+    await mockShareNotebookServerFailure(page);
+    await runCommand(page, 'jupytereverywhere:save-and-share');
+    const dialog = page.locator('.jp-Dialog-content');
+    expect(await dialog.screenshot()).toMatchSnapshot(
+      'share-dialog-failed-server-unkown-but-large.png'
+    );
   });
 
   test('Clicking the Save button should trigger share dialog in editable notebook', async ({
@@ -559,16 +632,30 @@ test.describe('Landing page', () => {
     await page.waitForSelector('.jp-NotebookPanel');
   });
 
-  test('Uploading an unsupported notebook shows an error alert', async ({ page }) => {
+  test('Uploading an unsupported notebook shows an error dialog', async ({ page }) => {
     await page.goto('index.html');
 
     const notebookPath = await createTempNotebookFile(CLOJURE_TEST_NOTEBOOK, 'clojure-test.ipynb');
 
-    page.on('dialog', async dialog => {
-      expect(dialog.message()).toContain('Only Python and R notebooks are supported');
-    });
-
+    const dialog = page.locator('.jp-Dialog-content');
     await page.setInputFiles('input[type="file"]', notebookPath);
+
+    await expect(dialog).toBeVisible();
+    await expect(dialog.textContent).toContain('Only Python and R notebooks are supported');
+    expect(await dialog.screenshot()).toMatchSnapshot('upload-error-dialog-not-supported.png');
+  });
+
+  test('Uploading a notebook larger than local storage can handle shows a nice dialog', async ({
+    page
+  }) => {
+    await page.goto('index.html');
+
+    const notebookPath = await createTempNotebookFile(LARGE_TEST_NOTEBOOK, 'large_test.ipynb');
+
+    const dialog = page.locator('.jp-Dialog-content');
+    await page.setInputFiles('input[type="file"]', notebookPath);
+
+    expect(await dialog.screenshot()).toMatchSnapshot('upload-error-dialog-notebook-too-large.png');
   });
 });
 
