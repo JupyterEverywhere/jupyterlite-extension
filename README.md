@@ -71,11 +71,11 @@ To ensure the code follows the standard style and does not contain basic issues 
 jlpm lint
 ```
 
-You can have it run on relevant files automatically before each `git` commit by installing [`pre-commit`](https://pre-commit.com/):
+You can have it run on relevant files automatically before each `git` commit by installing [`prek`](https://prek.j178.dev/):
 
 ```bash
-pip install pre-commit
-pre-commit install
+pip install prek
+prek install
 ```
 
 ### Development uninstall
