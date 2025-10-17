@@ -1,5 +1,5 @@
 | <img src="style/icons/logo.svg" alt="Jupyter Everywhere Logo" width="120" height="120"> | # Jupyter Everywhere<br><br>## A JupyterLite extension for K-12 education<br><br>Jupyter Everywhere is a notebooks-based application for K-12 education, designed to provide a simplified and user-friendly interface for students and educators. The platform runs entirely in web browsers without requiring any installation, making computational education accessible to students and teachers across all devices and operating systems.<br><br>This repository hosts the source code for the JupyterLite extension that powers Jupyter Everywhere. |
-|---|---|
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 <div align="center">
 
