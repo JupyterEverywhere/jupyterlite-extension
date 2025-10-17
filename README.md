@@ -1,6 +1,6 @@
 <table border="0">
   <tr>
-    <td width="120" align="center" valign="top" style="padding-right: 10px;">
+    <td width="120" align="center" valign="middle" style="padding-right: 10px;">
       <img src="style/icons/logo.svg" alt="Jupyter Everywhere Logo" width="120" height="120">
     </td>
     <td valign="top">
