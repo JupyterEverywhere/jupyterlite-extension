@@ -34,7 +34,7 @@ fields = ["description", "authors", "urls", "keywords"]
 
 [tool.hatch.build.targets.sdist]
 artifacts = ["jupytereverywhere/labextension"]
-exclude = [".github", "binder"]
+exclude = [".github"]
 
 [tool.hatch.build.targets.wheel.shared-data]
 "jupytereverywhere/labextension" = "share/jupyter/labextensions/jupytereverywhere"
