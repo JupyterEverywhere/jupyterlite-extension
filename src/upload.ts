@@ -62,7 +62,7 @@ export async function handleNotebookUpload(file: File): Promise<void> {
         title: 'Failed to upload this notebook',
         body: 'The local storage quota was exceeded.',
         buttons: [
-          Dialog.okButton({ label: 'Ok' }),
+          Dialog.okButton(),
           Dialog.warnButton({ label: 'Clear local storage', actions: ['clear'] })
         ]
       });
