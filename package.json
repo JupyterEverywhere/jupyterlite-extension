@@ -89,8 +89,7 @@
         "@lumino/widgets": "^2.7.1",
         "jspdf": "^3.0.2",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "valid-filename": "^4.0.0"
+        "react-dom": "^18.2.0"
     },
     "resolutions": {
         "@jupyterlab/application": "^4.5.0-alpha.3",
