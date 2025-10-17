@@ -60,6 +60,7 @@ export async function openRenameDialog(
     title: 'Rename file',
     body,
     buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Rename' })],
+    focusNodeSelector: 'input',
     defaultButton: 1
   });
 }
