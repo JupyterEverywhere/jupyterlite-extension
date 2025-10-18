@@ -83,6 +83,34 @@
   word-break: break-word;
 }
 
+.je-FileTile-label-rename {
+  width: 100%;
+  z-index: 1;
+  box-sizing: content-box;
+  padding: 8px 10px;
+
+  /* 8px of padding + 2px of border */
+  margin-top: -10px;
+  border-radius: var(--je-dialog-round-corners);
+  border: 2px solid var(--je-border-color);
+  outline: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+  background: #fff;
+}
+
+.je-FileTile-label-rename:hover {
+  border-color: color-mix(in srgb, var(--je-slate-blue) 40%, var(--je-border-color));
+}
+
+.je-FileTile-label-rename:focus {
+  border-color: var(--je-slate-blue);
+  box-shadow: 0 0 0 3px rgb(65 44 136 / 15%);
+  background: rgb(65 44 136 / 3%);
+}
+
 .je-FileTile-spinner {
   width: 20px;
   height: 20px;
