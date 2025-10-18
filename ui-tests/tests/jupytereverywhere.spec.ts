@@ -26,6 +26,12 @@ async function createTempNotebookFile(notebook: JSONObject, filename: string): P
   return tempPath;
 }
 
+const DIALOG_HIDE_BACKGROUND = `
+.jp-Dialog {
+  clip-path: none!important;
+  background: white!important
+}`;
+
 const PYTHON_TEST_NOTEBOOK: JSONObject = {
   cells: [
     {
@@ -303,7 +309,8 @@ test.describe('Sharing', () => {
     await mockShareNotebookTooLarge(page);
     await runCommand(page, 'jupytereverywhere:save-and-share');
     const dialog = page.locator('.jp-Dialog-content');
-    expect(await dialog.screenshot()).toMatchSnapshot('share-dialog-failed-server-413.png');
+    const screenshot = await dialog.screenshot({ style: DIALOG_HIDE_BACKGROUND });
+    expect(screenshot).toMatchSnapshot('share-dialog-failed-server-413.png');
   });
 
   test('Should display a nice error if notebook is too large and server is misbehaving', async ({
@@ -321,9 +328,8 @@ test.describe('Sharing', () => {
     await mockShareNotebookServerFailure(page);
     await runCommand(page, 'jupytereverywhere:save-and-share');
     const dialog = page.locator('.jp-Dialog-content');
-    expect(await dialog.screenshot()).toMatchSnapshot(
-      'share-dialog-failed-server-unkown-but-large.png'
-    );
+    const screenshot = await dialog.screenshot({ style: DIALOG_HIDE_BACKGROUND });
+    expect(screenshot).toMatchSnapshot('share-dialog-failed-server-unkown-but-large.png');
   });
 
   test('Clicking the Save button should trigger share dialog in editable notebook', async ({
