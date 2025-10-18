@@ -1,4 +1,7 @@
 @import url('./base.css');
+@import url('@jupyterlab/apputils/style/dialog.css');
+@import url('@jupyterlab/application/style/buttons.css');
+@import url('@jupyterlab/ui-components/style/styling.css');
 
 html,
 body {
@@ -7,6 +10,15 @@ body {
   height: 100%;
   overflow-x: hidden;
   scroll-behavior: smooth;
+}
+
+/* Include minimal required variables for dialog without including a full lab theme */
+.jp-Dialog {
+  --jp-layout-color1: white;
+  --jp-ui-font-color1: rgb(0 0 0 / 87%);
+  --jp-dialog-background: rgb(0 0 0 / 25%);
+
+  clip-path: none !important;
 }
 
 /* Overall style that's applied to the entire page, and overridden elsewhere. */
