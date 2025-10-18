@@ -808,6 +808,8 @@ function EditableFileLabel(props: { name: string; delegate: PromiseDelegate<stri
   const renameMaybeSubmit = React.useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
         delegate.resolve(e.currentTarget.textContent!);
       } else if (e.key === 'Escape') {
         delegate.reject(e);
