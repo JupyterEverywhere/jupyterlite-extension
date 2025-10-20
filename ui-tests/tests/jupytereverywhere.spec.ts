@@ -641,7 +641,7 @@ test.describe('Files', () => {
     await errorDialog.press('Escape');
 
     // The input should still contain the duplicate name, allowing the user to iterate on it
-    expect(input.textContent).toBe('d-leiria.jpg');
+    expect(await input.textContent()).toBe('d-leiria.jpg');
   });
 
   for (const testCase of renameConfirmationMethods) {
@@ -681,7 +681,7 @@ test.describe('Files', () => {
       await errorDialog.press('Escape');
 
       // The input should still contain the invalid name, allowing the user to iterate on it
-      expect(input.textContent).toBe('invalid/name');
+      expect(await input.textContent()).toBe('invalid/name');
     });
   }
 
