@@ -670,6 +670,12 @@ test.describe('Files', () => {
       await expect(errorDialog).toBeVisible();
       await expect(errorDialog).toContainText('Invalid name');
       await expect(errorDialog).toContainText('cannot contain');
+
+      // Close dialog
+      await errorDialog.press('Escape');
+
+      // The input should still contain the invalid name, allowing the user to iterate on it
+      expect(input.textContent).toBe('invalid/name');
     });
   }
 
