@@ -56,7 +56,7 @@ This extension requires `jupyterlab==4.5.0a3`, and additional dependencies liste
 
 ### For end users
 
-No installation required! Simply visit [jupytereverywhere.github.io](https://jupytereverywhere.github.io/jupyterlite-extension/lab/index.html) to start using Jupyter Everywhere directly in your web browser.
+No installation required! Simply visit [https://jupytereverywhere.org](https://jupytereverywhere.org) to start using Jupyter Everywhere directly in your web browser.
 
 ### For developers
 
