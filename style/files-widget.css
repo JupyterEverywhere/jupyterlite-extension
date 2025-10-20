@@ -13,6 +13,7 @@
   flex-direction: column;
   padding: 16px;
   gap: 16px;
+  overflow: hidden;
 }
 
 .je-FilesApp-content {
