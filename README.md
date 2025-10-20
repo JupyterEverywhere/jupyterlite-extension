@@ -56,21 +56,11 @@ This extension requires `jupyterlab==4.5.0a3`, and additional dependencies liste
 
 ### For end users
 
-No installation required! Simply visit [https://jupytereverywhere.org](https://jupytereverywhere.org) to start using Jupyter Everywhere directly in your web browser.
+No installation is required! Simply visit [https://jupytereverywhere.org](https://jupytereverywhere.org) to start using Jupyter Everywhere directly in your web browser.
 
 ### For developers
 
-To install the extension for development purposes, execute:
-
-```bash
-pip install jupytereverywhere
-```
-
-To remove the extension, execute:
-
-```bash
-pip uninstall jupytereverywhere
-```
+To install the extension for development purposes, please follow the steps outlined in the "Development install" section below.
 
 ## Contributing
 
@@ -80,8 +70,7 @@ If you'd like to contribute to Jupyter Everywhere (thanks!), please read the fol
 
 Note: You will need Node.js to build the extension package.
 
-The `jlpm` command is JupyterLab's pinned version of
-[yarn](https://yarnpkg.com/) that is installed with JupyterLab
+The `jlpm` command is provided by JupyterLab's pinned version of [`yarn`](https://yarnpkg.com/) that is installed with JupyterLab.
 
 ```bash
 # Clone the repo to your local environment
@@ -109,6 +98,19 @@ By default, the `jlpm build` command generates the source maps for this extensio
 
 ```bash
 jupyter lab build --minimize=False
+```
+
+To build the JupyterLite application after the extension has been installed into the environment, you can run the following commands from the root of this repository:
+
+```bash
+pip install -r lite/requirements.txt
+jlpm build:all
+```
+
+which will install the necessary dependencies, install the extension into JupyterLite, and build the JupyterLite static assets. You can then serve the built JupyterLite application locally with a simple HTTP server, for example:
+
+```bash
+python -m http.server --directory dist 3000
 ```
 
 ### Linting
