@@ -14,19 +14,16 @@
 
 <div align="center">
 
-[![Build Status]][build-link]
-[![License]][license-link]
-[![Try Jupyter Everywhere]][jupytereverywhere-link]
+[![Build Status]][Link to builds]
+[![License]][License file]
+[![Try Jupyter Everywhere]][JupyterEverywhere]
 
 [Build Status]: https://img.shields.io/github/actions/workflow/status/JupyterEverywhere/jupyterlite-extension/build.yml?branch=main&logo=github&label=build
 [License]: https://img.shields.io/badge/license-BSD--3--Clause-blue.svg?logo=opensourceinitiative&logoColor=white
-
-<!-- TODO: replace with main repo link before merge -->
-
-[Try Jupyter Everywhere]: https://raw.githubusercontent.com/agriyakhetarpal/jupytereverywhere-jupyterlite-extension/refs/heads/cleanups-and-readme/static/badge.svg
-[build-link]: https://github.com/JupyterEverywhere/jupyterlite-extension/actions/workflows/build.yml
-[license-link]: https://github.com/JupyterEverywhere/jupyterlite-extension/blob/main/LICENSE
-[jupytereverywhere-link]: https://jupytereverywhere.org
+[Try Jupyter Everywhere]: https://raw.githubusercontent.com/JupyterEverywhere/jupyterlite-extension/refs/heads/main/static/badge.svg
+[Link to builds]: https://github.com/JupyterEverywhere/jupyterlite-extension/actions/workflows/build.yml
+[License file]: https://github.com/JupyterEverywhere/jupyterlite-extension/blob/main/LICENSE
+[JupyterEverywhere]: https://jupytereverywhere.org
 
 </div>
 
