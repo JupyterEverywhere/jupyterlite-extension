@@ -17,8 +17,8 @@ import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
 import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
-import { openRenameDialog } from '../ui-components/rename-dialog';
 import { showUploadConflictDialog } from '../ui-components/upload-conflict';
+import { PromiseDelegate } from '@lumino/coreutils';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
@@ -368,6 +368,31 @@ function FileMenu(props: IFileMenuProps) {
 }
 
 /**
+ * Infer the MIME type from a file name.
+ * @param name - file name
+ * @returns the MIME type inferred from the file extension, or an empty string if unknown.
+ */
+function inferMimeFromName(name: string): string {
+  const ext = PathExt.extname(name).toLowerCase().slice(1);
+  if (ext === 'png') {
+    return 'image/png';
+  }
+  if (ext === 'jpg' || ext === 'jpeg') {
+    return 'image/jpeg';
+  }
+  if (ext === 'webp') {
+    return 'image/webp';
+  }
+  if (ext === 'csv') {
+    return 'text/csv';
+  }
+  if (ext === 'tsv') {
+    return 'text/tab-separated-values';
+  }
+  return '';
+}
+
+/**
  * The main Files page component. It manages the state of uploaded files,
  * handles file uploads, and renders the file thumbnails.
  */
@@ -483,174 +508,21 @@ function FilesApp(props: IFilesAppProps) {
     return () => window.removeEventListener('beforeunload', handler);
   }, [hasAnyFileBeenUploaded]);
 
-  const downloadFile = React.useCallback(
-    async (model: Contents.IModel) => {
-      try {
-        const fetched = await props.contentsManager.get(model.path, { content: true });
-        if (fetched.type !== 'file') {
-          return;
+  const onRename = React.useCallback(
+    async (change: IRenameChange) => {
+      setOrderMap(prev => {
+        const next = new Map(prev);
+        const pos = next.get(change.oldPath);
+        if (typeof pos === 'number') {
+          next.delete(change.oldPath);
+          next.set(change.newPath, pos);
         }
+        return next;
+      });
 
-        const fmt = (fetched.format ?? 'text') as 'text' | 'base64';
-        const mime = fetched.mimetype ?? inferMimeFromName(model.name);
-
-        let blob: Blob;
-        if (fmt === 'base64') {
-          const b64 = String(fetched.content ?? '');
-          const bytes = atob(b64);
-          const buf = new Uint8Array(bytes.length);
-          for (let i = 0; i < bytes.length; i++) {
-            buf[i] = bytes.charCodeAt(i);
-          }
-          blob = new Blob([buf], { type: mime });
-        } else {
-          blob = new Blob([String(fetched.content ?? '')], { type: mime || 'text/plain' });
-        }
-
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = model.name;
-        document.body.appendChild(a);
-        a.click();
-        requestAnimationFrame(() => {
-          URL.revokeObjectURL(a.href);
-          a.remove();
-        });
-      } catch (err) {
-        await showErrorMessage(
-          'Download failed',
-          `Could not download ${model.name}: ${err instanceof Error ? err.message : String(err)}`
-        );
-      }
+      await refreshListing();
     },
-    [props.contentsManager]
-  );
-
-  const deleteFile = React.useCallback(
-    async (model: Contents.IModel) => {
-      try {
-        await props.contentsManager.delete(model.path);
-        await refreshListing();
-      } catch (err) {
-        await showErrorMessage(
-          'Delete failed',
-          `Could not delete ${model.name}: ${err instanceof Error ? err.message : String(err)}`
-        );
-      }
-    },
-    [props.contentsManager, refreshListing]
-  );
-
-  /**
-   * Infer the MIME type from a file name.
-   * @param name - file name
-   * @returns the MIME type inferred from the file extension, or an empty string if unknown.
-   */
-  function inferMimeFromName(name: string): string {
-    const ext = PathExt.extname(name).toLowerCase().slice(1);
-    if (ext === 'png') {
-      return 'image/png';
-    }
-    if (ext === 'jpg' || ext === 'jpeg') {
-      return 'image/jpeg';
-    }
-    if (ext === 'webp') {
-      return 'image/webp';
-    }
-    if (ext === 'csv') {
-      return 'text/csv';
-    }
-    if (ext === 'tsv') {
-      return 'text/tab-separated-values';
-    }
-    return '';
-  }
-
-  /**
-   * Rename handler: prompts for a new name and performs a contents rename.
-   * We check for conflicts and prevent changing file extensions here.
-   */
-  const renameFile = React.useCallback(
-    async (model: Contents.IModel) => {
-      const oldName = model.name;
-      const oldPath = model.path;
-      let attempt = oldName;
-
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const result = await openRenameDialog(attempt);
-
-        if (!result.button.accept) {
-          return;
-        }
-
-        const newName = (result.value?.newName ?? '').trim();
-        attempt = newName;
-
-        // No-op if unchanged or empty
-        if (!newName || newName === oldName) {
-          return;
-        }
-
-        if (/[\\/]/.test(newName)) {
-          await showErrorMessage(
-            'Invalid name',
-            'File name cannot contain invalid characters. Please choose a different name for your file.'
-          );
-          continue;
-        }
-
-        const oldExt = PathExt.extname(oldName);
-        const newExt = PathExt.extname(newName);
-
-        if (oldExt && newExt && oldExt.toLowerCase() !== newExt.toLowerCase()) {
-          await showErrorMessage(
-            'Cannot change file extension',
-            'Jupyter Everywhere does not support converting files from one format to another. To convert a file, please delete it and re-upload the converted version.'
-          );
-          continue;
-        }
-
-        const finalName = oldExt && !newExt ? `${newName}${oldExt}` : newName;
-
-        const dirname = PathExt.dirname(model.path);
-        const newPath = dirname ? PathExt.join(dirname, finalName) : finalName;
-
-        const exists = await fileExists(props.contentsManager, newPath);
-
-        if (exists && newPath !== oldPath) {
-          await showErrorMessage(
-            'File exists',
-            `A file named "${finalName}" already exists. Please choose a different name.`
-          );
-          continue;
-        }
-
-        try {
-          await props.contentsManager.rename(model.path, newPath);
-
-          setOrderMap(prev => {
-            const next = new Map(prev);
-            const pos = next.get(oldPath);
-            if (typeof pos === 'number') {
-              next.delete(oldPath);
-              next.set(newPath, pos);
-            }
-            return next;
-          });
-
-          await refreshListing();
-          return;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          await showErrorMessage('Rename failed', `Could not rename “${oldName}”: ${msg}`);
-          // The loop will continue to allow the user to try again; the user may click the
-          // "Cancel" button to exit at any point on the "Rename file" dialog.
-          continue;
-        }
-      }
-    },
-    [props.contentsManager, refreshListing]
+    [refreshListing, setOrderMap]
   );
 
   return (
@@ -717,43 +589,272 @@ function FilesApp(props: IFilesAppProps) {
                   } as File)
                 );
               })
-              .map((f, index) => {
-                const fileIcon = getFileIcon(f.name, f.mimetype ?? '');
-                // The "add new" tile sits at the zeroth index, so we offset by 1.
-                // We use this to determine if we are in the rightmost column.
-                // If so, we add a special data attribute to the tile, which is
-                // used in CSS to remove the right margin. This is to avoid users
-                // from adding horizontal scrolling by accident.
-                const totalIndex = index + 1;
-                const row = Math.floor(totalIndex / gridColumns);
-                const col = totalIndex % gridColumns;
-                const isRightColumn = col === gridColumns - 1;
-                const isLeftColumn = col === 0;
-
+              .map((file, index) => {
                 return (
-                  <div
-                    className="je-FileTile"
-                    key={f.path}
-                    data-row={row}
-                    data-col-right={isRightColumn ? 'true' : 'false'}
-                    data-col-left={isLeftColumn ? 'true' : 'false'}
-                  >
-                    <div className="je-FileTile-box je-FileTile-box-hasMenu">
-                      <FileMenu
-                        model={f}
-                        onDownload={downloadFile}
-                        onDelete={deleteFile}
-                        onRename={renameFile}
-                      />
-                      <fileIcon.react />
-                    </div>
-                    <div className="je-FileTile-label">{f.name}</div>
-                  </div>
+                  <FileTile
+                    file={file}
+                    gridIndex={index}
+                    contentsManager={props.contentsManager}
+                    onRename={onRename}
+                    onDelete={refreshListing}
+                    gridColumns={gridColumns}
+                  />
                 );
               })}
         </div>
       </div>
       <FilesWarningBanner />
+    </div>
+  );
+}
+
+interface IRenameChange {
+  oldPath: string;
+  newPath: string;
+}
+
+function FileTile(props: {
+  contentsManager: Contents.IManager;
+  file: Contents.IModel;
+  onRename: (change: IRenameChange) => Promise<void>;
+  onDelete: () => Promise<void>;
+  gridIndex: number;
+  gridColumns: number;
+}) {
+  const [isRenaming, setIsRenaming] = useState<PromiseDelegate<string> | false>(false);
+  const [draftName, setDraftName] = useState<string | null>(null);
+
+  const downloadFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      try {
+        const fetched = await props.contentsManager.get(model.path, { content: true });
+        if (fetched.type !== 'file') {
+          return;
+        }
+
+        const fmt = (fetched.format ?? 'text') as 'text' | 'base64';
+        const mime = fetched.mimetype ?? inferMimeFromName(model.name);
+
+        let blob: Blob;
+        if (fmt === 'base64') {
+          const b64 = String(fetched.content ?? '');
+          const bytes = atob(b64);
+          const buf = new Uint8Array(bytes.length);
+          for (let i = 0; i < bytes.length; i++) {
+            buf[i] = bytes.charCodeAt(i);
+          }
+          blob = new Blob([buf], { type: mime });
+        } else {
+          blob = new Blob([String(fetched.content ?? '')], { type: mime || 'text/plain' });
+        }
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = model.name;
+        document.body.appendChild(a);
+        a.click();
+        requestAnimationFrame(() => {
+          URL.revokeObjectURL(a.href);
+          a.remove();
+        });
+      } catch (err) {
+        await showErrorMessage(
+          'Download failed',
+          `Could not download ${model.name}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    },
+    [props.contentsManager]
+  );
+
+  const deleteFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      try {
+        await props.contentsManager.delete(model.path);
+        await props.onDelete();
+      } catch (err) {
+        await showErrorMessage(
+          'Delete failed',
+          `Could not delete ${model.name}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    },
+    [props.contentsManager, props.onDelete]
+  );
+  /**
+   * Rename handler: prompts for a new name and performs a contents rename.
+   * We check for conflicts and prevent changing file extensions here.
+   */
+  const renameFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      const oldName = model.name;
+      const oldPath = model.path;
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const delegate = new PromiseDelegate<string>();
+        setIsRenaming(delegate);
+        let result: string;
+        try {
+          result = await delegate.promise;
+        } catch {
+          // User cancelled, finish.
+          return;
+        } finally {
+          setIsRenaming(false);
+        }
+
+        const newName = result.trim();
+        setDraftName(newName);
+
+        // No-op if unchanged or empty
+        if (!newName || newName === oldName) {
+          return;
+        }
+
+        if (/[\\/]/.test(newName)) {
+          await showErrorMessage(
+            'Invalid name',
+            'File name cannot contain invalid characters. Please choose a different name for your file.'
+          );
+          continue;
+        }
+
+        const oldExt = PathExt.extname(oldName);
+        const newExt = PathExt.extname(newName);
+
+        if (oldExt && newExt && oldExt.toLowerCase() !== newExt.toLowerCase()) {
+          await showErrorMessage(
+            'Cannot change file extension',
+            'Jupyter Everywhere does not support converting files from one format to another. To convert a file, please delete it and re-upload the converted version.'
+          );
+          continue;
+        }
+
+        const finalName = oldExt && !newExt ? `${newName}${oldExt}` : newName;
+
+        const dirname = PathExt.dirname(model.path);
+        const newPath = dirname ? PathExt.join(dirname, finalName) : finalName;
+
+        const exists = await fileExists(props.contentsManager, newPath);
+
+        if (exists && newPath !== oldPath) {
+          await showErrorMessage(
+            'File exists',
+            `A file named "${finalName}" already exists. Please choose a different name.`
+          );
+          continue;
+        }
+
+        try {
+          await props.contentsManager.rename(model.path, newPath);
+          await props.onRename({ oldPath, newPath });
+          setDraftName(null);
+          return;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          await showErrorMessage('Rename failed', `Could not rename “${oldName}”: ${msg}`);
+          // The loop will continue to allow the user to try again; the user may click the
+          // "Cancel" button to exit at any point on the "Rename file" dialog.
+          continue;
+        }
+      }
+    },
+    [props.contentsManager, props.onRename]
+  );
+
+  const { file, gridColumns, gridIndex } = props;
+  const fileIcon = getFileIcon(file.name, file.mimetype ?? '');
+  // The "add new" tile sits at the zeroth index, so we offset by 1.
+  // We use this to determine if we are in the rightmost column.
+  // If so, we add a special data attribute to the tile, which is
+  // used in CSS to remove the right margin. This is to avoid users
+  // from adding horizontal scrolling by accident.
+  const totalIndex = gridIndex + 1;
+  const row = Math.floor(totalIndex / gridColumns);
+  const col = totalIndex % gridColumns;
+  const isRightColumn = col === gridColumns - 1;
+  const isLeftColumn = col === 0;
+  return (
+    <div
+      className="je-FileTile"
+      key={file.path}
+      data-row={row}
+      data-col-right={isRightColumn ? 'true' : 'false'}
+      data-col-left={isLeftColumn ? 'true' : 'false'}
+    >
+      <div className="je-FileTile-box je-FileTile-box-hasMenu">
+        <FileMenu
+          model={file}
+          onDownload={downloadFile}
+          onDelete={deleteFile}
+          onRename={renameFile}
+        />
+        <fileIcon.react />
+      </div>
+      {isRenaming ? (
+        <EditableFileLabel delegate={isRenaming} name={draftName ?? file.name} />
+      ) : (
+        <div className="je-FileTile-label">{file.name}</div>
+      )}
+    </div>
+  );
+}
+
+function EditableFileLabel(props: { name: string; delegate: PromiseDelegate<string> }) {
+  const { delegate, name } = props;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  const renameMaybeSubmit = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        delegate.resolve(e.currentTarget.textContent!);
+      } else if (e.key === 'Escape') {
+        delegate.reject(e);
+      }
+    },
+    [delegate]
+  );
+  const renameSubmit = React.useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      delegate.resolve(e.currentTarget.textContent!);
+    },
+    [delegate]
+  );
+
+  return (
+    <div
+      contentEditable={true}
+      className="je-FileTile-label je-FileTile-label-rename"
+      onKeyDown={renameMaybeSubmit}
+      onBlur={renameSubmit}
+      onFocus={e => {
+        const ext = PathExt.extname(name);
+        const value = e.target.textContent!;
+
+        const selection = window.getSelection();
+        if (!selection) {
+          return;
+        }
+        const range = document.createRange();
+
+        const textNode = e.target.firstChild!;
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, value.length - ext.length);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }}
+      tabIndex={0}
+      ref={ref}
+      role="textbox"
+    >
+      {name}
     </div>
   );
 }

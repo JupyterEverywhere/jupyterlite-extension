@@ -26,6 +26,12 @@ async function createTempNotebookFile(notebook: JSONObject, filename: string): P
   return tempPath;
 }
 
+const DIALOG_HIDE_BACKGROUND = `
+.jp-Dialog {
+  clip-path: none!important;
+  background: white!important
+}`;
+
 const PYTHON_TEST_NOTEBOOK: JSONObject = {
   cells: [
     {
@@ -303,7 +309,8 @@ test.describe('Sharing', () => {
     await mockShareNotebookTooLarge(page);
     await runCommand(page, 'jupytereverywhere:save-and-share');
     const dialog = page.locator('.jp-Dialog-content');
-    expect(await dialog.screenshot()).toMatchSnapshot('share-dialog-failed-server-413.png');
+    const screenshot = await dialog.screenshot({ style: DIALOG_HIDE_BACKGROUND });
+    expect(screenshot).toMatchSnapshot('share-dialog-failed-server-413.png');
   });
 
   test('Should display a nice error if notebook is too large and server is misbehaving', async ({
@@ -321,9 +328,8 @@ test.describe('Sharing', () => {
     await mockShareNotebookServerFailure(page);
     await runCommand(page, 'jupytereverywhere:save-and-share');
     const dialog = page.locator('.jp-Dialog-content');
-    expect(await dialog.screenshot()).toMatchSnapshot(
-      'share-dialog-failed-server-unkown-but-large.png'
-    );
+    const screenshot = await dialog.screenshot({ style: DIALOG_HIDE_BACKGROUND });
+    expect(screenshot).toMatchSnapshot('share-dialog-failed-server-unkown-but-large.png');
   });
 
   test('Clicking the Save button should trigger share dialog in editable notebook', async ({
@@ -533,7 +539,44 @@ test.describe('Files', () => {
     expect(filePath).not.toBeNull();
   });
 
-  test('Should rename a file successfully', async ({ page }) => {
+  const renameConfirmationMethods = ['on pressing Enter', 'on blur'] as const;
+
+  for (const testCase of renameConfirmationMethods) {
+    test(`Should rename a file ${testCase}`, async ({ page }) => {
+      await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+      await page.locator('.je-FileTile').first().click();
+      const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+      await page.setInputFiles('input[type="file"]', jpgPath);
+
+      const oldLabel = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+      await oldLabel.waitFor({ state: 'visible' });
+
+      const tile = page.locator('.je-FileTile', { has: oldLabel });
+
+      // Click ellipsis to open menu
+      await tile.locator('.je-FileMenu-trigger').click();
+
+      // Click Rename button and fill in new name
+
+      await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+      const input = page.locator('.je-FileTile-label-rename');
+      await input.fill('renamed-image');
+
+      if (testCase === 'on pressing Enter') {
+        await input.press('Enter');
+      } else {
+        await input.blur();
+      }
+
+      const newLabel = page.locator('.je-FileTile-label', { hasText: 'renamed-image.jpg' });
+      await expect(newLabel).toBeVisible();
+      await expect(oldLabel).toHaveCount(0);
+    });
+  }
+
+  test('Should cancel rename on Escape', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
     await page.locator('.je-FileTile').first().click();
@@ -548,19 +591,15 @@ test.describe('Files', () => {
     // Click ellipsis to open menu
     await tile.locator('.je-FileMenu-trigger').click();
 
-    // Click Rename button and fill in new name
-
     await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
 
-    const input = page.locator('#je-rename-input');
+    const input = page.locator('.je-FileTile-label-rename');
     await input.fill('renamed-image');
-
-    // Click the button in the rename dialog
-    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+    await input.press('Escape');
 
     const newLabel = page.locator('.je-FileTile-label', { hasText: 'renamed-image.jpg' });
-    await expect(newLabel).toBeVisible();
-    await expect(oldLabel).toHaveCount(0);
+    await expect(newLabel).not.toBeVisible();
+    await expect(oldLabel).toBeVisible();
   });
 
   test('Should raise an error when renaming a file to an existing file name', async ({ page }) => {
@@ -587,45 +626,64 @@ test.describe('Files', () => {
     await firstTile.locator('.je-FileMenu-trigger').click();
     await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
 
-    const input = page.locator('#je-rename-input');
+    const input = page.locator('.je-FileTile-label-rename');
     await input.fill('d-leiria.jpg');
-
-    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+    await input.press('Enter');
 
     // Check that the error dialog appears
     const errorDialog = page.locator('.jp-Dialog-content');
     await expect(errorDialog).toBeVisible();
     await expect(errorDialog).toContainText('File exists');
 
-    expect(await errorDialog.screenshot()).toMatchSnapshot('rename-conflict-error.png');
+    expect.soft(await errorDialog.screenshot()).toMatchSnapshot('rename-conflict-error.png');
+
+    // Close dialog
+    await errorDialog.press('Escape');
+
+    // The input should still contain the duplicate name, allowing the user to iterate on it
+    expect(await input.textContent()).toBe('d-leiria.jpg');
   });
 
-  test('Should show error when renaming with invalid characters', async ({ page }) => {
-    await page.locator('.jp-SideBar').getByTitle('Files').click();
+  for (const testCase of renameConfirmationMethods) {
+    test(`Should show error when renaming with invalid characters ${testCase}`, async ({
+      page
+    }) => {
+      await page.locator('.jp-SideBar').getByTitle('Files').click();
 
-    await page.locator('.je-FileTile').first().click();
-    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
-    await page.setInputFiles('input[type="file"]', jpgPath);
+      await page.locator('.je-FileTile').first().click();
+      const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+      await page.setInputFiles('input[type="file"]', jpgPath);
 
-    const label = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
-    await label.waitFor({ state: 'visible' });
+      const label = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+      await label.waitFor({ state: 'visible' });
 
-    const tile = page.locator('.je-FileTile', { has: label });
+      const tile = page.locator('.je-FileTile', { has: label });
 
-    await tile.locator('.je-FileMenu-trigger').click();
-    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+      await tile.locator('.je-FileMenu-trigger').click();
+      await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
 
-    const input = page.locator('#je-rename-input');
-    await input.fill('invalid/name');
+      const input = page.locator('.je-FileTile-label-rename');
+      await input.fill('invalid/name');
 
-    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+      if (testCase === 'on pressing Enter') {
+        await input.press('Enter');
+      } else {
+        await input.blur();
+      }
 
-    // Check that the error dialog appears
-    const errorDialog = page.locator('.jp-Dialog-content');
-    await expect(errorDialog).toBeVisible();
-    await expect(errorDialog).toContainText('Invalid name');
-    await expect(errorDialog).toContainText('cannot contain');
-  });
+      // Check that the error dialog appears
+      const errorDialog = page.locator('.jp-Dialog-content');
+      await expect(errorDialog).toBeVisible();
+      await expect(errorDialog).toContainText('Invalid name');
+      await expect(errorDialog).toContainText('cannot contain');
+
+      // Close dialog
+      await errorDialog.press('Escape');
+
+      // The input should still contain the invalid name, allowing the user to iterate on it
+      expect(await input.textContent()).toBe('invalid/name');
+    });
+  }
 
   test('Should prevent changing file extension', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
@@ -642,10 +700,9 @@ test.describe('Files', () => {
     await tile.locator('.je-FileMenu-trigger').click();
     await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
 
-    const input = page.locator('#je-rename-input');
+    const input = page.locator('.je-FileTile-label-rename');
     await input.fill('changed-extension.png');
-
-    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+    await input.press('Enter');
 
     // Check that error dialog appears
     const errorDialog = page.locator('.jp-Dialog-content');
@@ -735,10 +792,10 @@ test.describe('Files', () => {
     await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
 
     // Enter name without extension
-    const input = page.locator('#je-rename-input');
+    const input = page.locator('.je-FileTile-label-rename');
     await input.fill('my-photo');
 
-    await page.locator('.jp-Dialog-button', { hasText: 'Rename' }).click();
+    await input.press('Enter');
 
     // Check that extension was auto-appended
     const newLabel = page.locator('.je-FileTile-label', { hasText: 'my-photo.jpg' });
