@@ -635,7 +635,13 @@ test.describe('Files', () => {
     await expect(errorDialog).toBeVisible();
     await expect(errorDialog).toContainText('File exists');
 
-    expect(await errorDialog.screenshot()).toMatchSnapshot('rename-conflict-error.png');
+    expect.soft(await errorDialog.screenshot()).toMatchSnapshot('rename-conflict-error.png');
+
+    // Close dialog
+    await errorDialog.press('Escape');
+
+    // The input should still contain the duplicate name, allowing the user to iterate on it
+    expect(input.textContent).toBe('d-leiria.jpg');
   });
 
   for (const testCase of renameConfirmationMethods) {

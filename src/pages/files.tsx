@@ -622,6 +622,7 @@ function FileTile(props: {
   gridColumns: number;
 }) {
   const [isRenaming, setIsRenaming] = useState<PromiseDelegate<string> | false>(false);
+  const [draftName, setDraftName] = useState<string | null>(null);
 
   const downloadFile = React.useCallback(
     async (model: Contents.IModel) => {
@@ -704,6 +705,7 @@ function FileTile(props: {
         }
 
         const newName = result.trim();
+        setDraftName(newName);
 
         // No-op if unchanged or empty
         if (!newName || newName === oldName) {
@@ -747,6 +749,7 @@ function FileTile(props: {
         try {
           await props.contentsManager.rename(model.path, newPath);
           await props.onRename({ oldPath, newPath });
+          setDraftName(null);
           return;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
@@ -790,7 +793,7 @@ function FileTile(props: {
         <fileIcon.react />
       </div>
       {isRenaming ? (
-        <EditableFileLabel delegate={isRenaming} name={file.name} />
+        <EditableFileLabel delegate={isRenaming} name={draftName ?? file.name} />
       ) : (
         <div className="je-FileTile-label">{file.name}</div>
       )}
