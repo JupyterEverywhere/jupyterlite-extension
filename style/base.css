@@ -388,3 +388,33 @@ consistent with code cells */
 .jp-Dialog .jp-Dialog-close-button .jp-Icon {
   --jp-inverse-layout-color3: var(--je-slate-blue);
 }
+
+.je-NotFound {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  font-family: var(--je-font-family);
+  color: var(--je-slate-blue);
+}
+
+.je-NotFound-code {
+  font-size: 48px;
+  margin-bottom: 12px;
+  color: var(--je-slate-blue);
+  opacity: 0.5;
+}
+
+.je-NotFound h2 {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: var(--je-slate-blue);
+}
+
+.je-NotFound p {
+  margin: 0;
+  opacity: 0.8;
+  color: var(--je-slate-blue);
+}
