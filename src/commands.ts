@@ -2,6 +2,8 @@ export namespace Commands {
   export const openCompetitions = 'jupytereverywhere:open-competitions';
   export const openFiles = 'jupytereverywhere:open-files';
   export const routeFiles = 'jupytereverywhere:files-route';
+  export const openNotFound = 'jupytereverywhere:open-not-found';
+  export const routeNotFound = 'jupytereverywhere:not-found-route';
   export const openHelp = 'jupytereverywhere:open-help';
   export const downloadNotebookCommand = 'jupytereverywhere:download-notebook';
   export const downloadPDFCommand = 'jupytereverywhere:download-pdf';

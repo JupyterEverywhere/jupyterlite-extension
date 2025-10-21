@@ -13,6 +13,7 @@ import { createSuccessDialog, createErrorDialog } from './ui-components/share-di
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
 import routesPlugin from './routes';
+import notFoundPlugin from './pages/not-found';
 import { Commands } from './commands';
 // import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
@@ -618,5 +619,6 @@ export default [
   helpPlugin,
   singleDocumentMode,
   placeholderPlugin,
-  sessionDialogs
+  sessionDialogs,
+  notFoundPlugin
 ];
