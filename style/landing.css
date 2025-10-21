@@ -383,6 +383,7 @@ body {
   padding: 20px 60px;
   font-size: 0.9em;
   border-top: 1px solid rgb(255 255 255 / 10%);
+  text-align: center;
 }
 
 .je-footer-bottom a {
