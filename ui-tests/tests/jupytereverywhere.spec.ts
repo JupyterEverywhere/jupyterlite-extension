@@ -1355,3 +1355,16 @@ test.describe('Per cell run buttons', () => {
     await expect(runBtn).toBeVisible();
   });
 });
+
+test.describe('404 page', () => {
+  test('Should load 404 page', async ({ page }) => {
+    await page.goto('lab/404/');
+    await page.waitForSelector('.je-NotFound');
+
+    const notFoundWidget = page.locator('.je-NotFound');
+    await expect(notFoundWidget).toBeVisible();
+
+    expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot('404-full.png');
+    await expect(page).toHaveURL(/\/lab\/404\/$/);
+  });
+});
