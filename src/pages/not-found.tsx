@@ -1,5 +1,5 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { MainAreaWidget, ReactWidget } from '@jupyterlab/apputils';
+import { ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 import { Commands } from '../commands';
 
@@ -8,22 +8,14 @@ class NotFoundView extends ReactWidget {
     super();
     this.addClass('je-NotFound');
   }
+
   protected render(): React.ReactElement {
     return (
-      <div
-        style={{
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          padding: '24px'
-        }}
-      >
-        <div>
-          <div style={{ opacity: 0.5, marginBottom: 12, fontSize: 48 }}>404</div>
-          <h2 style={{ margin: '0 0 8px' }}>Oops! We could not find what you are looking for.</h2>
-          <p style={{ margin: 0, opacity: 0.8 }}>
+      <div className="je-NotFound-container">
+        <div className="je-NotFound-content">
+          <div className="je-NotFound-code">404</div>
+          <h2 className="je-NotFound-title">Oops! We could not find what you are looking for.</h2>
+          <p className="je-NotFound-message">
             The page may have moved or the link might be incorrect.
           </p>
         </div>
@@ -37,8 +29,7 @@ export const notFoundPlugin: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
     const newWidget = () => {
-      const content = new NotFoundView();
-      const widget = new MainAreaWidget({ content });
+      const widget = new NotFoundView();
       widget.id = 'je-not-found';
       widget.title.label = 'Not found';
       widget.title.closable = true;

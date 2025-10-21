@@ -391,29 +391,39 @@ consistent with code cells */
 
 .je-NotFound {
   height: 100%;
+  width: 100%;
+  background: white;
+  border-radius: var(--je-round-corners);
+}
+
+.je-NotFound-container {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 24px;
+}
+
+.je-NotFound-content {
   font-family: var(--je-font-family);
   color: var(--je-slate-blue);
 }
 
 .je-NotFound-code {
-  font-size: 48px;
-  margin-bottom: 12px;
-  color: var(--je-slate-blue);
   opacity: 0.5;
+  margin-bottom: 12px;
+  font-size: 48px;
+  color: var(--je-slate-blue);
 }
 
-.je-NotFound h2 {
+.je-NotFound-title {
   margin: 0 0 8px;
   font-weight: 700;
   color: var(--je-slate-blue);
 }
 
-.je-NotFound p {
+.je-NotFound-message {
   margin: 0;
   opacity: 0.8;
   color: var(--je-slate-blue);
