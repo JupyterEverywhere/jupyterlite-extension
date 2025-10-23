@@ -273,6 +273,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
             buttons: [Dialog.okButton()]
           });
         }
+      },
+      icon: args => {
+        const isMenu = args['isMenu'] as boolean;
+        if (isMenu) {
+          return EverywhereIcons.downloadCaret.bindprops({ className: 'je-filipped-icon' });
+        }
       }
     });
     /**
@@ -387,6 +393,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return display;
         }
         return `Switch to ${display}`;
+      },
+      icon: args => {
+        const isActive = args['isActive'] as boolean;
+        if (isActive) {
+          return EverywhereIcons.kernelCaret.bindprops({ className: 'je-filipped-icon' });
+        }
       },
       execute: async args => {
         const kernel = args['kernel'] as string | undefined;

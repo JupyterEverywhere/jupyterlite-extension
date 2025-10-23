@@ -55,6 +55,26 @@
   border: 0;
 }
 
+.je-filipped-icon {
+  transform: rotate(180deg);
+  position: absolute;
+  right: 8px;
+  top: -1px;
+}
+
+.je-DropdownMenu {
+  font-size: calc(var(--je-scale) * 24px);
+}
+
+.je-DropdownMenu .lm-Menu-itemSubmenuIcon,
+.je-DropdownMenu .lm-Menu-itemIcon {
+  display: none;
+}
+
+.je-filipped-icon > svg {
+  width: 16px;
+}
+
 .jp-Dialog-content {
   border: 3px solid var(--je-slate-blue);
   border-radius: var(--je-dialog-round-corners);
