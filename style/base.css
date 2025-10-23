@@ -265,8 +265,8 @@ consistent with code cells */
 }
 
 .je-KernelSwitcherButton.jp-ToolbarButtonComponent::part(content) {
-  flex-direction: row-reverse;
   gap: 4px;
+  flex-direction: row-reverse;
 }
 
 .jp-cell-toolbar .jp-ToolbarButtonComponent {
