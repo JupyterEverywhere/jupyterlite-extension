@@ -2,7 +2,7 @@ import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
 import { MarkdownCell } from '@jupyterlab/cells';
 import { IEditorServices } from '@jupyterlab/codeeditor';
 import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
-import { EMPTY_MARKDOWN_PLACEHOLDER, MarkdownCellWithCustomPlaceholder } from './placeholders';
+import { EMPTY_MARKDOWN_PLACEHOLDER } from './placeholders';
 import { JEInputPrompt } from './run-button';
 
 export namespace JENotebookContentFactory {
@@ -28,13 +28,10 @@ export class JENotebookContentFactory extends Notebook.ContentFactory {
   }
 
   createMarkdownCell(options: MarkdownCell.IOptions): MarkdownCell {
-    const cell = new MarkdownCellWithCustomPlaceholder({
+    return new MarkdownCell({
       ...options,
       emptyPlaceholder: EMPTY_MARKDOWN_PLACEHOLDER
     }).initializeState();
-    // Monkey patch until https://github.com/jupyterlab/jupyterlab/issues/17917 is solved
-    cell['_updateRenderedInput'] = cell['updateRenderedInput'];
-    return cell;
   }
 }
 
