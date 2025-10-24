@@ -55,7 +55,7 @@
   border: 0;
 }
 
-.je-filipped-icon {
+.je-flipped-icon {
   transform: rotate(180deg);
   position: absolute;
   right: 8px;
@@ -71,7 +71,7 @@
   display: none;
 }
 
-.je-filipped-icon > svg {
+.je-flipped-icon > svg {
   width: 16px;
 }
 

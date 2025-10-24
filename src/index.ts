@@ -277,7 +277,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       icon: args => {
         const isMenu = args['isMenu'] as boolean;
         if (isMenu) {
-          return EverywhereIcons.downloadCaret.bindprops({ className: 'je-filipped-icon' });
+          return EverywhereIcons.downloadCaret.bindprops({ className: 'je-flipped-icon' });
         }
       }
     });
@@ -397,7 +397,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       icon: args => {
         const isActive = args['isActive'] as boolean;
         if (isActive) {
-          return EverywhereIcons.kernelCaret.bindprops({ className: 'je-filipped-icon' });
+          return EverywhereIcons.kernelCaret.bindprops({ className: 'je-flipped-icon' });
         }
       },
       execute: async args => {
