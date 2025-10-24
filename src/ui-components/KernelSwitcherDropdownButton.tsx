@@ -20,6 +20,7 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
     this._tracker = tracker;
     this._menu = new Menu({ commands });
     this._menu.addClass('je-KernelSwitcherDropdownButton-menu');
+    this._menu.addClass('je-DropdownMenu');
   }
 
   onAfterAttach(msg: Message): void {
@@ -92,7 +93,8 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
       });
     }
 
-    const rect = this.node.getBoundingClientRect();
+    const node = this.node.querySelector('jp-button') ?? this.node;
+    const rect = node.getBoundingClientRect();
     this._menu.open(rect.left, rect.top);
   }
 }
