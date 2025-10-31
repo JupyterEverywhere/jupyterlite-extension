@@ -63,7 +63,6 @@ jobs:
       - name: Move everything into a single directory for attestation and publication
         run: |
           mkdir upload
-          mv dist/ upload/
           mv jupyterlite-app-release.tar.gz upload/
 
       - name: Generate artifact attestations
