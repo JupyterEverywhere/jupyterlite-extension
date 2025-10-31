@@ -47,7 +47,7 @@
 
 ## Requirements
 
-This extension requires `jupyterlab==4.5.0a3`, and additional dependencies listed in `lite/requirements.txt`.
+This extension requires `jupyterlab==4.5.0b1`, and additional dependencies listed in `lite/requirements.txt`.
 
 ## Getting started
 
