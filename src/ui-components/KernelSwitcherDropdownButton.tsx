@@ -1,9 +1,10 @@
 import React from 'react';
+import { CommandRegistry } from '@lumino/commands';
+import { UUID } from '@lumino/coreutils';
 import { Menu } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 import { ToolbarButtonComponent, ReactWidget } from '@jupyterlab/ui-components';
 import { EverywhereIcons } from '../icons';
-import { CommandRegistry } from '@lumino/commands';
 import { ACTIVE_KERNELS, KERNEL_DISPLAY_NAMES } from '../kernels';
 import { INotebookTracker } from '@jupyterlab/notebook';
 
@@ -21,6 +22,7 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
     this._menu = new Menu({ commands });
     this._menu.addClass('je-KernelSwitcherDropdownButton-menu');
     this._menu.addClass('je-DropdownMenu');
+    this._menu.id = UUID.uuid4();
   }
 
   onAfterAttach(msg: Message): void {
@@ -67,6 +69,10 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
         label={label}
         tooltip="Switch coding language"
         onClick={() => this._showMenu()}
+        // Aria attributes will only work once https://github.com/jupyterlab/jupyterlab/issues/18037 is solved and dependencies are updated
+        aria-expanded={this._menu.isVisible}
+        aria-controls={this._menu.id}
+        aria-haspopup={true}
       />
     );
   }
@@ -95,6 +101,6 @@ export class KernelSwitcherDropdownButton extends ReactWidget {
 
     const node = this.node.querySelector('jp-button') ?? this.node;
     const rect = node.getBoundingClientRect();
-    this._menu.open(rect.left, rect.top);
+    this._menu.open(rect.left, rect.top - 4);
   }
 }
