@@ -120,7 +120,7 @@
     "devDependencies": {
         "@jupyterlab/builder": "^4.5.0-beta.1",
         "@jupyterlab/testutils": "^4.5.0-beta.1",
-        "@playwright/test": "^1.54.2",
+        "@playwright/test": "^1.56.1",
         "@types/jest": "^29.2.0",
         "@types/json-schema": "^7.0.11",
         "@types/react": "^18.0.26",
