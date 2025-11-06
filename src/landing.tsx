@@ -53,6 +53,9 @@ function LandingPage(): JSX.Element {
           <h1>
             <span className="je-brand je-welcome">Welcome to</span>
             <span className="je-brand">Jupyter Everywhere</span>
+            <span className="je-brand" style={{ color: 'black' }}>
+              Beta
+            </span>
           </h1>
 
           <div className="je-buttons">
@@ -141,12 +144,9 @@ function LandingPage(): JSX.Element {
 
       <section className="je-about">
         <p>
-          Jupyter Everywhere (JE) is a collaborative project between Skew the Script and CourseKata,
-          launched in 2024 with support from the Gates Foundation. Our initiative focuses on
-          bringing data science tools and resources into classrooms by providing access to
-          high-quality tools. Our goal is to empower teachers and students to explore data science
-          and statistics easily, fostering deeper engagement and understanding in these essential
-          fields.
+          Jupyter Everywhere enables teachers and students to run R and Python code on the web,
+          without a Jupyter hub, and to easily share notebooks using simple links. Funded by the
+          Gates Foundation, Jupyter Everywhere is a joint project of CourseKata and Skew The Script.
         </p>
       </section>
 
@@ -172,6 +172,7 @@ function LandingPage(): JSX.Element {
       </footer>
 
       <div className="je-footer-bottom">
+        <p>This project is not endorsed or affiliated with Project Jupyter.</p>
         <p>
           Jupyter Everywhere is a collaboration between{' '}
           <a href="https://www.coursekata.org/">CourseKata</a> and{' '}
