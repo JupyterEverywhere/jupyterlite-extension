@@ -150,4 +150,7 @@ See [RELEASE.md](RELEASE.md) for instructions on creating a new release of the e
 
 Jupyter Everywhere is built on the powerful foundation of [the Jupyter ecosystem](https://jupyter.org/): particularly, [JupyterLite](https://jupyterlite.readthedocs.io/) and [JupyterLab](https://jupyterlab.readthedocs.io/). Additionally, it is powered by the [Pyodide](https://pyodide.org/) and the [Xeus](https://github.com/jupyter-xeus/xeus) projects, their intersections with the Jupyter ecosystem, and the broader scientific Python community. We are grateful to the maintainers, core developers, and contributors of these projects who make educational computing accessible to everyone.
 
-Jupyter Everywhere (JE) is a collaborative project between [Skew The Script](https://skewthescript.org/) and [CourseKata](https://coursekata.org/), launched in 2024 with support from the Gates Foundation. Our initiative focuses on bringing data science tools and resources into classrooms by providing access to high-quality tools. Our goal is to empower teachers and students to explore data science and statistics easily, fostering deeper engagement and understanding in these essential fields.
+Jupyter Everywhere enables teachers and students to run R and Python code on the
+web, without a Jupyter hub, and to easily share notebooks using simple links.
+Funded by the Gates Foundation, Jupyter Everywhere is a joint project of
+CourseKata and Skew The Script.
