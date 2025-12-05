@@ -5,6 +5,10 @@ on:
     types:
       - opened
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 permissions: {}
 
 jobs:
