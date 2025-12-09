@@ -5,6 +5,11 @@ permissions: {}
 on:
   pull_request:
     types: [labeled, unlabeled, opened, edited, synchronize]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}-enforce-label
+  cancel-in-progress: true
+
 jobs:
   enforce-label:
     name: Enforce labels on PRs
