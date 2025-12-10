@@ -12,6 +12,10 @@ on:
   pull_request:
     types: [closed]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: true
+
 env:
   INFRA_REPO: infrastructure
 
