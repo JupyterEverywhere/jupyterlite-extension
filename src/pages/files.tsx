@@ -92,6 +92,7 @@ interface IFileUploaderProps {
  */
 interface IFileUploaderRef {
   triggerFileSelect: () => void;
+  handleFiles: (files: FileList) => Promise<void>;
 }
 
 const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((props, ref) => {
@@ -202,9 +203,10 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
     fileInputRef.current?.click();
   };
 
-  // Expose the trigger function to the parent
+  // Expose the trigger function and file handler to the parent
   React.useImperativeHandle(ref, () => ({
-    triggerFileSelect
+    triggerFileSelect,
+    handleFiles: handleFileSelect
   }));
 
   return (
@@ -407,6 +409,8 @@ function FilesApp(props: IFilesAppProps) {
   const fileUploaderRef = useRef<IFileUploaderRef>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const [gridColumns, setGridColumns] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = useRef(0);
 
   useEffect(() => {
     if (!gridRef.current) {
@@ -525,8 +529,49 @@ function FilesApp(props: IFilesAppProps) {
     [refreshListing, setOrderMap]
   );
 
+  // Drag-and-drop event handlers
+  const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounterRef.current = 0;
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await fileUploaderRef.current?.handleFiles(e.dataTransfer.files);
+    }
+  }, []);
+
   return (
-    <div className="je-FilesApp">
+    <div
+      className={`je-FilesApp ${isDragging ? 'je-FilesApp-dragging' : ''}`}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <FileUploader
         ref={fileUploaderRef}
         onUploadStart={count => {
