@@ -115,8 +115,7 @@
         "typescript": "5.1.6",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "lib0": "0.2.105",
-        "js-yaml": "^4.1.1"
+        "lib0": "0.2.105"
     },
     "devDependencies": {
         "@jupyterlab/builder": "^4.5.0-beta.1",
