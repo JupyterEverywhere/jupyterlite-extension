@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   font-family: var(--je-font-family);
+  position: relative;
 }
 
 .je-FilesApp {
@@ -19,6 +20,29 @@
 .je-FilesApp-content {
   flex: 1;
   overflow: auto;
+  position: relative;
+  border-radius: var(--je-round-corners);
+}
+
+.je-FilesApp-dragging .je-FilesApp-content::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background-color: rgb(65 44 136 / 8%);
+  border-radius: var(--je-round-corners);
+  pointer-events: none;
+  z-index: 99;
+  transition: opacity 0.2s ease;
+}
+
+.je-FilesApp-dragging .je-FilesApp-content::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: calc(var(--je-scale) * 3px) dashed var(--je-slate-blue);
+  border-radius: calc(var(--je-round-corners) - 4px);
+  pointer-events: none;
+  z-index: 100;
 }
 
 .je-FilesApp-grid {
