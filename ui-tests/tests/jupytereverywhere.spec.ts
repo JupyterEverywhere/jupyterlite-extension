@@ -801,6 +801,98 @@ test.describe('Files', () => {
     const newLabel = page.locator('.je-FileTile-label', { hasText: 'my-photo.jpg' });
     await expect(newLabel).toBeVisible();
   });
+
+  test('Should show visual feedback when dragging files into the Files widget', async ({
+    page
+  }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const jpgBuffer = await fs.promises.readFile(jpgPath);
+
+    await page.evaluate(
+      ({ jpgData }) => {
+        const filesApp = document.querySelector('.je-FilesApp') as HTMLElement;
+        if (filesApp) {
+          const dt = new DataTransfer();
+          const jpgBlob = new Blob([new Uint8Array(jpgData)], { type: 'image/jpeg' });
+          const jpgFile = new File([jpgBlob], 'a-image.jpg', { type: 'image/jpeg' });
+          dt.items.add(jpgFile);
+
+          const dragEvent = new DragEvent('dragenter', {
+            bubbles: true,
+            cancelable: true,
+            dataTransfer: dt
+          });
+
+          filesApp.dispatchEvent(dragEvent);
+        }
+      },
+      { jpgData: Array.from(jpgBuffer) }
+    );
+
+    await page.waitForTimeout(100);
+
+    const filesContainer = page.locator('.je-Files');
+    await expect(filesContainer.locator('.je-FilesApp-dragging')).toBeVisible();
+
+    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot(
+      'files-in-dragging-state.png'
+    );
+  });
+
+  test('File uploads should work via drag-and-drop', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+
+    const jpgBuffer = await fs.promises.readFile(jpgPath);
+    const csvBuffer = await fs.promises.readFile(csvPath);
+
+    await page.evaluate(
+      ({ jpgData, csvData }) => {
+        const filesApp = document.querySelector('.je-FilesApp') as HTMLElement;
+        if (filesApp) {
+          const dt = new DataTransfer();
+
+          const jpgBlob = new Blob([new Uint8Array(jpgData)], { type: 'image/jpeg' });
+          const csvBlob = new Blob([new Uint8Array(csvData)], { type: 'text/csv' });
+          const jpgFile = new File([jpgBlob], 'a-image.jpg', { type: 'image/jpeg' });
+          const csvFile = new File([csvBlob], 'b-dataset.csv', { type: 'text/csv' });
+
+          dt.items.add(jpgFile);
+          dt.items.add(csvFile);
+
+          const dropEvent = new DragEvent('drop', {
+            bubbles: true,
+            cancelable: true,
+            dataTransfer: dt
+          });
+
+          filesApp.dispatchEvent(dropEvent);
+        }
+      },
+      {
+        jpgData: Array.from(jpgBuffer),
+        csvData: Array.from(csvBuffer)
+      }
+    );
+
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+
+    await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+
+    await expect(page.locator('.je-FilesApp-dragging')).toHaveCount(0);
+
+    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('uploaded-files-grid.png');
+  });
 });
 
 test('Should remove View Only banner when the Create Copy button is clicked', async ({ page }) => {
