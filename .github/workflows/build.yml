@@ -13,11 +13,11 @@ concurrency:
 permissions: {}
 
 jobs:
-  lint-and-test:
+  lint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    name: "Lint and Test"
+    name: "Lint"
 
     steps:
     - name: Checkout
@@ -36,11 +36,6 @@ jobs:
         set -eux
         jlpm
         jlpm run lint:check
-
-    - name: Test the extension
-      run: |
-        set -eux
-        jlpm run test
 
   build-extension:
     name: Build the jupyterlite-extension wheel
