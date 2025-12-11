@@ -801,6 +801,112 @@ test.describe('Files', () => {
     const newLabel = page.locator('.je-FileTile-label', { hasText: 'my-photo.jpg' });
     await expect(newLabel).toBeVisible();
   });
+
+  test('Should show visual feedback when dragging files into the Files widget', async ({
+    page
+  }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const jpgBuffer = await fs.promises.readFile(jpgPath);
+
+    await page.evaluate(
+      ({ jpgData }) => {
+        const filesApp = document.querySelector('.je-FilesApp') as HTMLElement;
+        if (filesApp) {
+          const dt = new DataTransfer();
+          const jpgBlob = new Blob([new Uint8Array(jpgData)], { type: 'image/jpeg' });
+          const jpgFile = new File([jpgBlob], 'a-image.jpg', { type: 'image/jpeg' });
+          dt.items.add(jpgFile);
+
+          const dragEvent = new DragEvent('dragenter', {
+            bubbles: true,
+            cancelable: true,
+            dataTransfer: dt
+          });
+
+          filesApp.dispatchEvent(dragEvent);
+        }
+      },
+      { jpgData: Array.from(jpgBuffer) }
+    );
+
+    await page.waitForTimeout(100);
+
+    const filesContainer = page.locator('.je-Files');
+    await expect(filesContainer.locator('.je-FilesApp')).toHaveClass(/je-mod-dragging/);
+
+    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot(
+      'files-in-dragging-state.png'
+    );
+  });
+
+  test('File uploads should work via drag-and-drop', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    const webpPath = path.resolve(__dirname, '../test-files/c-flower.webp');
+
+    const jpgBuffer = await fs.promises.readFile(jpgPath);
+    const csvBuffer = await fs.promises.readFile(csvPath);
+    const webpBuffer = await fs.promises.readFile(webpPath);
+
+    await page.evaluate(
+      ({ jpgData, csvData, webpData }) => {
+        const filesApp = document.querySelector('.je-FilesApp') as HTMLElement;
+        if (filesApp) {
+          const dt = new DataTransfer();
+
+          const jpgBlob = new Blob([new Uint8Array(jpgData)], { type: 'image/jpeg' });
+          const csvBlob = new Blob([new Uint8Array(csvData)], { type: 'text/csv' });
+          const webpBlob = new Blob([new Uint8Array(webpData)], { type: 'image/webp' });
+          const jpgFile = new File([jpgBlob], 'a-image.jpg', { type: 'image/jpeg' });
+          const csvFile = new File([csvBlob], 'b-dataset.csv', { type: 'text/csv' });
+          const webpFile = new File([webpBlob], 'c-flower.webp', { type: 'image/webp' });
+
+          dt.items.add(jpgFile);
+          dt.items.add(csvFile);
+          dt.items.add(webpFile);
+
+          const dropEvent = new DragEvent('drop', {
+            bubbles: true,
+            cancelable: true,
+            dataTransfer: dt
+          });
+
+          filesApp.dispatchEvent(dropEvent);
+        }
+      },
+      {
+        jpgData: Array.from(jpgBuffer),
+        csvData: Array.from(csvBuffer),
+        webpData: Array.from(webpBuffer)
+      }
+    );
+
+    // Wait some time for thumbnails to appear as the files
+    // are being uploaded to the contents manager
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+
+    await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'c-flower.webp' })).toBeVisible();
+
+    await expect(page.locator('.je-FilesApp.je-mod-dragging')).toHaveCount(0);
+
+    expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
+      'uploaded-files-grid.png'
+    );
+  });
 });
 
 test('Should remove View Only banner when the Create Copy button is clicked', async ({ page }) => {
