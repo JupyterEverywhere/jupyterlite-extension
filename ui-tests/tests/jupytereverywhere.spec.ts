@@ -453,7 +453,9 @@ test.describe('Files', () => {
       .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
       .waitFor({ state: 'visible' });
 
-    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('uploaded-files-grid.png');
+    expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
+      'uploaded-files-grid.png'
+    );
 
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
@@ -897,10 +899,13 @@ test.describe('Files', () => {
 
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'c-flower.webp' })).toBeVisible();
 
     await expect(page.locator('.je-FilesApp-dragging')).toHaveCount(0);
 
-    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('uploaded-files-grid.png');
+    expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
+      'uploaded-files-grid.png'
+    );
   });
 });
 
