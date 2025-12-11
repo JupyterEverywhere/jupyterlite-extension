@@ -4,13 +4,12 @@
   "description": "Jupyter Everywhere Integration Tests",
   "private": true,
   "scripts": {
-    "start": "cd ../dist && npx static-handler --cors --coop --coep --corp --port 3000 --host 127.0.0.1 ./",
+    "start": "cd ../dist && npx static-handler --coi -p 3000 ./",
     "test": "jlpm playwright test",
     "test:update": "jlpm playwright test --update-snapshots"
   },
   "devDependencies": {
     "@jupyterlab/application": "^4.5.0-beta.1",
-    "@playwright/test": "^1.57.0",
-    "static-handler": "^0.4.1"
+    "@playwright/test": "^1.57.0"
   }
 }
