@@ -834,7 +834,7 @@ test.describe('Files', () => {
     await page.waitForTimeout(100);
 
     const filesContainer = page.locator('.je-Files');
-    await expect(filesContainer.locator('.je-FilesApp.je-mod-dragging')).toBeVisible();
+    await expect(filesContainer.locator('.je-FilesApp')).toHaveClass(/je-mod-dragging/);
 
     expect(await page.locator('#je-files').screenshot()).toMatchSnapshot(
       'files-in-dragging-state.png'
