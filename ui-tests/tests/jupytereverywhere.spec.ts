@@ -1054,8 +1054,7 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   const cell = page.locator('.jp-Cell').first();
   await cell.getByRole('textbox').fill(code);
 
-  const runBtn = cell.locator('.je-cell-run-button');
-  await runBtn.click();
+  await runCommand(page, 'notebook:run-cell');
 
   const output = cell.locator('.jp-Cell-outputArea');
   await expect(output).toBeVisible({
@@ -1081,8 +1080,7 @@ test.describe('Kernel networking', () => {
     const cell = page.locator('.jp-Cell').first();
     await cell.getByRole('textbox').fill(code);
 
-    const runBtn = cell.locator('.je-cell-run-button');
-    await runBtn.click();
+    await runCommand(page, 'notebook:run-cell');
 
     const output = cell.locator('.jp-Cell-outputArea');
     await expect(output).toBeVisible({
