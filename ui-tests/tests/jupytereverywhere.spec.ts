@@ -1044,6 +1044,25 @@ test.describe('Kernel Switching', () => {
 });
 
 test('Should switch to R kernel and run R code', async ({ page }) => {
+  const consoleMessages: string[] = [];
+  const pageErrors: string[] = [];
+
+  page.on('console', msg => {
+    const text = `[${msg.type()}] ${msg.text()}`;
+    consoleMessages.push(text);
+    console.log(text);
+  });
+
+  page.on('pageerror', error => {
+    const errorText = `Page error: ${error.message}\n${error.stack}`;
+    pageErrors.push(errorText);
+    console.error(errorText);
+  });
+
+  page.on('crash', () => {
+    console.error('PAGE CRASHED!');
+  });
+
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-NotebookPanel');
 
@@ -1073,6 +1092,25 @@ test.describe('Kernel networking', () => {
   const expectedContent = 'col1';
 
   test('R kernel should be able to fetch from a remote URL', async ({ page }) => {
+    const consoleMessages: string[] = [];
+    const pageErrors: string[] = [];
+
+    page.on('console', msg => {
+      const text = `[${msg.type()}] ${msg.text()}`;
+      consoleMessages.push(text);
+      console.log(text);
+    });
+
+    page.on('pageerror', error => {
+      const errorText = `Page error: ${error.message}\n${error.stack}`;
+      pageErrors.push(errorText);
+      console.error(errorText);
+    });
+
+    page.on('crash', () => {
+      console.error('PAGE CRASHED!');
+    });
+
     await page.goto('lab/index.html?kernel=r');
     await page.waitForSelector('.jp-NotebookPanel');
 
