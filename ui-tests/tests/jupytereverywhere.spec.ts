@@ -453,9 +453,7 @@ test.describe('Files', () => {
       .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
       .waitFor({ state: 'visible' });
 
-    expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
-      'uploaded-files-grid.png'
-    );
+    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('uploaded-files-grid.png');
 
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
@@ -846,23 +844,28 @@ test.describe('Files', () => {
 
     const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
     const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    const webpPath = path.resolve(__dirname, '../test-files/c-flower.webp');
 
     const jpgBuffer = await fs.promises.readFile(jpgPath);
     const csvBuffer = await fs.promises.readFile(csvPath);
+    const webpBuffer = await fs.promises.readFile(webpPath);
 
     await page.evaluate(
-      ({ jpgData, csvData }) => {
+      ({ jpgData, csvData, webpData }) => {
         const filesApp = document.querySelector('.je-FilesApp') as HTMLElement;
         if (filesApp) {
           const dt = new DataTransfer();
 
           const jpgBlob = new Blob([new Uint8Array(jpgData)], { type: 'image/jpeg' });
           const csvBlob = new Blob([new Uint8Array(csvData)], { type: 'text/csv' });
+          const webpBlob = new Blob([new Uint8Array(webpData)], { type: 'image/webp' });
           const jpgFile = new File([jpgBlob], 'a-image.jpg', { type: 'image/jpeg' });
           const csvFile = new File([csvBlob], 'b-dataset.csv', { type: 'text/csv' });
+          const webpFile = new File([webpBlob], 'c-flower.webp', { type: 'image/webp' });
 
           dt.items.add(jpgFile);
           dt.items.add(csvFile);
+          dt.items.add(webpFile);
 
           const dropEvent = new DragEvent('drop', {
             bubbles: true,
@@ -875,15 +878,21 @@ test.describe('Files', () => {
       },
       {
         jpgData: Array.from(jpgBuffer),
-        csvData: Array.from(csvBuffer)
+        csvData: Array.from(csvBuffer),
+        webpData: Array.from(webpBuffer)
       }
     );
 
+    // Wait some time for thumbnails to appear as the files
+    // are being uploaded to the contents manager
     await page
       .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
       .waitFor({ state: 'visible', timeout: 5000 });
     await page
       .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
       .waitFor({ state: 'visible', timeout: 5000 });
 
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
