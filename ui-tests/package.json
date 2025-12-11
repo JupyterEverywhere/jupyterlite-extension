@@ -4,7 +4,7 @@
   "description": "Jupyter Everywhere Integration Tests",
   "private": true,
   "scripts": {
-    "start": "cd ../dist && npx static-handler --cors --coop --coep --corp --port 3000 --host 127.0.0.1 ./",
+    "start": "npx static-handler --cors --coop --coep --corp --port 3000 --host 127.0.0.1 ../dist",
     "test": "jlpm playwright test",
     "test:update": "jlpm playwright test --update-snapshots"
   },
