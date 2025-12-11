@@ -1066,8 +1066,11 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   await page.goto('lab/index.html');
   await page.waitForSelector('.jp-NotebookPanel');
 
+  // Wait for Python kernel to fully initialise
+  await page.waitForTimeout(30000);
+
   await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
-  await page.waitForTimeout(10000);
+  await page.waitForTimeout(30000);
 
   const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
   const cell = page.locator('.jp-Cell').last();
