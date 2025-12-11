@@ -1051,7 +1051,7 @@ test('Should switch to R kernel and run R code', async ({ page }) => {
   await page.waitForTimeout(10000);
 
   const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
-  const cell = page.locator('.jp-Cell').last();
+  const cell = page.locator('.jp-Cell').first();
   await cell.getByRole('textbox').fill(code);
 
   await runCommand(page, 'notebook:run-cell');
@@ -1077,7 +1077,7 @@ test.describe('Kernel networking', () => {
     await page.waitForSelector('.jp-NotebookPanel');
 
     const code = `read.csv("${remoteUrl}")`;
-    const cell = page.locator('.jp-Cell').last();
+    const cell = page.locator('.jp-Cell').first();
     await cell.getByRole('textbox').fill(code);
 
     await runCommand(page, 'notebook:run-cell');
