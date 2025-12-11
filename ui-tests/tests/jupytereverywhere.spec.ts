@@ -834,7 +834,7 @@ test.describe('Files', () => {
     await page.waitForTimeout(100);
 
     const filesContainer = page.locator('.je-Files');
-    await expect(filesContainer.locator('.je-FilesApp-dragging')).toBeVisible();
+    await expect(filesContainer.locator('.je-FilesApp.je-mod-dragging')).toBeVisible();
 
     expect(await page.locator('#je-files').screenshot()).toMatchSnapshot(
       'files-in-dragging-state.png'
@@ -901,7 +901,7 @@ test.describe('Files', () => {
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'c-flower.webp' })).toBeVisible();
 
-    await expect(page.locator('.je-FilesApp-dragging')).toHaveCount(0);
+    await expect(page.locator('.je-FilesApp.je-mod-dragging')).toHaveCount(0);
 
     expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
       'uploaded-files-grid.png'

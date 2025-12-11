@@ -24,7 +24,7 @@
   border-radius: var(--je-round-corners);
 }
 
-.je-FilesApp-dragging .je-FilesApp-content::before {
+.je-FilesApp.je-mod-dragging .je-FilesApp-content::before {
   content: '';
   position: absolute;
   inset: 4px;
@@ -35,7 +35,7 @@
   transition: opacity 0.2s ease;
 }
 
-.je-FilesApp-dragging .je-FilesApp-content::after {
+.je-FilesApp.je-mod-dragging .je-FilesApp-content::after {
   content: '';
   position: absolute;
   inset: 4px;

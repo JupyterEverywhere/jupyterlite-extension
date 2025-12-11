@@ -566,7 +566,7 @@ function FilesApp(props: IFilesAppProps) {
 
   return (
     <div
-      className={`je-FilesApp ${isDragging ? 'je-FilesApp-dragging' : ''}`}
+      className={`je-FilesApp ${isDragging ? 'je-mod-dragging' : ''}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
