@@ -15,7 +15,12 @@ module.exports = {
     autoGoto: false,
     baseURL: 'http://localhost:3000',
     trace: 'retain-on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    // Capture browser console logs
+    launchOptions: {
+      args: process.env.CI ? ['--disable-dev-shm-usage'] : []
+    }
   },
   webServer: {
     command: 'jlpm start',
