@@ -1041,31 +1041,49 @@ test.describe('Kernel Switching', () => {
       await page.locator('.je-KernelSwitcherDropdownButton-menu').screenshot()
     ).toMatchSnapshot('kernel-switcher-menu.png');
   });
+
+  test('Should switch to R kernel and run R code', async ({ page }) => {
+    await page.goto('lab/index.html');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
+    await page.waitForTimeout(10000);
+    await runCommand(page, 'notebook:insert-cell-below');
+
+    const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(code);
+
+    await runCommand(page, 'notebook:run-cell');
+
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({
+      timeout: 20000 // shouldn't take too long to run but just to be safe
+    });
+
+    const text = await output.textContent();
+    expect(text).toContain('Call');
+    // Add a snapshot of the output area
+    expect(await output.screenshot()).toMatchSnapshot('r-output.png');
+  });
 });
 
-test('Should switch to R kernel and run R code', async ({ page }) => {
-  await page.goto('lab/index.html');
-  await page.waitForSelector('.jp-NotebookPanel');
+test.describe('Default (Python) kernel environment', () => {
+  test('Should be able to import geopandas', async ({ page }) => {
+    await page.waitForSelector('.jp-NotebookPanel');
 
-  await runCommand(page, 'jupytereverywhere:switch-kernel', { kernel: 'xr' });
-  await page.waitForTimeout(10000);
-  await runCommand(page, 'notebook:insert-cell-below');
+    const code = 'import geopandas; geopandas.GeoSeries()';
+    const cell = page.locator('.jp-Cell').first();
+    await cell.getByRole('textbox').fill(code);
 
-  const code = 'lm(mpg ~ wt + hp + disp + cyl, data=mtcars)';
-  const cell = page.locator('.jp-Cell').last();
-  await cell.getByRole('textbox').fill(code);
+    await runCommand(page, 'notebook:run-cell');
 
-  await runCommand(page, 'notebook:run-cell');
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({ timeout: 20000 });
 
-  const output = cell.locator('.jp-Cell-outputArea');
-  await expect(output).toBeVisible({
-    timeout: 20000 // shouldn't take too long to run but just to be safe
+    const text = await output.textContent();
+    expect(text).toContain('dtype: geometry');
   });
-
-  const text = await output.textContent();
-  expect(text).toContain('Call');
-  // Add a snapshot of the output area
-  expect(await output.screenshot()).toMatchSnapshot('r-output.png');
 });
 
 test.describe('Kernel networking', () => {
