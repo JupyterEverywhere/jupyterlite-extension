@@ -1,6 +1,13 @@
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
 import { ILiteRouter } from '@jupyterlite/application';
-import { MainAreaWidget, ReactWidget, showErrorMessage } from '@jupyterlab/apputils';
+import {
+  Dialog,
+  MainAreaWidget,
+  ReactWidget,
+  showDialog,
+  showErrorMessage
+} from '@jupyterlab/apputils';
+import { PathExt } from '@jupyterlab/coreutils';
 import { Contents } from '@jupyterlab/services';
 import { IContentsManager } from '@jupyterlab/services';
 import { Commands } from '../commands';
@@ -8,20 +15,22 @@ import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { PageTitle } from '../ui-components/PageTitle';
 import { EverywhereIcons } from '../icons';
 import { FilesWarningBanner } from '../ui-components/FilesWarningBanner';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { LabIcon, closeIcon, downloadIcon } from '@jupyterlab/ui-components';
+import React, { useId, useState, useRef, useCallback, useEffect } from 'react';
+import { LabIcon } from '@jupyterlab/ui-components';
+import { showUploadConflictDialog } from '../ui-components/upload-conflict';
+import { PromiseDelegate } from '@lumino/coreutils';
 
 /**
  * File type icons mapping function. We currently implement four common file types:
- * 1. Image files (PNG, JPEG/JPG) (binary)
+ * 1. Image files (PNG, JPEG/JPG, WEBP) (binary)
  * 2. CSV/TSV files (text)
  * @param fileName - the name of the file to determine the icon for.
  * @param fileType - the MIME type of the file to determine the icon for.
  * @returns A LabIcon representing the file type icon.
  */
 const getFileIcon = (fileName: string, fileType: string): LabIcon => {
-  const extension = fileName.split('.').pop()?.toLowerCase() || '';
-  if (fileType.startsWith('image/') || ['png', 'jpg', 'jpeg'].includes(extension)) {
+  const extension = PathExt.extname(fileName).toLowerCase().slice(1);
+  if (fileType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
     return EverywhereIcons.imageIcon;
   }
   if (
@@ -36,16 +45,37 @@ const getFileIcon = (fileName: string, fileType: string): LabIcon => {
 };
 
 /**
- * Checks if the file type is supported (PNG, JPG/JPEG, or CSV/TSV).
+ * Checks if the file type is supported (PNG, JPG/JPEG, WEBP, or CSV/TSV).
  * @param file - The file to check
  * @returns True if the file type is supported, false otherwise.
  */
 const isSupportedFileType = (file: File): boolean => {
-  const supportedMimeTypes = ['image/png', 'image/jpeg', 'text/csv', 'text/tab-separated-values'];
-  const extension = file.name.split('.').pop()?.toLowerCase() || '';
-  const supportedExtensions = ['png', 'jpg', 'jpeg', 'csv', 'tsv'];
+  const supportedMimeTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/webp',
+    'text/csv',
+    'text/tab-separated-values'
+  ];
+  const extension = PathExt.extname(file.name).toLowerCase().slice(1);
+  const supportedExtensions = ['png', 'jpg', 'jpeg', 'webp', 'csv', 'tsv'];
   return supportedMimeTypes.includes(file.type) || supportedExtensions.includes(extension);
 };
+
+/**
+ * A helper function to check if a file exists in the contents manager.
+ * @param contentsManager - The contents manager instance.
+ * @param path - The path to check.
+ * @returns True if the file exists, false otherwise.
+ */
+async function fileExists(contentsManager: Contents.IManager, path: string): Promise<boolean> {
+  try {
+    await contentsManager.get(path, { content: false });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 /**
  * A React component for uploading files to the Jupyter Contents Manager.
@@ -62,6 +92,7 @@ interface IFileUploaderProps {
  */
 interface IFileUploaderRef {
   triggerFileSelect: () => void;
+  handleFiles: (files: FileList) => Promise<void>;
 }
 
 const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((props, ref) => {
@@ -77,15 +108,59 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
       if (supportedFiles.length === 0) {
         await showErrorMessage(
           'Unsupported file type',
-          'Please upload only PNG, JPG/JPEG, or CSV/TSV files.'
+          'Please upload only PNG, JPG/JPEG, WEBP, or CSV/TSV files.'
         );
         return;
       }
 
-      props.onUploadStart(supportedFiles.length);
+      // Check for conflicts before starting file uploads. We check all files first
+      // and allow the user to decide if they want to upload the non-conflicting files.
+      const conflictingFiles: string[] = [];
+      const filesToUpload: File[] = [];
+
+      for (const file of supportedFiles) {
+        const exists = await fileExists(props.contentsManager, file.name);
+
+        if (exists) {
+          conflictingFiles.push(file.name);
+        } else {
+          filesToUpload.push(file);
+        }
+      }
+
+      if (conflictingFiles.length > 0) {
+        await showUploadConflictDialog(conflictingFiles);
+
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+
+        // If there are non-conflicting files after the dialog is dismissed
+        // by the user, ask if they want to upload them.
+        if (filesToUpload.length > 0) {
+          const result = await showDialog({
+            title: 'Upload remaining files',
+            body: `${conflictingFiles.length} file${conflictingFiles.length > 1 ? 's' : ''} could not be uploaded due to name conflicts. Would you like to upload the remaining ${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''}?`,
+            buttons: [Dialog.cancelButton(), Dialog.okButton({ label: 'Upload' })]
+          });
+
+          if (!result.button.accept) {
+            return;
+          }
+        } else {
+          // All files had conflicts, nothing to upload.
+          return;
+        }
+      }
+
+      if (filesToUpload.length === 0) {
+        return;
+      }
+
+      props.onUploadStart(filesToUpload.length);
 
       try {
-        for (const file of supportedFiles) {
+        for (const file of filesToUpload) {
           const content = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -110,6 +185,9 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
         }
       } finally {
         props.onUploadEnd();
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     },
     [props]
@@ -125,9 +203,10 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
     fileInputRef.current?.click();
   };
 
-  // Expose the trigger function to the parent
+  // Expose the trigger function and file handler to the parent
   React.useImperativeHandle(ref, () => ({
-    triggerFileSelect
+    triggerFileSelect,
+    handleFiles: handleFileSelect
   }));
 
   return (
@@ -137,12 +216,183 @@ const FileUploader = React.forwardRef<IFileUploaderRef, IFileUploaderProps>((pro
       multiple
       onChange={handleInputChange}
       style={{ display: 'none' }}
-      accept=".png,.jpg,.jpeg,.csv,.tsv,image/png,image/jpeg,text/csv,text/tab-separated-values"
+      accept=".png,.jpg,.jpeg,.webp,.csv,.tsv,image/png,image/jpeg,image/webp,text/csv,text/tab-separated-values"
     />
   );
 });
 
 FileUploader.displayName = 'FileUploader';
+
+/**
+ * Component for the ellipsis menu dropdown for each file.
+ */
+interface IFileMenuProps {
+  model: Contents.IModel;
+  onDownload: (model: Contents.IModel) => void;
+  onDelete: (model: Contents.IModel) => void;
+  onRename: (model: Contents.IModel) => void;
+}
+
+function FileMenu(props: IFileMenuProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
+  const triggerId = useId();
+  const menuItemsRef = useRef<HTMLButtonElement[]>([]);
+
+  // We'll close the menu when clicking outside the component.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        triggerRef.current?.focus();
+        setIsOpen(false);
+        return;
+      }
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const activeElement = document.activeElement;
+        const currentIndex = menuItemsRef.current.findIndex(item => item === activeElement);
+
+        let nextIndex: number;
+        if (e.key === 'ArrowDown') {
+          nextIndex = currentIndex < menuItemsRef.current.length - 1 ? currentIndex + 1 : 0;
+        } else {
+          nextIndex = currentIndex > 0 ? currentIndex - 1 : menuItemsRef.current.length - 1;
+        }
+
+        menuItemsRef.current[nextIndex]?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Focus the first menu item when the menu opens.
+    menuItemsRef.current[0]?.focus();
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!isOpen && menuRef.current) {
+      const fileTile = menuRef.current.closest('.je-FileTile');
+      if (fileTile) {
+        fileTile.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+      }
+    }
+
+    setIsOpen(!isOpen);
+  };
+
+  const handleRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    props.onRename(props.model);
+    setIsOpen(false);
+  };
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    props.onDownload(props.model);
+    setIsOpen(false);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    props.onDelete(props.model);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="je-FileMenu" ref={menuRef}>
+      <button
+        ref={triggerRef}
+        className="je-FileMenu-trigger"
+        id={triggerId}
+        aria-label={`Options for ${props.model.name}`}
+        aria-haspopup="menu"
+        aria-controls={menuId}
+        aria-expanded={isOpen}
+        onClick={handleMenuClick}
+      >
+        {isOpen ? <EverywhereIcons.dropdownTriangle.react /> : <EverywhereIcons.ellipsis.react />}
+      </button>
+      {isOpen && (
+        <div className="je-FileMenu-dropdown" id={menuId} role="menu" aria-labelledby={triggerId}>
+          <button
+            ref={el => el && (menuItemsRef.current[0] = el)}
+            className="je-FileMenu-item"
+            onClick={handleRename}
+            role="menuitem"
+          >
+            Rename
+          </button>
+          <button
+            ref={el => el && (menuItemsRef.current[1] = el)}
+            className="je-FileMenu-item"
+            onClick={handleDownload}
+            role="menuitem"
+          >
+            Download
+          </button>
+          <button
+            ref={el => el && (menuItemsRef.current[2] = el)}
+            className="je-FileMenu-item"
+            onClick={handleDelete}
+            role="menuitem"
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Infer the MIME type from a file name.
+ * @param name - file name
+ * @returns the MIME type inferred from the file extension, or an empty string if unknown.
+ */
+function inferMimeFromName(name: string): string {
+  const ext = PathExt.extname(name).toLowerCase().slice(1);
+  if (ext === 'png') {
+    return 'image/png';
+  }
+  if (ext === 'jpg' || ext === 'jpeg') {
+    return 'image/jpeg';
+  }
+  if (ext === 'webp') {
+    return 'image/webp';
+  }
+  if (ext === 'csv') {
+    return 'text/csv';
+  }
+  if (ext === 'tsv') {
+    return 'text/tab-separated-values';
+  }
+  return '';
+}
 
 /**
  * The main Files page component. It manages the state of uploaded files,
@@ -157,11 +407,64 @@ function FilesApp(props: IFilesAppProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
   const fileUploaderRef = useRef<IFileUploaderRef>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [gridColumns, setGridColumns] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = useRef(0);
+
+  useEffect(() => {
+    if (!gridRef.current) {
+      return;
+    }
+
+    const updateColumns = () => {
+      const gridComputedStyle = window.getComputedStyle(gridRef.current!);
+      const gridTemplateColumns = gridComputedStyle.gridTemplateColumns;
+      const columns = gridTemplateColumns.split(' ').length;
+      setGridColumns(columns);
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+
+    return () => window.removeEventListener('resize', updateColumns);
+  }, [listing?.content?.length]);
+
+  // Preserve file order across file renames.
+  const [orderMap, setOrderMap] = useState<Map<string, number>>(new Map());
 
   const refreshListing = useCallback(async () => {
     try {
       const dirListing = await props.contentsManager.get('', { content: true });
       setListing(dirListing);
+
+      if (dirListing.type === 'directory') {
+        const items = dirListing.content as Contents.IModel[];
+        setOrderMap(prev => {
+          const next = new Map(prev);
+
+          for (const key of Array.from(next.keys())) {
+            if (!items.some(i => i.path === key)) {
+              next.delete(key);
+            }
+          }
+
+          let max = -1;
+          for (const pos of next.values()) {
+            if (pos > max) {
+              max = pos;
+            }
+          }
+
+          items.forEach((it, idx) => {
+            if (!next.has(it.path)) {
+              next.set(it.path, ++max >= 0 ? max : idx);
+            }
+          });
+
+          return next;
+        });
+      }
     } catch (err) {
       await showErrorMessage(
         'Error loading files',
@@ -175,6 +478,196 @@ function FilesApp(props: IFilesAppProps) {
   useEffect(() => {
     void refreshListing();
   }, [refreshListing]);
+
+  // Show the native "Leave site?" prompt when there is at least one uploaded (supported) file.
+  const hasAnyFileBeenUploaded = React.useMemo(() => {
+    if (!listing || listing.type !== 'directory') {
+      return false;
+    }
+    const items = listing.content as Contents.IModel[];
+    return items.some(f => {
+      if (f.type !== 'file') {
+        return false;
+      }
+      return isSupportedFileType({
+        name: f.name,
+        type: f.mimetype ?? '',
+        size: f.size ?? 0,
+        lastModified: Date.now()
+      } as File);
+    });
+  }, [listing]);
+
+  useEffect(() => {
+    if (!hasAnyFileBeenUploaded) {
+      return;
+    }
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return true;
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasAnyFileBeenUploaded]);
+
+  const onRename = React.useCallback(
+    async (change: IRenameChange) => {
+      setOrderMap(prev => {
+        const next = new Map(prev);
+        const pos = next.get(change.oldPath);
+        if (typeof pos === 'number') {
+          next.delete(change.oldPath);
+          next.set(change.newPath, pos);
+        }
+        return next;
+      });
+
+      await refreshListing();
+    },
+    [refreshListing, setOrderMap]
+  );
+
+  // Drag-and-drop event handlers
+  const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounterRef.current = 0;
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await fileUploaderRef.current?.handleFiles(e.dataTransfer.files);
+    }
+  }, []);
+
+  return (
+    <div
+      className={`je-FilesApp ${isDragging ? 'je-mod-dragging' : ''}`}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <FileUploader
+        ref={fileUploaderRef}
+        onUploadStart={count => {
+          setUploadingCount(count);
+          setIsUploading(true);
+        }}
+        onUploadEnd={async () => {
+          setUploadingCount(0);
+          setIsUploading(false);
+          await refreshListing();
+        }}
+        contentsManager={props.contentsManager}
+      />
+      <div className="je-FilesApp-content">
+        <div className="je-FilesApp-grid" ref={gridRef}>
+          {/* "add new" tile */}
+          <div className="je-FileTile">
+            <div
+              className="je-FileTile-box je-FileTile-box-addNew"
+              onClick={() => fileUploaderRef.current?.triggerFileSelect()}
+            >
+              {isUploading ? (
+                <div className="je-FileTile-spinner" />
+              ) : (
+                <EverywhereIcons.addFile.react />
+              )}
+            </div>
+            <div className="je-FileTile-label">
+              {uploadingCount > 0
+                ? `Uploading ${uploadingCount} file${uploadingCount > 1 ? 's' : ''}...`
+                : 'add new'}
+            </div>
+          </div>
+          {/* File thumbnails, and the rest of the tiles. */}
+          {listing &&
+            listing.type === 'directory' &&
+            [...(listing.content as Contents.IModel[])]
+              .sort((a, b) => {
+                const orderOfa = orderMap.get(a.path);
+                const orderOfb = orderMap.get(b.path);
+                if (orderOfa === undefined && orderOfb === undefined) {
+                  return 0;
+                }
+                if (orderOfa === undefined) {
+                  return 1;
+                }
+                if (orderOfb === undefined) {
+                  return -1;
+                }
+                return orderOfa - orderOfb;
+              })
+              .filter(f => {
+                return (
+                  f.type === 'file' &&
+                  isSupportedFileType({
+                    name: f.name,
+                    type: f.mimetype ?? '',
+                    size: f.size ?? 0,
+                    lastModified: Date.now()
+                  } as File)
+                );
+              })
+              .map((file, index) => {
+                return (
+                  <FileTile
+                    file={file}
+                    gridIndex={index}
+                    contentsManager={props.contentsManager}
+                    onRename={onRename}
+                    onDelete={refreshListing}
+                    gridColumns={gridColumns}
+                  />
+                );
+              })}
+        </div>
+      </div>
+      <FilesWarningBanner />
+    </div>
+  );
+}
+
+interface IRenameChange {
+  oldPath: string;
+  newPath: string;
+}
+
+function FileTile(props: {
+  contentsManager: Contents.IManager;
+  file: Contents.IModel;
+  onRename: (change: IRenameChange) => Promise<void>;
+  onDelete: () => Promise<void>;
+  gridIndex: number;
+  gridColumns: number;
+}) {
+  const [isRenaming, setIsRenaming] = useState<PromiseDelegate<string> | false>(false);
+  const [draftName, setDraftName] = useState<string | null>(null);
 
   const downloadFile = React.useCallback(
     async (model: Contents.IModel) => {
@@ -223,7 +716,7 @@ function FilesApp(props: IFilesAppProps) {
     async (model: Contents.IModel) => {
       try {
         await props.contentsManager.delete(model.path);
-        await refreshListing();
+        await props.onDelete();
       } catch (err) {
         await showErrorMessage(
           'Delete failed',
@@ -231,122 +724,182 @@ function FilesApp(props: IFilesAppProps) {
         );
       }
     },
-    [props.contentsManager, refreshListing]
+    [props.contentsManager, props.onDelete]
+  );
+  /**
+   * Rename handler: prompts for a new name and performs a contents rename.
+   * We check for conflicts and prevent changing file extensions here.
+   */
+  const renameFile = React.useCallback(
+    async (model: Contents.IModel) => {
+      const oldName = model.name;
+      const oldPath = model.path;
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const delegate = new PromiseDelegate<string>();
+        setIsRenaming(delegate);
+        let result: string;
+        try {
+          result = await delegate.promise;
+        } catch {
+          // User cancelled, finish.
+          return;
+        } finally {
+          setIsRenaming(false);
+        }
+
+        const newName = result.trim();
+        setDraftName(newName);
+
+        // No-op if unchanged or empty
+        if (!newName || newName === oldName) {
+          return;
+        }
+
+        if (/[\\/]/.test(newName)) {
+          await showErrorMessage(
+            'Invalid name',
+            'File name cannot contain invalid characters. Please choose a different name for your file.'
+          );
+          continue;
+        }
+
+        const oldExt = PathExt.extname(oldName);
+        const newExt = PathExt.extname(newName);
+
+        if (oldExt && newExt && oldExt.toLowerCase() !== newExt.toLowerCase()) {
+          await showErrorMessage(
+            'Cannot change file extension',
+            'Jupyter Everywhere does not support converting files from one format to another. To convert a file, please delete it and re-upload the converted version.'
+          );
+          continue;
+        }
+
+        const finalName = oldExt && !newExt ? `${newName}${oldExt}` : newName;
+
+        const dirname = PathExt.dirname(model.path);
+        const newPath = dirname ? PathExt.join(dirname, finalName) : finalName;
+
+        const exists = await fileExists(props.contentsManager, newPath);
+
+        if (exists && newPath !== oldPath) {
+          await showErrorMessage(
+            'File exists',
+            `A file named "${finalName}" already exists. Please choose a different name.`
+          );
+          continue;
+        }
+
+        try {
+          await props.contentsManager.rename(model.path, newPath);
+          await props.onRename({ oldPath, newPath });
+          setDraftName(null);
+          return;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          await showErrorMessage('Rename failed', `Could not rename “${oldName}”: ${msg}`);
+          // The loop will continue to allow the user to try again; the user may click the
+          // "Cancel" button to exit at any point on the "Rename file" dialog.
+          continue;
+        }
+      }
+    },
+    [props.contentsManager, props.onRename]
   );
 
-  /**
-   * Infer the MIME type from a file name.
-   * @param name - file name
-   * @returns the MIME type inferred from the file extension, or an empty string if unknown.
-   */
-  function inferMimeFromName(name: string): string {
-    const ext = name.split('.').pop()?.toLowerCase() ?? '';
-    if (ext === 'png') {
-      return 'image/png';
-    }
-    if (ext === 'jpg' || ext === 'jpeg') {
-      return 'image/jpeg';
-    }
-    if (ext === 'csv') {
-      return 'text/csv';
-    }
-    if (ext === 'tsv') {
-      return 'text/tab-separated-values';
-    }
-    return '';
-  }
+  const { file, gridColumns, gridIndex } = props;
+  const fileIcon = getFileIcon(file.name, file.mimetype ?? '');
+  // The "add new" tile sits at the zeroth index, so we offset by 1.
+  // We use this to determine if we are in the rightmost column.
+  // If so, we add a special data attribute to the tile, which is
+  // used in CSS to remove the right margin. This is to avoid users
+  // from adding horizontal scrolling by accident.
+  const totalIndex = gridIndex + 1;
+  const row = Math.floor(totalIndex / gridColumns);
+  const col = totalIndex % gridColumns;
+  const isRightColumn = col === gridColumns - 1;
+  const isLeftColumn = col === 0;
+  return (
+    <div
+      className="je-FileTile"
+      key={file.path}
+      data-row={row}
+      data-col-right={isRightColumn ? 'true' : 'false'}
+      data-col-left={isLeftColumn ? 'true' : 'false'}
+    >
+      <div className="je-FileTile-box je-FileTile-box-hasMenu">
+        <FileMenu
+          model={file}
+          onDownload={downloadFile}
+          onDelete={deleteFile}
+          onRename={renameFile}
+        />
+        <fileIcon.react />
+      </div>
+      {isRenaming ? (
+        <EditableFileLabel delegate={isRenaming} name={draftName ?? file.name} />
+      ) : (
+        <div className="je-FileTile-label">{file.name}</div>
+      )}
+    </div>
+  );
+}
+
+function EditableFileLabel(props: { name: string; delegate: PromiseDelegate<string> }) {
+  const { delegate, name } = props;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  const renameMaybeSubmit = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        delegate.resolve(e.currentTarget.textContent!);
+      } else if (e.key === 'Escape') {
+        delegate.reject(e);
+      }
+    },
+    [delegate]
+  );
+  const renameSubmit = React.useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      delegate.resolve(e.currentTarget.textContent!);
+    },
+    [delegate]
+  );
 
   return (
-    <div className="je-FilesApp">
-      <FileUploader
-        ref={fileUploaderRef}
-        onUploadStart={count => {
-          setUploadingCount(count);
-          setIsUploading(true);
-        }}
-        onUploadEnd={async () => {
-          setUploadingCount(0);
-          setIsUploading(false);
-          await refreshListing();
-        }}
-        contentsManager={props.contentsManager}
-      />
-      <div className="je-FilesApp-content">
-        <div className="je-FilesApp-grid">
-          {/* "add new" tile */}
-          <div className="je-FileTile">
-            <div
-              className="je-FileTile-box je-FileTile-box-addNew"
-              onClick={() => fileUploaderRef.current?.triggerFileSelect()}
-            >
-              {isUploading ? (
-                <div className="je-FileTile-spinner" />
-              ) : (
-                <EverywhereIcons.addFile.react />
-              )}
-            </div>
-            <div className="je-FileTile-label">
-              {uploadingCount > 0
-                ? `Uploading ${uploadingCount} file${uploadingCount > 1 ? 's' : ''}...`
-                : 'add new'}
-            </div>
-          </div>
-          {/* File thumbnails, and the rest of the tiles. */}
-          {listing &&
-            listing.type === 'directory' &&
-            (listing.content as Contents.IModel[])
-              .filter(f => {
-                return (
-                  f.type === 'file' &&
-                  isSupportedFileType({
-                    name: f.name,
-                    type: f.mimetype ?? '',
-                    size: f.size ?? 0,
-                    lastModified: Date.now()
-                  } as File)
-                );
-              })
-              .map(f => {
-                const fileIcon = getFileIcon(f.name, f.mimetype ?? '');
-                return (
-                  <div className="je-FileTile" key={f.path}>
-                    <div className="je-FileTile-box je-FileTile-box-hasActions">
-                      <div className="je-FileTile-actions">
-                        {/* Delete (X) button */}
-                        <button
-                          className="je-FileTile-action je-FileTile-action--close"
-                          aria-label={`Delete ${f.name}`}
-                          title="Delete"
-                          onClick={e => {
-                            e.stopPropagation();
-                            void deleteFile(f);
-                          }}
-                        >
-                          <closeIcon.react tag="span" />
-                        </button>
+    <div
+      contentEditable={true}
+      className="je-FileTile-label je-FileTile-label-rename"
+      onKeyDown={renameMaybeSubmit}
+      onBlur={renameSubmit}
+      onFocus={e => {
+        const ext = PathExt.extname(name);
+        const value = e.target.textContent!;
 
-                        {/* Download (↓) button */}
-                        <button
-                          className="je-FileTile-action je-FileTile-action--download"
-                          aria-label={`Download ${f.name}`}
-                          title="Download"
-                          onClick={e => {
-                            e.stopPropagation();
-                            void downloadFile(f);
-                          }}
-                        >
-                          <downloadIcon.react tag="span" />
-                        </button>
-                      </div>
-                      <fileIcon.react />
-                    </div>
-                    <div className="je-FileTile-label">{f.name}</div>
-                  </div>
-                );
-              })}
-        </div>
-      </div>
-      <FilesWarningBanner />
+        const selection = window.getSelection();
+        if (!selection) {
+          return;
+        }
+        const range = document.createRange();
+
+        const textNode = e.target.firstChild!;
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, value.length - ext.length);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }}
+      tabIndex={0}
+      ref={ref}
+      role="textbox"
+    >
+      {name}
     </div>
   );
 }

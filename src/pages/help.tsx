@@ -27,76 +27,69 @@ export class HelpCentre extends ReactWidget {
         <p>Follow these steps to get started with the Jupyter Everywhere platform...</p>
         <ol>
           <li>
-            Open the Magic Portal
-            <br />
+            <h4>Open the Magic Portal</h4>
             Go to the Jupyter Everywhere website (no login needed—yay!).
           </li>
           <li>
-            Click “Start Coding”
-            <br />
+            <h4>Create an R or Python Notebook</h4>
             Instantly drop into a blank Jupyter notebook powered by WebAssembly — no setup, just
             vibes.
           </li>
           <li>
-            Choose Your Sidekick
-            <br />
-            Python or R? Pick your language.
+            <h4>Upload your files</h4>
+            Want to use data and add images? Well you can! Use the left navigation bar to upload
+            your files by clicking the file icon. Simply drag in your own CSV or PNG/JPG files or
+            click the add files button.
           </li>
           <li>
-            Load a Dataset or Create a New One
-            <br />
-            Use built-in sample data or drag in your own CSV. Bonus: It doesn’t get uploaded
-            anywhere unless you say so.
-          </li>
-          <li>
-            Code Like a Wizard
-            <br />
+            <h4>Code Like a Wizard</h4>
             Run some cells, make a plot, maybe even do some linear regression. Sky’s the limit.
           </li>
           <li>
-            Hit “Share” to Make a Magic Link
-            <br />
-            When you're ready, hit the Share button to get a link + optional password. Great for
-            showing off.
+            <h4>Hit “Share” to Make a Magic Link</h4>
+            When you're ready, hit the Share button to get a link. Great for showing off.
           </li>
           <li>
-            Send the Link to a Friend or Teacher
-            <br />
-            Boom—now someone else can view or edit (if they have the password).
+            <h4>Send the Link to a Friend or Teacher</h4>
+            Boom—now someone else can view your Jupyter notebook via JE.
           </li>
           <li>
-            Make a Copy if You’re in View-Only Mode
-            <br />
-            If someone sends you a notebook and it’s locked down, just click "Make a Copy" to tinker
-            freely.
+            <h4>Make a Copy if You’re in View-Only Mode</h4>
+            If someone sends you a notebook and you want to edit, just click "Make a Copy" to tinker
+            freely. Once done, make sure to save again to create a new link.
           </li>
           <li>
-            Come Back Later (If You Have the Link + Password)
-            <br />
-            Your notebook lives in the cloud for a bit. Use your secret combo to get back in and
-            keep working.
+            <h4>Come Back Later</h4>
+            Your notebook lives in the cloud. If you have your magic link you can access your
+            notebook in any other computer, on the go, and even at home. No rush to finish, just
+            come back later with your shared link, create a copy, and continue working wherever you
+            go.
           </li>
         </ol>
         <h3>JE User Guide</h3>
         The user guide will help you get started coding in your favorite language:
         <ul>
           <li>
-            Click <a href="#">here</a> for an R Coding Guide
+            Click{' '}
+            <a href="https://docs.google.com/document/d/1k05giO8HYKiLtdyS1pWM7GOJuxsQ0ww2Q-PrO9xRaxE/edit">
+              here
+            </a>{' '}
+            for an R Coding Guide
           </li>
           <li>
-            Click <a href="#">here</a> for a Python Coding Guide
+            Click{' '}
+            <a href="https://docs.google.com/document/d/1J_STDSo_9JJvsS87GIB7wY-lGAgr4lza3hoXaYDJnw8/edit">
+              here
+            </a>{' '}
+            for a Python Coding Guide
           </li>
         </ul>
         <p>
           Need help with a coding or notebook question? Check out our{' '}
           <a href="https://jupytereverywhere.freeflarum.com/">Community Forum</a>
           <br />
-          Found a bug in the platform? Post a{' '}
-          <a href="https://github.com/JupyterEverywhere/jupyterlite-extension/issues">
-            GitHub issue
-          </a>
-          <br />
-          Need to report something? <a href="https://forms.gle/DG42BpS8EKpmNCFD9">Fill out</a>
+          Need to report something? Fill out{' '}
+          <a href="https://forms.gle/SAi65HfqhkSzygMr7">the Google Form</a>
           <br />
         </p>
       </div>

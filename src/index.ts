@@ -10,17 +10,14 @@ import { SharingService } from './sharing-service';
 
 import { createSuccessDialog, createErrorDialog } from './ui-components/share-dialog';
 
-import { LabIcon } from '@jupyterlab/ui-components';
-import refreshIcon from '../style/icons/refresh.svg';
-import fastForwardSvg from '../style/icons/fast-forward.svg';
-
 import { exportNotebookAsPDF } from './pdf';
 import { files } from './pages/files';
 import routesPlugin from './routes';
+import notFoundPlugin from './pages/not-found';
 import { Commands } from './commands';
 // import { competitions } from './pages/competitions';
 import { notebookPlugin } from './pages/notebook';
-// import { helpPlugin } from './pages/help';
+import { helpPlugin } from './pages/help';
 import { generateDefaultNotebookName, isNotebookEmpty } from './notebook-utils';
 import {
   IViewOnlyNotebookTracker,
@@ -32,6 +29,8 @@ import { KERNEL_DISPLAY_NAMES, switchKernel } from './kernels';
 import { singleDocumentMode } from './single-mode';
 import { notebookFactoryPlugin } from './notebook-factory';
 import { placeholderPlugin } from './placeholders';
+import { EverywhereIcons } from './icons';
+import { sessionDialogs } from './dialogs';
 
 /**
  * Generate a shareable URL for the currently active notebook.
@@ -42,6 +41,19 @@ function generateShareURL(notebookID: string): string {
   const currentUrl = new URL(window.location.href);
   const baseUrl = `${currentUrl.protocol}//${currentUrl.host}${currentUrl.pathname}`;
   return `${baseUrl}?notebook=${notebookID}`;
+}
+
+/**
+ * Sets or updates the 'notebook' query parameter in the current URL to the given notebookID.
+ * If the parameter already exists with the same value, no change is made.
+ * @param notebookID - The ID of the notebook to set in the URL.
+ */
+function setNotebookParamInUrl(notebookID: string): void {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get('notebook') !== notebookID) {
+    url.searchParams.set('notebook', notebookID);
+    window.history.replaceState({}, '', url.toString());
+  }
 }
 
 const manuallySharing = new WeakSet<NotebookPanel | ViewOnlyNotebookPanel>();
@@ -134,6 +146,17 @@ async function handleNotebookSharing(
 
       notebookPanel.context.model.fromJSON(notebookContent);
       await notebookPanel.context.save();
+
+      try {
+        const notebookID =
+          (notebookContent.metadata?.readableId as string | undefined) ??
+          (notebookContent.metadata?.sharedId as string | undefined);
+        if (notebookID) {
+          setNotebookParamInUrl(notebookID);
+        }
+      } catch (e) {
+        console.warn('Failed to update URL with shareable notebook ID:', e);
+      }
     }
 
     if (manual) {
@@ -192,7 +215,37 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(Commands.downloadNotebookCommand, {
       label: 'Download as a notebook',
       execute: args => {
-        // Execute the built-in download command
+        // Clear all sharing-specific metadata before download
+        const panel = readonlyTracker.currentWidget ?? tracker.currentWidget;
+
+        if (!panel) {
+          console.warn('No active notebook to download');
+          return;
+        }
+
+        const content = panel.context.model.toJSON() as INotebookContent;
+
+        // Remove sharing-specific metadata
+        const purgedMetadata = { ...content.metadata };
+        delete purgedMetadata.isSharedNotebook;
+        delete purgedMetadata.sharedId;
+        delete purgedMetadata.readableId;
+        delete purgedMetadata.sharedName;
+        delete purgedMetadata.lastShared;
+
+        // Ensure that we preserve kernelspec metadata if present
+        const kernelSpec = content.metadata?.kernelspec;
+        if (kernelSpec) {
+          purgedMetadata.kernelspec = kernelSpec;
+        }
+
+        const cleanedContent: INotebookContent = {
+          ...content,
+          metadata: purgedMetadata
+        };
+        panel.context.model.fromJSON(cleanedContent);
+
+        // Execute the built-in download command with the cleaned model
         return commands.execute('docmanager:download');
       }
     });
@@ -222,52 +275,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       }
     });
-
-    /**
-     * Add a command to restart the notebook kernel, terming it as "memory"
-     */
-    const RefreshLabIcon = new LabIcon({
-      name: 'jupytereverywhere:refresh',
-      svgstr: refreshIcon
-    });
-
-    commands.addCommand(Commands.restartMemoryCommand, {
-      label: 'Restart Notebook Memory',
-      icon: RefreshLabIcon,
-      execute: async () => {
-        const panel = tracker.currentWidget;
-        if (!panel) {
-          console.warn('No active notebook to restart.');
-          return;
-        }
-
-        const result = await showDialog({
-          title: 'Would you like to restart the notebook’s memory?',
-          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Restart' })]
-        });
-
-        if (result.button.accept) {
-          try {
-            await panel.sessionContext.restartKernel();
-          } catch (err) {
-            console.error('Memory restart failed', err);
-          }
-        }
-      }
-    });
-
     /**
      * Add a command to restart the notebook kernel, terming it as "memory",
      * and run all cells after the restart.
      */
-    const customFastForwardIcon = new LabIcon({
-      name: 'jupytereverywhere:restart-run',
-      svgstr: fastForwardSvg
-    });
 
     commands.addCommand(Commands.restartMemoryAndRunAllCommand, {
       label: 'Restart Notebook Memory and Run All Cells',
-      icon: customFastForwardIcon,
+      icon: EverywhereIcons.fastForward,
       isEnabled: () => !!tracker.currentWidget,
       execute: async () => {
         const panel = tracker.currentWidget;
@@ -427,7 +442,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           delete purgedMetadata.sharedName;
           delete purgedMetadata.lastShared;
 
-          // Ensure that we preserve kernelspec metadata
+          // Ensure that we preserve kernelspec metadata if present
           const kernelSpec = originalContent.metadata?.kernelspec;
 
           // Remove cell-level editable=false; as the notebook has
@@ -601,7 +616,9 @@ export default [
   routesPlugin,
   // competitions,
   customSidebar,
-  // helpPlugin,
+  helpPlugin,
   singleDocumentMode,
-  placeholderPlugin
+  placeholderPlugin,
+  sessionDialogs,
+  notFoundPlugin
 ];

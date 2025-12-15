@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Not found</title>
+    <script>
+      (function () {
+        const url = new URL('/lab/index.html', window.location.href);
+        const params = new URLSearchParams(window.location.search);
+        params.set('tab', '404');
+        url.search = params.toString();
+        url.hash = window.location.hash;
+        window.location.replace(url.toString());
+      })();
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0; url=/lab/index.html?tab=404" />
+    </noscript>
+  </head>
+  <body></body>
+</html>

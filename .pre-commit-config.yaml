@@ -4,9 +4,6 @@ ci:
   # skip any check that needs internet access
   skip: [prettier, eslint, stylelint]
 
-default_language_version:
-  node: system
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -49,7 +46,7 @@ repos:
         additional_dependencies: ['validate-pyproject-schema-store[all]']
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.12.1
+    rev: v1.16.2
     hooks:
       - id: zizmor
         args: ['--pedantic', '--fix=safe']

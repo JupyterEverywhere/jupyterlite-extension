@@ -13,11 +13,11 @@ concurrency:
 permissions: {}
 
 jobs:
-  lint-and-test:
+  lint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    name: "Lint and Test"
+    name: "Lint"
 
     steps:
     - name: Checkout
@@ -36,11 +36,6 @@ jobs:
         set -eux
         jlpm
         jlpm run lint:check
-
-    - name: Test the extension
-      run: |
-        set -eux
-        jlpm run test
 
   build-extension:
     name: Build the jupyterlite-extension wheel
@@ -74,7 +69,7 @@ jobs:
           mode: ${{ matrix.mode }}
 
   deploy:
-    name: Deploy to GitHub Pages and Netlify
+    name: Deploy to GitHub Pages
     needs: build-app
     if: github.ref == 'refs/heads/main'
     permissions:
@@ -122,7 +117,7 @@ jobs:
     - name: Install Python
       uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
-        python-version: '3.9'
+        python-version: '3.10'
         architecture: 'x64'
     - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
       with:

@@ -20,13 +20,16 @@ import linkSvg from '../style/icons/link.svg';
 import competitionSvg from '../style/icons/competition.svg';
 import notebookSvg from '../style/icons/notebook.svg';
 import logoSvg from '../style/icons/logo.svg';
+import octopusSvg from '../style/icons/je-octopus.svg';
 import runSvg from '../style/icons/run.svg';
 import runCellSvg from '../style/icons/run-cell.svg';
 import refreshSvg from '../style/icons/refresh.svg';
 import stopSvg from '../style/icons/stop.svg';
 import fastForwardSvg from '../style/icons/fast-forward.svg';
+import ellipsisSvg from '../style/icons/ellipsis.svg';
 import downloadCaretSvg from '../style/icons/download-caret.svg';
 import kernelCaretSvg from '../style/icons/kernel-caret.svg';
+import dropdownTriangleSvg from '../style/icons/dropdown-triangle.svg';
 import imageIconSvg from '../style/icons/image-icon.svg';
 import fileIconSvg from '../style/icons/file-icon.svg';
 import helpSvg from '../style/icons/help.svg';
@@ -69,6 +72,10 @@ export namespace EverywhereIcons {
     name: fastForwardIcon.name,
     svgstr: fastForwardSvg
   });
+  export const ellipsis = new LabIcon({
+    name: 'everywhere:ellipsis',
+    svgstr: ellipsisSvg
+  });
   // Add custom icons
   export const folderSidebar = new LabIcon({
     name: 'everywhere:folder-sidebar',
@@ -90,6 +97,10 @@ export namespace EverywhereIcons {
     name: 'everywhere:logo',
     svgstr: logoSvg
   });
+  export const octopus = new LabIcon({
+    name: 'everywhere:octopus',
+    svgstr: octopusSvg
+  });
   export const runCell = new LabIcon({
     name: 'everywhere:run-cell',
     svgstr: runCellSvg
@@ -101,6 +112,10 @@ export namespace EverywhereIcons {
   export const kernelCaret = new LabIcon({
     name: 'everywhere:kernel-caret',
     svgstr: kernelCaretSvg
+  });
+  export const dropdownTriangle = new LabIcon({
+    name: 'everywhere:dropdown-triangle',
+    svgstr: dropdownTriangleSvg
   });
   export const imageIcon = new LabIcon({
     name: 'everywhere:image-icon',

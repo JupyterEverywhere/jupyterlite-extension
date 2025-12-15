@@ -26,6 +26,12 @@ async function createTempNotebookFile(notebook: JSONObject, filename: string): P
   return tempPath;
 }
 
+const DIALOG_HIDE_BACKGROUND = `
+.jp-Dialog {
+  clip-path: none!important;
+  background: white!important
+}`;
+
 const PYTHON_TEST_NOTEBOOK: JSONObject = {
   cells: [
     {
@@ -33,7 +39,12 @@ const PYTHON_TEST_NOTEBOOK: JSONObject = {
       execution_count: null,
       id: '55eb9a2d-401d-4abd-b0eb-373ded5b408d',
       outputs: [],
-      metadata: {},
+      metadata: {
+        sharedId: 'some-random-alphanumeric-id',
+        readableId: 'python-test-notebook',
+        sharedName: 'Notebook_1980-10-30_00-10-20',
+        lastShared: '2024-06-20T00:10:20.123Z'
+      },
       source: [`# This is a test notebook`]
     }
   ],
@@ -114,6 +125,36 @@ const CLOJURE_TEST_NOTEBOOK: JSONObject = {
   nbformat_minor: 5
 };
 
+const VERY_LONG_CODE = 'A'.repeat(10000000);
+
+const LARGE_TEST_NOTEBOOK: JSONObject = {
+  cells: [
+    {
+      cell_type: 'code',
+      execution_count: null,
+      id: 'large-test-cell',
+      outputs: [],
+      metadata: {},
+      source: [VERY_LONG_CODE]
+    }
+  ],
+  metadata: {
+    kernelspec: {
+      display_name: 'R (xr)',
+      language: 'R',
+      name: 'xr'
+    },
+    language_info: {
+      codemirror_mode: 'r',
+      file_extension: '.r',
+      mimetype: 'text/x-r-source',
+      name: 'R'
+    }
+  },
+  nbformat: 4,
+  nbformat_minor: 5
+};
+
 async function mockTokenRoute(page: Page) {
   await page.route('**/api/v1/auth/issue', async route => {
     const json = { token: 'test-token' };
@@ -140,6 +181,18 @@ async function mockShareNotebookResponse(page: Page, notebookId: string) {
       notebook: { id: notebookId, readable_id: null }
     };
     await route.fulfill({ json });
+  });
+}
+
+async function mockShareNotebookTooLarge(page: Page) {
+  await page.route('**/api/v1/notebooks', async route => {
+    await route.fulfill({ status: 413, body: 'This is too large' });
+  });
+}
+
+async function mockShareNotebookServerFailure(page: Page) {
+  await page.route('**/api/v1/notebooks', async route => {
+    await route.fulfill({ status: 500 });
   });
 }
 
@@ -207,7 +260,7 @@ test.describe('General', () => {
     expect(await page.locator('#je-files').screenshot()).toMatchSnapshot('files.png');
   });
 
-  test.skip('Should open the help page', async ({ page }) => {
+  test('Should open the help page', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Help Centre').click();
     expect(await page.locator('#je-help').screenshot()).toMatchSnapshot('help.png');
   });
@@ -249,6 +302,34 @@ test.describe('Sharing', () => {
     const dialog = page.locator('.jp-Dialog-content');
     await expect(dialog).toBeVisible();
     expect(await dialog.screenshot()).toMatchSnapshot('share-dialog.png');
+  });
+
+  test('Should display a nice error if notebook server rejects as too large', async ({ page }) => {
+    await mockTokenRoute(page);
+    await mockShareNotebookTooLarge(page);
+    await runCommand(page, 'jupytereverywhere:save-and-share');
+    const dialog = page.locator('.jp-Dialog-content');
+    const screenshot = await dialog.screenshot({ style: DIALOG_HIDE_BACKGROUND });
+    expect(screenshot).toMatchSnapshot('share-dialog-failed-server-413.png');
+  });
+
+  test('Should display a nice error if notebook is too large and server is misbehaving', async ({
+    page
+  }) => {
+    test.setTimeout(120_000);
+    await mockTokenRoute(page);
+
+    await page.waitForSelector('.jp-KernelStatus-success');
+
+    // Generate a large notebook
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(VERY_LONG_CODE);
+
+    await mockShareNotebookServerFailure(page);
+    await runCommand(page, 'jupytereverywhere:save-and-share');
+    const dialog = page.locator('.jp-Dialog-content');
+    const screenshot = await dialog.screenshot({ style: DIALOG_HIDE_BACKGROUND });
+    expect(screenshot).toMatchSnapshot('share-dialog-failed-server-unkown-but-large.png');
   });
 
   test('Clicking the Save button should trigger share dialog in editable notebook', async ({
@@ -316,6 +397,28 @@ test.describe('Download', () => {
     const pdfPath = await (await pdfDownload).path();
     expect(pdfPath).not.toBeNull();
   });
+
+  test('Notebook downloaded as IPyNB should not have sharing-specific metadata', async ({
+    page,
+    context
+  }) => {
+    await mockTokenRoute(page);
+    await mockShareNotebookResponse(page, 'test-download-metadata-notebook');
+
+    const ipynbDownload = page.waitForEvent('download');
+    await runCommand(page, 'jupytereverywhere:download-notebook');
+    const ipynbPath = await (await ipynbDownload).path();
+    expect(ipynbPath).not.toBeNull();
+
+    const content = await fs.promises.readFile(ipynbPath!, { encoding: 'utf-8' });
+    const notebook = JSON.parse(content) as JSONObject;
+    const metadata = notebook['metadata'] as JSONObject | undefined;
+    expect(metadata).toBeDefined();
+    expect(metadata).not.toHaveProperty('sharedId');
+    expect(metadata).not.toHaveProperty('readableId');
+    expect(metadata).not.toHaveProperty('sharedName');
+    expect(metadata).not.toHaveProperty('lastShared');
+  });
 });
 
 // We take a screenshot of the full files page, to
@@ -327,15 +430,16 @@ test.describe('Files', () => {
     await expect(page).toHaveURL(/\/lab\/files\/$/);
   });
 
-  test('Should upload two files and display their thumbnails', async ({ page }) => {
+  test('Should upload three files and display their thumbnails', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
     await page.locator('.je-FileTile').first().click(); // the first tile will always be the "add new" one
 
     const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
     const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    const webpPath = path.resolve(__dirname, '../test-files/c-flower.webp');
 
-    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath, webpPath]);
 
     // Wait some time for thumbnails to appear as the files
     // are being uploaded to the contents manager
@@ -345,6 +449,9 @@ test.describe('Files', () => {
     await page
       .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
       .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
+      .waitFor({ state: 'visible' });
 
     expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
       'uploaded-files-grid.png'
@@ -352,9 +459,10 @@ test.describe('Files', () => {
 
     await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
     await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'c-flower.webp' })).toBeVisible();
   });
 
-  test('Hovering a file tile shows close and download actions', async ({ page }) => {
+  test('Clicking ellipsis shows dropdown menu with actions', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
     await page.locator('.je-FileTile').first().click();
@@ -366,15 +474,25 @@ test.describe('Files', () => {
     });
     await tile.waitFor();
 
-    // Hover to reveal the actions
-    await tile.hover();
-    await expect(tile.locator('.je-FileTile-action--close')).toBeVisible();
-    await expect(tile.locator('.je-FileTile-action--download')).toBeVisible();
+    // Click the ellipsis to open the menu
+    const ellipsisButton = tile.locator('.je-FileMenu-trigger');
+    await ellipsisButton.click();
 
-    expect(await tile.screenshot()).toMatchSnapshot('file-tile-actions-visible.png');
+    // Check that the dropdown menu is visible
+    const dropdown = page.locator('.je-FileMenu-dropdown');
+    await expect(dropdown).toBeVisible();
+    await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Rename' })).toBeVisible();
+    await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Download' })).toBeVisible();
+    await expect(dropdown.locator('.je-FileMenu-item', { hasText: 'Delete' })).toBeVisible();
+
+    await page.addStyleTag({
+      content: '.je-FileMenu-dropdown { box-shadow: none !important; }'
+    });
+
+    expect(await dropdown.screenshot()).toMatchSnapshot('file-menu-dropdown.png');
   });
 
-  test('Clicking the X (close) action deletes the file tile', async ({ page }) => {
+  test('Clicking Delete in the menu deletes the file tile', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
     await page.locator('.je-FileTile').first().click();
@@ -385,13 +503,18 @@ test.describe('Files', () => {
     await label.waitFor({ state: 'visible' });
 
     const tile = page.locator('.je-FileTile', { has: label });
-    await tile.hover();
-    await tile.locator('.je-FileTile-action--close').click();
+
+    // Click ellipsis to open menu
+    await tile.locator('.je-FileMenu-trigger').click();
+
+    // Click Delete button in dropdown
+    const dropdown = page.locator('.je-FileMenu-dropdown');
+    await dropdown.locator('.je-FileMenu-item', { hasText: 'Delete' }).click();
 
     await expect(label).toHaveCount(0);
   });
 
-  test('Clicking the ⭳ (download) action downloads the file', async ({ page }) => {
+  test('Clicking Download in the menu downloads the file', async ({ page }) => {
     await page.locator('.jp-SideBar').getByTitle('Files').click();
 
     await page.locator('.je-FileTile').first().click();
@@ -402,13 +525,387 @@ test.describe('Files', () => {
     await label.waitFor({ state: 'visible' });
 
     const tile = page.locator('.je-FileTile', { has: label });
-    await tile.hover();
+
+    // Click ellipsis to open menu
+    await tile.locator('.je-FileMenu-trigger').click();
+
+    // Click Download button in dropdown
+    const dropdown = page.locator('.je-FileMenu-dropdown');
     const downloadPromise = page.waitForEvent('download');
-    await tile.locator('.je-FileTile-action--download').click();
+    await dropdown.locator('.je-FileMenu-item', { hasText: 'Download' }).click();
     const download = await downloadPromise;
 
     const filePath = await download.path();
     expect(filePath).not.toBeNull();
+  });
+
+  const renameConfirmationMethods = ['on pressing Enter', 'on blur'] as const;
+
+  for (const testCase of renameConfirmationMethods) {
+    test(`Should rename a file ${testCase}`, async ({ page }) => {
+      await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+      await page.locator('.je-FileTile').first().click();
+      const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+      await page.setInputFiles('input[type="file"]', jpgPath);
+
+      const oldLabel = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+      await oldLabel.waitFor({ state: 'visible' });
+
+      const tile = page.locator('.je-FileTile', { has: oldLabel });
+
+      // Click ellipsis to open menu
+      await tile.locator('.je-FileMenu-trigger').click();
+
+      // Click Rename button and fill in new name
+
+      await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+      const input = page.locator('.je-FileTile-label-rename');
+      await input.fill('renamed-image');
+
+      if (testCase === 'on pressing Enter') {
+        await input.press('Enter');
+      } else {
+        await input.blur();
+      }
+
+      const newLabel = page.locator('.je-FileTile-label', { hasText: 'renamed-image.jpg' });
+      await expect(newLabel).toBeVisible();
+      await expect(oldLabel).toHaveCount(0);
+    });
+  }
+
+  test('Should cancel rename on Escape', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const oldLabel = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await oldLabel.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: oldLabel });
+
+    // Click ellipsis to open menu
+    await tile.locator('.je-FileMenu-trigger').click();
+
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    const input = page.locator('.je-FileTile-label-rename');
+    await input.fill('renamed-image');
+    await input.press('Escape');
+
+    const newLabel = page.locator('.je-FileTile-label', { hasText: 'renamed-image.jpg' });
+    await expect(newLabel).not.toBeVisible();
+    await expect(oldLabel).toBeVisible();
+  });
+
+  test('Should raise an error when renaming a file to an existing file name', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    // Upload two files
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/d-leiria.jpg');
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'd-leiria.jpg' })
+      .waitFor({ state: 'visible' });
+
+    // Try to rename first file to second file's name
+    const firstTile = page.locator('.je-FileTile', {
+      has: page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+    });
+
+    await firstTile.locator('.je-FileMenu-trigger').click();
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    const input = page.locator('.je-FileTile-label-rename');
+    await input.fill('d-leiria.jpg');
+    await input.press('Enter');
+
+    // Check that the error dialog appears
+    const errorDialog = page.locator('.jp-Dialog-content');
+    await expect(errorDialog).toBeVisible();
+    await expect(errorDialog).toContainText('File exists');
+
+    expect.soft(await errorDialog.screenshot()).toMatchSnapshot('rename-conflict-error.png');
+
+    // Close dialog
+    await errorDialog.press('Escape');
+
+    // The input should still contain the duplicate name, allowing the user to iterate on it
+    expect(await input.textContent()).toBe('d-leiria.jpg');
+  });
+
+  for (const testCase of renameConfirmationMethods) {
+    test(`Should show error when renaming with invalid characters ${testCase}`, async ({
+      page
+    }) => {
+      await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+      await page.locator('.je-FileTile').first().click();
+      const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+      await page.setInputFiles('input[type="file"]', jpgPath);
+
+      const label = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+      await label.waitFor({ state: 'visible' });
+
+      const tile = page.locator('.je-FileTile', { has: label });
+
+      await tile.locator('.je-FileMenu-trigger').click();
+      await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+      const input = page.locator('.je-FileTile-label-rename');
+      await input.fill('invalid/name');
+
+      if (testCase === 'on pressing Enter') {
+        await input.press('Enter');
+      } else {
+        await input.blur();
+      }
+
+      // Check that the error dialog appears
+      const errorDialog = page.locator('.jp-Dialog-content');
+      await expect(errorDialog).toBeVisible();
+      await expect(errorDialog).toContainText('Invalid name');
+      await expect(errorDialog).toContainText('cannot contain');
+
+      // Close dialog
+      await errorDialog.press('Escape');
+
+      // The input should still contain the invalid name, allowing the user to iterate on it
+      expect(await input.textContent()).toBe('invalid/name');
+    });
+  }
+
+  test('Should prevent changing file extension', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const label = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await label.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: label });
+
+    await tile.locator('.je-FileMenu-trigger').click();
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    const input = page.locator('.je-FileTile-label-rename');
+    await input.fill('changed-extension.png');
+    await input.press('Enter');
+
+    // Check that error dialog appears
+    const errorDialog = page.locator('.jp-Dialog-content');
+    await expect(errorDialog).toBeVisible();
+    await expect(errorDialog).toContainText('Cannot change file extension');
+    await expect(errorDialog).toContainText('Jupyter Everywhere does not support');
+  });
+
+  test('Should show conflict dialog with multiple files when uploading files with existing names', async ({
+    page
+  }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    // Upload two files
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible' });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
+      .waitFor({ state: 'visible' });
+
+    // Try to upload the same files again
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    // Check that conflict dialog appears with multiple files listed
+    const dialog = page.locator('.jp-Dialog-content');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText('Files already exist');
+    await expect(dialog).toContainText('a-image.jpg');
+    await expect(dialog).toContainText('b-dataset.csv');
+
+    expect(await dialog.screenshot()).toMatchSnapshot('upload-conflict-multiple-dialog.png');
+  });
+
+  test('Should upload non-conflicting files when some files have conflicts', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    // Upload first file
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible' });
+
+    // Try to upload the same file along with a new file
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    await page.locator('.je-FileTile').first().click();
+    await page.setInputFiles('input[type="file"]', [jpgPath, csvPath]);
+
+    // First dialog: conflict notification
+    const conflictDialog = page.locator('.jp-Dialog-content');
+    await expect(conflictDialog).toBeVisible();
+    await conflictDialog.locator('button', { hasText: 'Close' }).click();
+
+    // Second dialog: asking about remaining files
+    const remainingDialog = page.locator('.jp-Dialog-content');
+    await expect(remainingDialog).toBeVisible();
+    await expect(remainingDialog).toContainText('Upload remaining files');
+    await remainingDialog.locator('button', { hasText: 'Upload' }).click();
+
+    // Check that the new file was uploaded
+    await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+  });
+
+  test('Should auto-append extension when renaming without extension', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    await page.locator('.je-FileTile').first().click();
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    await page.setInputFiles('input[type="file"]', jpgPath);
+
+    const oldLabel = page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' });
+    await oldLabel.waitFor({ state: 'visible' });
+
+    const tile = page.locator('.je-FileTile', { has: oldLabel });
+
+    await tile.locator('.je-FileMenu-trigger').click();
+    await page.locator('.je-FileMenu-item', { hasText: 'Rename' }).click();
+
+    // Enter name without extension
+    const input = page.locator('.je-FileTile-label-rename');
+    await input.fill('my-photo');
+
+    await input.press('Enter');
+
+    // Check that extension was auto-appended
+    const newLabel = page.locator('.je-FileTile-label', { hasText: 'my-photo.jpg' });
+    await expect(newLabel).toBeVisible();
+  });
+
+  test('Should show visual feedback when dragging files into the Files widget', async ({
+    page
+  }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const jpgBuffer = await fs.promises.readFile(jpgPath);
+
+    await page.evaluate(
+      ({ jpgData }) => {
+        const filesApp = document.querySelector('.je-FilesApp') as HTMLElement;
+        if (filesApp) {
+          const dt = new DataTransfer();
+          const jpgBlob = new Blob([new Uint8Array(jpgData)], { type: 'image/jpeg' });
+          const jpgFile = new File([jpgBlob], 'a-image.jpg', { type: 'image/jpeg' });
+          dt.items.add(jpgFile);
+
+          const dragEvent = new DragEvent('dragenter', {
+            bubbles: true,
+            cancelable: true,
+            dataTransfer: dt
+          });
+
+          filesApp.dispatchEvent(dragEvent);
+        }
+      },
+      { jpgData: Array.from(jpgBuffer) }
+    );
+
+    await page.waitForTimeout(100);
+
+    const filesContainer = page.locator('.je-Files');
+    await expect(filesContainer.locator('.je-FilesApp')).toHaveClass(/je-mod-dragging/);
+
+    expect(await page.locator('#je-files').screenshot()).toMatchSnapshot(
+      'files-in-dragging-state.png'
+    );
+  });
+
+  test('File uploads should work via drag-and-drop', async ({ page }) => {
+    await page.locator('.jp-SideBar').getByTitle('Files').click();
+
+    const jpgPath = path.resolve(__dirname, '../test-files/a-image.jpg');
+    const csvPath = path.resolve(__dirname, '../test-files/b-dataset.csv');
+    const webpPath = path.resolve(__dirname, '../test-files/c-flower.webp');
+
+    const jpgBuffer = await fs.promises.readFile(jpgPath);
+    const csvBuffer = await fs.promises.readFile(csvPath);
+    const webpBuffer = await fs.promises.readFile(webpPath);
+
+    await page.evaluate(
+      ({ jpgData, csvData, webpData }) => {
+        const filesApp = document.querySelector('.je-FilesApp') as HTMLElement;
+        if (filesApp) {
+          const dt = new DataTransfer();
+
+          const jpgBlob = new Blob([new Uint8Array(jpgData)], { type: 'image/jpeg' });
+          const csvBlob = new Blob([new Uint8Array(csvData)], { type: 'text/csv' });
+          const webpBlob = new Blob([new Uint8Array(webpData)], { type: 'image/webp' });
+          const jpgFile = new File([jpgBlob], 'a-image.jpg', { type: 'image/jpeg' });
+          const csvFile = new File([csvBlob], 'b-dataset.csv', { type: 'text/csv' });
+          const webpFile = new File([webpBlob], 'c-flower.webp', { type: 'image/webp' });
+
+          dt.items.add(jpgFile);
+          dt.items.add(csvFile);
+          dt.items.add(webpFile);
+
+          const dropEvent = new DragEvent('drop', {
+            bubbles: true,
+            cancelable: true,
+            dataTransfer: dt
+          });
+
+          filesApp.dispatchEvent(dropEvent);
+        }
+      },
+      {
+        jpgData: Array.from(jpgBuffer),
+        csvData: Array.from(csvBuffer),
+        webpData: Array.from(webpBuffer)
+      }
+    );
+
+    // Wait some time for thumbnails to appear as the files
+    // are being uploaded to the contents manager
+    await page
+      .locator('.je-FileTile-label', { hasText: 'a-image.jpg' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+    await page
+      .locator('.je-FileTile-label', { hasText: 'c-flower.webp' })
+      .waitFor({ state: 'visible', timeout: 5000 });
+
+    await expect(page.locator('.je-FileTile-label', { hasText: 'a-image.jpg' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'b-dataset.csv' })).toBeVisible();
+    await expect(page.locator('.je-FileTile-label', { hasText: 'c-flower.webp' })).toBeVisible();
+
+    await expect(page.locator('.je-FilesApp.je-mod-dragging')).toHaveCount(0);
+
+    expect(await page.locator('.je-FilesApp-grid').screenshot()).toMatchSnapshot(
+      'uploaded-files-grid.png'
+    );
   });
 });
 
@@ -508,16 +1005,31 @@ test.describe('Landing page', () => {
     await page.waitForSelector('.jp-NotebookPanel');
   });
 
-  test('Uploading an unsupported notebook shows an error alert', async ({ page }) => {
+  test('Uploading an unsupported notebook shows an error dialog', async ({ page }) => {
     await page.goto('index.html');
 
     const notebookPath = await createTempNotebookFile(CLOJURE_TEST_NOTEBOOK, 'clojure-test.ipynb');
 
-    page.on('dialog', async dialog => {
-      expect(dialog.message()).toContain('Only Python and R notebooks are supported');
-    });
-
+    const dialog = page.locator('.jp-Dialog-content');
     await page.setInputFiles('input[type="file"]', notebookPath);
+
+    await expect(dialog).toBeVisible();
+    const content = await dialog.textContent();
+    await expect(content).toContain('Only Python and R notebooks are supported');
+    expect(await dialog.screenshot()).toMatchSnapshot('upload-error-dialog-not-supported.png');
+  });
+
+  test('Uploading a notebook larger than local storage can handle shows a nice dialog', async ({
+    page
+  }) => {
+    await page.goto('index.html');
+
+    const notebookPath = await createTempNotebookFile(LARGE_TEST_NOTEBOOK, 'large_test.ipynb');
+
+    const dialog = page.locator('.jp-Dialog-content');
+    await page.setInputFiles('input[type="file"]', notebookPath);
+
+    expect(await dialog.screenshot()).toMatchSnapshot('upload-error-dialog-notebook-too-large.png');
   });
 });
 
@@ -575,14 +1087,15 @@ test.describe('Default (Python) kernel environment', () => {
 });
 
 test.describe('Kernel networking', () => {
-  const remote_url =
+  const remoteUrl =
     'https://raw.githubusercontent.com/JupyterEverywhere/jupyterlite-extension/refs/heads/main/ui-tests/test-files/b-dataset.csv';
+  const expectedContent = 'col1';
 
   test('R kernel should be able to fetch from a remote URL', async ({ page }) => {
     await page.goto('lab/index.html?kernel=r');
     await page.waitForSelector('.jp-NotebookPanel');
 
-    const code = `read.csv("${remote_url}")`;
+    const code = `read.csv("${remoteUrl}")`;
     const cell = page.locator('.jp-Cell').last();
     await cell.getByRole('textbox').fill(code);
 
@@ -594,7 +1107,25 @@ test.describe('Kernel networking', () => {
     });
 
     const text = await output.textContent();
-    expect(text).toContain('col1');
+    expect(text).toContain(expectedContent);
+  });
+  test('Python kernel should be able to fetch from a remote URL', async ({ page }) => {
+    await page.goto('lab/index.html?kernel=python');
+    await page.waitForSelector('.jp-NotebookPanel');
+
+    const code = `import pandas; pandas.read_csv("${remoteUrl}")`;
+    const cell = page.locator('.jp-Cell').last();
+    await cell.getByRole('textbox').fill(code);
+
+    await runCommand(page, 'notebook:run-cell');
+
+    const output = cell.locator('.jp-Cell-outputArea');
+    await expect(output).toBeVisible({
+      timeout: 20000 // shouldn't take too long to run but just to be safe
+    });
+
+    const text = await output.textContent();
+    expect(text).toContain(expectedContent);
   });
 });
 
@@ -787,7 +1318,7 @@ test.describe('Title of the pages should be "Jupyter Everywhere"', () => {
 
 test.describe('Kernel commands should use memory terminology', () => {
   test('Restart memory command', async ({ page }) => {
-    const promise = runCommand(page, 'jupytereverywhere:restart-memory');
+    const promise = runCommand(page, 'notebook:restart-kernel');
     const dialog = page.locator('.jp-Dialog-content');
 
     await expect(dialog).toBeVisible();
@@ -946,5 +1477,18 @@ test.describe('Per cell run buttons', () => {
 
     await runCommand(page, 'notebook:change-cell-to-markdown');
     await expect(runBtn).toBeVisible();
+  });
+});
+
+test.describe('404 page', () => {
+  test('Should load 404 page', async ({ page }) => {
+    await page.goto('lab/404/');
+    await page.waitForSelector('.je-NotFound');
+
+    const notFoundWidget = page.locator('.je-NotFound');
+    await expect(notFoundWidget).toBeVisible();
+
+    expect(await page.locator('.jp-LabShell').screenshot()).toMatchSnapshot('404-full.png');
+    await expect(page).toHaveURL(/\/lab\/404\/$/);
   });
 });

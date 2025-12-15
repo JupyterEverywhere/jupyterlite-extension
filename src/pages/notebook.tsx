@@ -4,7 +4,7 @@ import { INotebookTracker, INotebookWidgetFactory } from '@jupyterlab/notebook';
 import { INotebookContent } from '@jupyterlab/nbformat';
 import { SidebarIcon } from '../ui-components/SidebarIcon';
 import { EverywhereIcons } from '../icons';
-import { ToolbarButton, IToolbarWidgetRegistry } from '@jupyterlab/apputils';
+import { ToolbarButton, IToolbarWidgetRegistry, ISessionContext } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { DownloadDropdownButton } from '../ui-components/DownloadDropdownButton';
 import { Commands } from '../commands';
@@ -31,6 +31,36 @@ function mapLanguageToKernel(content: INotebookContent): string {
     return 'xr';
   }
   return 'python';
+}
+
+/**
+ * Patch pyodide HTTP kernel
+ */
+async function patchPyodideHttp(sessionContext: ISessionContext): Promise<void> {
+  const session = sessionContext.session;
+  if (!session) {
+    throw Error('Session should have been ready');
+  }
+  const kernel = session.kernel;
+  if (!kernel) {
+    console.warn('Kernel was expected but not found');
+    return;
+  }
+  if (kernel.name !== 'python') {
+    console.debug('Non-python kernel: not patching');
+    return;
+  }
+  await kernel.requestExecute({
+    allow_stdin: false,
+    code: [
+      '%pip install -y pyodide-http requests',
+      'import pyodide_http',
+      'pyodide_http.patch_all()'
+    ].join('\n'),
+    silent: true,
+    stop_on_error: false,
+    store_history: false
+  });
 }
 
 export const notebookPlugin: JupyterFrontEndPlugin<void> = {
@@ -225,17 +255,19 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       void createNewNotebook();
     }
 
-    // Remove kernel URL param after notebook kernel is ready, as
-    // we don't want it to linger and confuse users.
-    tracker.widgetAdded.connect((_, panel) => {
-      panel.sessionContext.ready.then(() => {
-        const url = new URL(window.location.href);
-        if (url.searchParams.has('kernel')) {
-          url.searchParams.delete('kernel');
-          window.history.replaceState({}, '', url.toString());
-          console.log('Removed kernel param from URL after kernel init.');
-        }
-      });
+    tracker.widgetAdded.connect(async (_, panel) => {
+      await panel.sessionContext.ready;
+      // Remove kernel URL param after notebook kernel is ready, as
+      // we don't want it to linger and confuse users.
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('kernel')) {
+        url.searchParams.delete('kernel');
+        window.history.replaceState({}, '', url.toString());
+        console.log('Removed kernel param from URL after kernel init.');
+      }
+      // for Python notebooks, inject code enabling URL access
+      panel.sessionContext.kernelChanged.connect(patchPyodideHttp);
+      await patchPyodideHttp(panel.sessionContext);
     });
 
     const sidebarItem = new SidebarIcon({

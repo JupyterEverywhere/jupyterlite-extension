@@ -55,17 +55,17 @@
         "codeCellConfig": {
           "lineNumbers": false,
           "lineWrap": false,
-          "placeholder": "This is a code cell. Add code here"
+          "placeholder": "This is a code cell. Add code here."
         },
         "markdownCellConfig": {
           "lineNumbers": false,
           "matchBrackets": false,
-          "placeholder": "This is a text cell. Add text here"
+          "placeholder": "This is a text cell. Add text here."
         },
         "rawCellConfig": {
           "lineNumbers": false,
           "matchBrackets": false,
-          "placeholder": "This is a raw cell. Add text here"
+          "placeholder": "This is a raw cell. Add text here."
         }
       },
       "@jupyterlab/application-extension:context-menu": {
@@ -78,6 +78,7 @@
       "@jupyterlab/apputils-extension:state",
       "@jupyterlab/debugger-extension",
       "@jupyterlab/application-extension:property-inspector",
+      "@jupyterlab/apputils-extension:sessionDialogs",
       "@jupyterlab/launcher",
 
       "@jupyterlab/statusbar-extension",
@@ -104,6 +105,7 @@
       "@jupyterlab/fileeditor-extension",
       "@jupyterlab/tooltip-extension:files",
       "@jupyterlab/filebrowser-extension",
+      "@jupyterlab/notebook-extension:open-with-no-kernel",
       "@jupyterlab/toc-extension",
 
       "@jupyterlab/notebook-extension:factory",

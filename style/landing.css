@@ -1,4 +1,7 @@
 @import url('./base.css');
+@import url('@jupyterlab/apputils/style/dialog.css');
+@import url('@jupyterlab/application/style/buttons.css');
+@import url('@jupyterlab/ui-components/style/styling.css');
 
 html,
 body {
@@ -7,6 +10,15 @@ body {
   height: 100%;
   overflow-x: hidden;
   scroll-behavior: smooth;
+}
+
+/* Include minimal required variables for dialog without including a full lab theme */
+.jp-Dialog {
+  --jp-layout-color1: white;
+  --jp-ui-font-color1: rgb(0 0 0 / 87%);
+  --jp-dialog-background: rgb(0 0 0 / 25%);
+
+  clip-path: none !important;
 }
 
 /* Overall style that's applied to the entire page, and overridden elsewhere. */
@@ -269,26 +281,28 @@ body {
   justify-content: center;
   max-width: 1200px;
   margin: 0 auto;
-  flex-wrap: wrap;
+  flex-flow: column wrap;
 }
 
-.je-avatar {
-  border-radius: 50%;
-  margin-right: 30px;
-  margin-bottom: 20px;
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.je-testimonial blockquote {
+.je-testimonial > figure {
   font-style: italic;
   font-size: 2.8em;
   color: var(--je-slate-blue);
-  margin: 0;
   flex: 1;
   line-height: 1.2;
+  display: block;
+  margin: 0 0 60px;
+  text-align: center;
+}
+
+.je-testimonial > figure:last-of-type {
+  margin-bottom: 0;
+}
+
+.je-testimonial > figure > blockquote,
+.je-testimonial > figure > figcaption {
+  display: inline;
+  margin-inline-end: 0;
 }
 
 .je-about {
@@ -369,6 +383,7 @@ body {
   padding: 20px 60px;
   font-size: 0.9em;
   border-top: 1px solid rgb(255 255 255 / 10%);
+  text-align: center;
 }
 
 .je-footer-bottom a {

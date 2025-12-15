@@ -55,11 +55,32 @@
   border: 0;
 }
 
+.je-DropdownMenu {
+  font-size: calc(var(--je-scale) * 24px);
+  font-weight: 600;
+}
+
+.je-DropdownMenu .lm-Menu-itemLabel {
+  padding: 7px 10px;
+}
+
+.je-DropdownMenu .lm-Menu-itemSubmenuIcon,
+.je-DropdownMenu .lm-Menu-itemIcon {
+  display: none;
+}
+
 .jp-Dialog-content {
   border: 3px solid var(--je-slate-blue);
   border-radius: var(--je-dialog-round-corners);
   box-shadow: 3px 3px 3px rgb(0 0 0 / 25%);
   font-family: var(--je-font-family);
+}
+
+.jp-Dialog-body {
+  color: var(--je-slate-blue);
+  font-family: var(--je-font-family);
+  font-size: calc(var(--je-scale) * 16px);
+  line-height: 1.5;
 }
 
 .jp-Dialog-footer {
@@ -257,6 +278,11 @@ consistent with code cells */
   font-weight: 600;
 }
 
+.je-KernelSwitcherButton.jp-ToolbarButtonComponent::part(content) {
+  gap: 4px;
+  flex-direction: row-reverse;
+}
+
 .jp-cell-toolbar .jp-ToolbarButtonComponent {
   padding: calc(var(--je-scale) * 4px);
 }
@@ -380,4 +406,44 @@ consistent with code cells */
 
 .jp-Dialog .jp-Dialog-close-button .jp-Icon {
   --jp-inverse-layout-color3: var(--je-slate-blue);
+}
+
+.je-NotFound {
+  height: 100%;
+  width: 100%;
+  background: white;
+  border-radius: var(--je-round-corners);
+}
+
+.je-NotFound-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.je-NotFound-content {
+  font-family: var(--je-font-family);
+  color: var(--je-slate-blue);
+}
+
+.je-NotFound-code {
+  opacity: 0.5;
+  margin-bottom: 12px;
+  font-size: 48px;
+  color: var(--je-slate-blue);
+}
+
+.je-NotFound-title {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: var(--je-slate-blue);
+}
+
+.je-NotFound-message {
+  margin: 0;
+  opacity: 0.8;
+  color: var(--je-slate-blue);
 }

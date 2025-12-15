@@ -1,0 +1,20 @@
+rules:
+  undocumented-permissions:
+    disable: true
+
+  dangerous-triggers:
+    # The workflow_run trigger is flagged because it's commonly misused in ways that lead
+    # to privilege escalation and code execution vulnerabilities. However, pr-deploy.yml
+    # implements proper mitigations:
+    #
+    # 1. Uses github.event.workflow_run.head_sha as the source of truth for deployment,
+    #    ensuring we deploy exactly what was built and tested (TOCTOU protection)
+    # 2. Validates the triggering event type (github.event.workflow_run.event == 'pull_request')
+    # 3. Checks workflow conclusion (github.event.workflow_run.conclusion == 'success')
+    # 4. Uses minimal permissions (empty at workflow level, granular per-job)
+    # 5. Never executes PR-controlled code - only reads PR metadata (number, body)
+    # 6. Does not handle artifacts, avoiding artifact poisoning attacks
+    #
+    # See: https://securitylab.github.com/resources/github-actions-new-patterns-and-mitigations/
+    ignore:
+      - pr-deploy.yml

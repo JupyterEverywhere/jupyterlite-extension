@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 
 import { handleNotebookUpload } from './upload';
 
-import jeOctopus from '../style/icons/landing/je-octopus.svg';
-import octopusOutline from '../style/icons/landing/je-octopus-outline.svg';
+import jeOctopus from '../style/icons/je-octopus.svg';
+
 import jupyterEverywhereText from '../style/icons/landing/jupytereverywhere-text.svg';
 
 import pythonLogo from '../style/icons/landing/python.svg';
@@ -16,15 +16,7 @@ import codeSymbol from '../style/icons/landing/code.svg';
 import shareIcon from '../style/icons/landing/share.svg';
 import jupyterLogo from '../style/icons/landing/jupyter.svg';
 
-import testimonialAvatar from '../style/icons/landing/testimonial.svg';
-
-// TODO: get SVGs for these logos
-import courseKataLogo from '../static/coursekata.png';
-import skewTheScriptLogo from '../static/skewthescript.jpeg';
-
-// TODO: find a better way to handle these imports
 import '../style/landing.css';
-import '../style/base.css';
 
 /**
  * LandingPage component renders the landing page for Jupyter Everywhere.
@@ -130,32 +122,37 @@ function LandingPage(): JSX.Element {
 
       {/* Testimonial section */}
       <section className="je-testimonial">
-        <img src={testimonialAvatar} alt="User avatar" className="je-avatar" />
-        <blockquote>
-          “This application makes it so much easier for us to focus on the lesson and not on
-          technical issues. I have already recommended it to others.”
-        </blockquote>
+        <figure>
+          <blockquote>
+            “An effective tool to use in the classroom to teach data science and coding”
+          </blockquote>
+          <figcaption> - Jared Bryan</figcaption>
+        </figure>
+
+        <figure>
+          <blockquote>“I am so excited to use this in the classroom!”</blockquote>
+          <figcaption> - Jennifer Cotellino</figcaption>
+        </figure>
+
+        <figure>
+          <blockquote>
+            “I like the shareability. So easy to share a notebook and open anywhere”
+          </blockquote>
+          <figcaption> - Evan Fryer</figcaption>
+        </figure>
       </section>
 
       <section className="je-about">
         <p>
-          Jupyter Everywhere (JE) is a collaborative project between Skew the Script and CourseKata,
-          launched in 2024 with support from the Gates Foundation. Our initiative focuses on
-          bringing data science tools and resources into classrooms by providing access to
-          high-quality tools. Our goal is to empower teachers and students to explore data science
-          and statistics easily, fostering deeper engagement and understanding in these essential
-          fields.
+          Jupyter Everywhere enables teachers and students to run R and Python code on the web,
+          without a Jupyter hub, and to easily share notebooks using simple links. Funded by the
+          Gates Foundation, Jupyter Everywhere is a joint project of CourseKata and Skew The Script.
         </p>
-      </section>
-
-      <section className="je-partner-logos">
-        <img src={courseKataLogo} alt="CourseKata logo" />
-        <img src={skewTheScriptLogo} alt="Skew The Script logo" />
       </section>
 
       <footer className="je-footer">
         <div className="je-footer-brand">
-          <img src={octopusOutline} className="je-footer-logo" alt="Jupyter Everywhere Logo" />
+          <img src={jeOctopus} className="je-footer-logo" alt="Jupyter Everywhere Logo" />
           <img src={jupyterEverywhereText} className="je-footer-text" alt="Jupyter Everywhere" />
         </div>
 
@@ -168,13 +165,14 @@ function LandingPage(): JSX.Element {
 
           <div className="je-footer-section">
             <h4>Follow us</h4>
-            <a href="https://github.com/Skew-The-Script">GitHub</a>
-            <a href="https://www.youtube.com/@skewthescript">YouTube</a>
+            <a href="https://github.com/JupyterEverywhere">GitHub</a>
+            <a href="https://www.youtube.com/@jupytereverywhere">YouTube</a>
           </div>
         </div>
       </footer>
 
       <div className="je-footer-bottom">
+        <p>This project is not endorsed or affiliated with Project Jupyter.</p>
         <p>
           Jupyter Everywhere is a collaboration between{' '}
           <a href="https://www.coursekata.org/">CourseKata</a> and{' '}
