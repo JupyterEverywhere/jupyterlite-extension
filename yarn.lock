@@ -40,10 +40,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.26.9":
+"@babel/runtime@npm:^7.12.5":
   version: 7.28.3
   resolution: "@babel/runtime@npm:7.28.3"
   checksum: dd22662b9e02b6e66cfb061d6f9730eb0aa3b3a390a7bd70fe9a64116d86a3704df6d54ab978cb4acc13b58dbf63a3d7dd4616b0b87030eb14a22835e0aa602d
+  languageName: node
+  linkType: hard
+
+"@babel/runtime@npm:^7.28.4":
+  version: 7.28.4
+  resolution: "@babel/runtime@npm:7.28.4"
+  checksum: 934b0a0460f7d06637d93fcd1a44ac49adc33518d17253b5a0b55ff4cb90a45d8fe78bf034b448911dbec7aff2a90b918697559f78d21c99ff8dbadae9565b55
   languageName: node
   linkType: hard
 
@@ -6203,11 +6210,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jspdf@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "jspdf@npm:3.0.3"
+"jspdf@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "jspdf@npm:4.0.0"
   dependencies:
-    "@babel/runtime": ^7.26.9
+    "@babel/runtime": ^7.28.4
     canvg: ^3.0.11
     core-js: ^3.6.0
     dompurify: ^3.2.4
@@ -6223,7 +6230,7 @@ __metadata:
       optional: true
     html2canvas:
       optional: true
-  checksum: e120e2919753d5c943400549ca6823d0d67974a34681a8e91f23561186a2caee4196d2d07c5491721a6638e5a8bb54e2908722393ea5213f663544356c473fab
+  checksum: de3a8e068cadb45b3ee436c8d7ba5f8c414f339f0bc35a1c39bb69a2850b3ee0827117680023ccb842355ef4d493900241a630b91546af8139c88bfd423f13f6
   languageName: node
   linkType: hard
 
@@ -6262,7 +6269,7 @@ __metadata:
     eslint: ^8.36.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^5.0.0
-    jspdf: ^3.0.3
+    jspdf: ^4.0.0
     npm-run-all: ^4.1.5
     prettier: ^3.0.0
     react: ^18.2.0
@@ -8938,11 +8945,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>":
   version: 5.1.6
-  resolution: "typescript@patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=85af82"
+  resolution: "typescript@patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=5da071"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 21e88b0a0c0226f9cb9fd25b9626fb05b4c0f3fddac521844a13e1f30beb8f14e90bd409a9ac43c812c5946d714d6e0dee12d5d02dfc1c562c5aacfa1f49b606
+  checksum: f53bfe97f7c8b2b6d23cf572750d4e7d1e0c5fff1c36d859d0ec84556a827b8785077bc27676bf7e71fae538e517c3ecc0f37e7f593be913d884805d931bc8be
   languageName: node
   linkType: hard
 
