@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
-      - uses: ./.github/build-extension
+      - uses: $/.github/build-extension
 
   build-app:
     name: Build the JupyterLite app
@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
-      - uses: ./.github/build-app
+      - uses: $/.github/build-app
         with:
           mode: prod
 
